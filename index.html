@@ -176,6 +176,261 @@
       pointer-events: none;
     }
 
+    .section-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      align-self: flex-start;
+      padding: 4px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .section-nav-btn {
+      min-height: 38px;
+      padding: 8px 15px;
+      border-radius: 7px;
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 700;
+      transition: background .15s ease, color .15s ease;
+    }
+
+    .section-nav-btn:hover {
+      background: var(--panel-raised);
+      color: var(--parchment);
+    }
+
+    .section-nav-btn.active {
+      background: var(--parchment);
+      color: #111111;
+    }
+
+    .section-view {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .section-view[hidden] {
+      display: none !important;
+    }
+
+    .contents-view {
+      gap: 16px;
+    }
+
+    .contents-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 4px 2px 2px;
+    }
+
+    .contents-title {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      color: var(--parchment);
+      margin-top: 2px;
+    }
+
+    .contents-subtitle {
+      color: var(--muted);
+      font-size: .82rem;
+      margin-top: 5px;
+      max-width: 680px;
+    }
+
+    .contents-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .contents-breadcrumbs {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      min-height: 28px;
+    }
+
+    .crumb-btn {
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 600;
+      padding: 4px 6px;
+      border-radius: 6px;
+    }
+
+    .crumb-btn:hover {
+      background: var(--panel-raised);
+      color: var(--parchment);
+    }
+
+    .crumb-btn.current {
+      color: var(--parchment);
+      pointer-events: none;
+    }
+
+    .crumb-separator {
+      color: var(--muted-dark);
+      font-size: .72rem;
+    }
+
+    .contents-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .content-card {
+      min-width: 0;
+      min-height: 144px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      transition: border-color .15s ease, transform .15s ease, background .15s ease;
+    }
+
+    .content-card:hover {
+      border-color: #505050;
+      background: var(--panel-raised);
+      transform: translateY(-1px);
+    }
+
+    .content-card.folder-card {
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .content-card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      min-width: 0;
+    }
+
+    .content-icon {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      color: var(--icon-primary);
+    }
+
+    .content-card-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .content-name {
+      display: block;
+      color: var(--parchment);
+      font-size: .9rem;
+      font-weight: 700;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .content-kind {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted-dark);
+      font-family: var(--font-mono);
+      font-size: .67rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .content-card-spacer {
+      flex: 1;
+    }
+
+    .content-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: auto;
+    }
+
+    .content-action {
+      min-height: 36px;
+      padding: 7px 10px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: .75rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .content-action:hover {
+      color: var(--parchment);
+      border-color: #555;
+      background: var(--card-hover);
+    }
+
+    .content-action.primary {
+      background: var(--parchment);
+      color: #111111;
+      border-color: var(--parchment);
+    }
+
+    .contents-status {
+      grid-column: 1 / -1;
+      padding: 44px 18px;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      color: var(--muted);
+      text-align: center;
+      background: #1C1C1C;
+    }
+
+    .contents-status strong {
+      color: var(--parchment);
+    }
+
+    .contents-loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .contents-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #555;
+      border-top-color: var(--parchment);
+      border-radius: 50%;
+      animation: contents-spin .7s linear infinite;
+    }
+
+    @keyframes contents-spin {
+      to { transform: rotate(360deg); }
+    }
+
     /* Grelha de Indicadores KPI */
     .kpi-grid {
       display: grid;
@@ -1641,6 +1896,77 @@
       }
     }
 
+    @media (max-width: 640px) {
+      .section-nav {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .section-nav-btn {
+        width: 100%;
+        min-height: 42px;
+      }
+
+      .contents-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .contents-header > .btn {
+        width: 100%;
+        min-height: 44px;
+      }
+
+      .contents-controls {
+        padding: 10px;
+      }
+
+      .contents-breadcrumbs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+      }
+
+      .contents-breadcrumbs::-webkit-scrollbar {
+        display: none;
+      }
+
+      .crumb-btn,
+      .crumb-separator {
+        flex-shrink: 0;
+      }
+
+      .contents-grid {
+        grid-template-columns: 1fr;
+        gap: 9px;
+      }
+
+      .content-card {
+        min-height: 0;
+        padding: 13px;
+      }
+
+      .content-card.folder-card {
+        min-height: 88px;
+      }
+
+      .content-card-actions {
+        width: 100%;
+      }
+
+      .content-action {
+        flex: 1;
+        min-height: 42px;
+      }
+
+      .contents-status {
+        padding: 36px 14px;
+      }
+    }
+
     @media (max-width: 380px) {
       .kpi-card {
         padding: 10px;
@@ -1704,12 +2030,6 @@
           </svg>
           Permissões
         </button>
-        <button class="btn btn-secondary" id="exportBtn" title="Exportar Backup JSON">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-          </svg>
-          Backup
-        </button>
         <button class="btn btn-primary" id="openAddModal" hidden>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 5v14M5 12h14"/>
@@ -1719,6 +2039,12 @@
       </div>
     </header>
 
+    <nav class="section-nav" aria-label="Seções principais">
+      <button type="button" class="section-nav-btn active" data-section="activities">Atividades</button>
+      <button type="button" class="section-nav-btn" data-section="contents">Conteúdos</button>
+    </nav>
+
+    <div class="section-view" id="activitiesView">
     <!-- Indicadores KPI -->
     <section class="kpi-grid">
       <div class="kpi-card">
@@ -1831,6 +2157,48 @@
 
     <!-- Grelha de Atividades (Ativas à esquerda, expiradas à direita) -->
     <section class="activity-grid" id="activityList"></section>
+    </div>
+
+    <section class="section-view contents-view" id="contentsView" hidden>
+      <div class="contents-header">
+        <div>
+          <div class="subject-tag">Biblioteca compartilhada</div>
+          <h2 class="contents-title">Conteúdos</h2>
+          <p class="contents-subtitle">
+            Materiais da turma organizados diretamente a partir da pasta pública BCC 2023.2 no Google Drive.
+          </p>
+        </div>
+
+        <a
+          class="btn btn-secondary"
+          href="https://drive.google.com/drive/folders/1Q3hAXFsU4QBJxD0DKB_gv9bo8KgXeHUc"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Abrir Drive
+        </a>
+      </div>
+
+      <div class="contents-controls">
+        <nav class="contents-breadcrumbs" id="contentsBreadcrumbs" aria-label="Caminho dos conteúdos"></nav>
+
+        <div class="search-box">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            id="contentsSearchInput"
+            class="search-input"
+            placeholder="Buscar nesta pasta..."
+            autocomplete="off"
+          />
+        </div>
+      </div>
+
+      <section class="contents-grid" id="contentsGrid" aria-live="polite"></section>
+    </section>
   </div>
 
   <!-- Modal Adicionar Atividade -->
@@ -2081,61 +2449,23 @@
       import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
     );
 
-    const STORE_KEY = "mural_academico_bounded_v1";
-    const DONE_KEY = "mural_academico_done_bounded_v1";
-
-    function futureDate(days, hour = 23, minute = 59) {
-      const d = new Date();
-      d.setDate(d.getDate() + days);
-      d.setHours(hour, minute, 0, 0);
-      return d.toISOString();
-    }
-
-    function pastDate(days) {
-      const d = new Date();
-      d.setDate(d.getDate() - days);
-      return d.toISOString();
-    }
-
-    const initialData = [
-      {
-        id: crypto.randomUUID(),
-        title: "Normalização e Álgebra Relacional",
-        subject: "Banco de Dados",
-        type: "Exercício",
-        modality: "Individual",
-        due: futureDate(3),
-        points: 2.5,
-        description: "Exercícios práticos cobrindo 1FN até Boyce-Codd e redução relacional."
-      },
-      {
-        id: crypto.randomUUID(),
-        title: "Treinamento de Redes Neurais",
-        subject: "Inteligência Artificial",
-        type: "Trabalho",
-        modality: "Em dupla",
-        due: futureDate(1, 19, 0),
-        points: 3.0,
-        description: "Implementação e teste comparativo do algoritmo de retropropagação com validação cruzada."
-      },
-      {
-        id: crypto.randomUUID(),
-        title: "Arquitetura de Microsserviços",
-        subject: "Sistemas Distribuídos",
-        type: "Projeto",
-        modality: "Em grupo",
-        due: pastDate(2),
-        points: 4.0,
-        description: "Relatório de implementação e testes de resiliência e escalabilidade em nuvem."
-      }
-    ];
-
     let activities = [];
     let doneIds = new Set();
     let activeFilter = "all";
     let selectedSubject = "";
     let currentUser = null;
     let currentUserRole = null;
+    let activeSection = "activities";
+    let contentsState = {
+      path: "",
+      folder: null,
+      breadcrumbs: [],
+      items: [],
+      loaded: false,
+      loading: false,
+      error: null,
+      requestId: 0
+    };
 
     const $ = s => document.querySelector(s);
     const $$ = s => [...document.querySelectorAll(s)];
@@ -2308,6 +2638,245 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+    }
+
+    function normalizeSearch(value = "") {
+      return String(value)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    }
+
+    function getContentIcon(item) {
+      if (item.type === "folder") {
+        return `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2h6.5A2.5 2.5 0 0 1 21 8.5v8A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5z"/>
+          </svg>
+        `;
+      }
+
+      return `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="8" y1="13" x2="16" y2="13"/>
+          <line x1="8" y1="17" x2="14" y2="17"/>
+        </svg>
+      `;
+    }
+
+    function renderContentsBreadcrumbs() {
+      const container = $("#contentsBreadcrumbs");
+      const crumbs = contentsState.breadcrumbs || [];
+
+      if (!crumbs.length) {
+        container.innerHTML = '<span class="content-kind">BCC 2023.2</span>';
+        return;
+      }
+
+      container.innerHTML = crumbs.map((crumb, index) => {
+        const current = index === crumbs.length - 1;
+        return `
+          ${index > 0 ? '<span class="crumb-separator">/</span>' : ""}
+          <button
+            type="button"
+            class="crumb-btn ${current ? "current" : ""}"
+            data-content-breadcrumb="${escapeHtml(crumb.path || "")}"
+            ${current ? "aria-current=\"page\"" : ""}
+          >
+            ${escapeHtml(crumb.name)}
+          </button>
+        `;
+      }).join("");
+
+      $$("[data-content-breadcrumb]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          if (btn.classList.contains("current")) return;
+          $("#contentsSearchInput").value = "";
+          loadContents(btn.dataset.contentBreadcrumb || "");
+        });
+      });
+    }
+
+    function renderContents() {
+      const grid = $("#contentsGrid");
+      renderContentsBreadcrumbs();
+
+      if (contentsState.loading) {
+        grid.innerHTML = `
+          <div class="contents-status">
+            <span class="contents-loading">
+              <span class="contents-spinner" aria-hidden="true"></span>
+              Carregando conteúdos do Drive...
+            </span>
+          </div>
+        `;
+        return;
+      }
+
+      if (contentsState.error) {
+        grid.innerHTML = `
+          <div class="contents-status">
+            <strong>Não foi possível carregar esta pasta.</strong>
+            <div style="margin-top:8px;">${escapeHtml(contentsState.error)}</div>
+            <button type="button" class="btn btn-secondary" id="retryContentsBtn" style="margin-top:14px;">
+              Tentar novamente
+            </button>
+          </div>
+        `;
+
+        $("#retryContentsBtn")?.addEventListener("click", () => {
+          loadContents(contentsState.path);
+        });
+        return;
+      }
+
+      const query = normalizeSearch($("#contentsSearchInput")?.value || "");
+      const filtered = (contentsState.items || []).filter(item =>
+        !query || normalizeSearch(item.name).includes(query)
+      );
+
+      if (!filtered.length) {
+        grid.innerHTML = `
+          <div class="contents-status">
+            ${query
+              ? "Nenhum arquivo ou pasta corresponde à busca."
+              : "Esta pasta está vazia."}
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(item => {
+        if (item.type === "folder") {
+          return `
+            <button
+              type="button"
+              class="content-card folder-card"
+              data-content-folder-path="${escapeHtml(item.path || "")}"
+              aria-label="Abrir pasta ${escapeHtml(item.name)}"
+            >
+              <div class="content-card-top">
+                <span class="content-icon">${getContentIcon(item)}</span>
+                <span class="content-card-copy">
+                  <span class="content-name">${escapeHtml(item.name)}</span>
+                  <span class="content-kind">Pasta</span>
+                </span>
+              </div>
+              <span class="content-card-spacer"></span>
+              <span class="content-action">
+                Abrir pasta
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </button>
+          `;
+        }
+
+        const downloadButton = item.downloadUrl ? `
+          <a
+            class="content-action primary"
+            href="${escapeHtml(item.downloadUrl)}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Baixar
+          </a>
+        ` : "";
+
+        return `
+          <article class="content-card">
+            <div class="content-card-top">
+              <span class="content-icon">${getContentIcon(item)}</span>
+              <span class="content-card-copy">
+                <span class="content-name">${escapeHtml(item.name)}</span>
+                <span class="content-kind">${escapeHtml(item.label || "Arquivo")}</span>
+              </span>
+            </div>
+
+            <span class="content-card-spacer"></span>
+
+            <div class="content-card-actions">
+              <a
+                class="content-action"
+                href="${escapeHtml(item.openUrl)}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Abrir
+              </a>
+              ${downloadButton}
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      $$("[data-content-folder-path]").forEach(card => {
+        card.addEventListener("click", () => {
+          $("#contentsSearchInput").value = "";
+          loadContents(card.dataset.contentFolderPath || "");
+        });
+      });
+    }
+
+    async function loadContents(path = "") {
+      const requestId = ++contentsState.requestId;
+
+      contentsState.path = path;
+      contentsState.loading = true;
+      contentsState.error = null;
+      renderContents();
+
+      try {
+        const url = path
+          ? `/api/drive?path=${encodeURIComponent(path)}`
+          : "/api/drive";
+
+        const response = await fetch(url, {
+          headers: { Accept: "application/json" }
+        });
+
+        const payload = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          throw new Error(payload?.error || "Falha ao consultar o Google Drive.");
+        }
+
+        if (requestId !== contentsState.requestId) return;
+
+        contentsState.folder = payload.folder || null;
+        contentsState.breadcrumbs = payload.breadcrumbs || [];
+        contentsState.items = payload.items || [];
+        contentsState.loaded = true;
+        contentsState.loading = false;
+        contentsState.error = null;
+      } catch (error) {
+        if (requestId !== contentsState.requestId) return;
+
+        console.error("Falha ao carregar conteúdos:", error);
+        contentsState.loading = false;
+        contentsState.error = error?.message || "Erro inesperado.";
+      }
+
+      renderContents();
+    }
+
+    function setActiveSection(section) {
+      activeSection = section === "contents" ? "contents" : "activities";
+
+      $("#activitiesView").hidden = activeSection !== "activities";
+      $("#contentsView").hidden = activeSection !== "contents";
+
+      $$("[data-section]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.section === activeSection);
+      });
+
+      if (activeSection === "contents" && !contentsState.loaded && !contentsState.loading) {
+        loadContents("");
+      }
     }
 
     function formatDate(iso) {
@@ -3276,24 +3845,21 @@
     });
 
     $("#searchInput").addEventListener("input", renderList);
+    $("#contentsSearchInput").addEventListener("input", renderContents);
 
-    $$(".tab-btn").forEach(tab => {       tab.addEventListener("click", () => {         $$
-(".tab-btn").forEach(t => t.classList.remove("active"));
+    $$(".tab-btn").forEach(tab => {
+      tab.addEventListener("click", () => {
+        $$(".tab-btn").forEach(t => t.classList.remove("active"));
         tab.classList.add("active");
         activeFilter = tab.dataset.filter;
         renderList();
       });
     });
 
-    $("#exportBtn").addEventListener("click", () => {
-      const payload = JSON.stringify({ activities, doneIds: [...doneIds] }, null, 2);
-      const blob = new Blob([payload], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `mural_academico_${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
+    $$("[data-section]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        setActiveSection(btn.dataset.section);
+      });
     });
 
     window.addEventListener("keydown", e => {
