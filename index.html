@@ -105,16 +105,134 @@
       gap: 14px;
     }
 
+    .brand-account {
+      position: relative;
+      flex-shrink: 0;
+    }
+
     .brand-icon {
       width: 44px;
       height: 44px;
       border-radius: 10px;
-      background: #2A2A2A;
-      border: 1px solid var(--brass-muted);
-      color: var(--brass);
+      background: #F3F3F3;
+      border: 1px solid #555555;
       display: grid;
       place-items: center;
       flex-shrink: 0;
+      padding: 3px;
+      cursor: pointer;
+      transition: background .15s ease, border-color .15s ease, transform .12s ease;
+    }
+
+    .brand-icon:hover {
+      background: #FFFFFF;
+      border-color: #6A6A6A;
+    }
+
+    .brand-icon:active {
+      transform: scale(.97);
+    }
+
+    .brand-icon img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .user-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      width: min(310px, calc(100vw - 28px));
+      z-index: 1500;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 18px 40px rgba(0,0,0,.48);
+      padding: 10px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-6px) scale(.98);
+      transform-origin: top left;
+      pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease, visibility 0s linear .16s;
+    }
+
+    .user-menu.open {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+      transition: opacity .16s ease, transform .16s ease, visibility 0s linear 0s;
+    }
+
+    .user-menu-head {
+      padding: 8px 9px 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 6px;
+    }
+
+    .user-menu-name {
+      font-size: .9rem;
+      font-weight: 700;
+      color: var(--parchment);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-menu-email {
+      margin-top: 2px;
+      font-size: .74rem;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-menu-role {
+      display: inline-flex;
+      margin-top: 8px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: .64rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .user-menu-actions {
+      display: grid;
+      gap: 5px;
+    }
+
+    .user-menu-action {
+      width: 100%;
+      min-height: 40px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font-size: .8rem;
+      font-weight: 650;
+      text-align: left;
+      transition: background .12s ease, color .12s ease;
+    }
+
+    .user-menu-action:hover {
+      background: var(--panel-raised);
+      color: var(--parchment);
+    }
+
+    .user-menu-action.danger:hover {
+      color: #f1a7a7;
+      background: #302323;
     }
 
     .brand h1 {
@@ -660,6 +778,111 @@
       background: #303030;
       color: var(--brass);
       font-weight: 600;
+    }
+
+    .btn-text-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: .74rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--muted);
+      background: var(--panel-raised);
+      border: 1px solid var(--border);
+      padding: 5px 9px;
+      border-radius: 6px;
+      transition: color .15s ease, background .15s ease, border-color .15s ease;
+    }
+
+    .btn-text-action:hover {
+      color: var(--parchment);
+      border-color: #555;
+      background: #3B3B3B;
+    }
+
+    .field-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .field-label-row label {
+      margin-bottom: 0;
+    }
+
+    .discipline-option-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+      text-align: left;
+    }
+
+    .discipline-name {
+      font-size: .86rem;
+      color: var(--parchment);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .discipline-subinfo {
+      font-size: .7rem;
+      color: var(--muted-dark);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      min-width: 0;
+    }
+
+    .discipline-subinfo span:last-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .discipline-period-badge {
+      background: var(--panel);
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .discipline-delete-btn {
+      color: var(--muted-dark);
+      padding: 7px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      transition: background .15s ease, color .15s ease;
+      flex-shrink: 0;
+    }
+
+    .discipline-delete-btn:hover {
+      color: #f1a7a7;
+      background: #302323;
+    }
+
+    .menu-add-shortcut {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      margin-bottom: 4px;
+      color: var(--parchment);
+      font-weight: 650;
+      justify-content: flex-start;
+      gap: 8px;
+    }
+
+    .menu-add-shortcut:hover {
+      background: var(--panel-raised);
     }
 
     /* Input Numérico Customizado */
@@ -1541,9 +1764,13 @@
       }
 
       .brand-icon {
-        width: 40px;
-        height: 40px;
+        width: 42px;
+        height: 42px;
         border-radius: 9px;
+      }
+
+      .user-menu {
+        width: min(310px, calc(100vw - 20px));
       }
 
       .brand h1 {
@@ -1558,7 +1785,7 @@
       .actions {
         width: 100%;
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 8px;
       }
 
@@ -2005,12 +2232,40 @@
     <!-- Topbar -->
     <header class="topbar">
       <div class="brand">
-        <div class="brand-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-            <path d="M6 6h10M6 10h10M6 14h6"/>
-          </svg>
+        <div class="brand-account">
+          <button class="brand-icon" id="brandProfileBtn" type="button" aria-label="Abrir informações da conta" aria-expanded="false">
+            <img src="/ifpa-logo.png" alt="IFPA" />
+          </button>
+
+          <div class="user-menu" id="userMenu" role="menu" aria-hidden="true">
+            <div class="user-menu-head">
+              <div class="user-menu-name" id="userMenuName">Visitante</div>
+              <div class="user-menu-email" id="userMenuEmail">Faça login para acessar sua conta</div>
+              <span class="user-menu-role" id="userMenuRole" hidden>Aluno</span>
+            </div>
+
+            <div class="user-menu-actions">
+              <button class="user-menu-action" id="manageUsersBtn" type="button" hidden>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M19 8v6M22 11h-6"/>
+                </svg>
+                Permissões
+              </button>
+
+              <button class="user-menu-action danger" id="logoutBtn" type="button" hidden>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                Sair da conta
+              </button>
+            </div>
+          </div>
         </div>
+
         <div>
           <h1>Mural Acadêmico</h1>
           <p>Gestão contínua de prazos, disciplinas e atividades de estudo</p>
@@ -2020,15 +2275,6 @@
       <div class="actions">
         <button class="btn btn-secondary" id="authBtn" title="Entrar no mural">
           <span id="authBtnLabel">Entrar</span>
-        </button>
-        <button class="btn btn-secondary" id="logoutBtn" title="Sair da conta" hidden>Sair</button>
-        <button class="btn btn-secondary" id="manageUsersBtn" title="Gerenciar administradores" hidden>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M19 8v6M22 11h-6"/>
-          </svg>
-          Permissões
         </button>
         <button class="btn btn-primary" id="openAddModal" hidden>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2221,9 +2467,28 @@
             <input type="text" id="actTitle" required placeholder="Ex.: Relatório de Banco de Dados" />
           </div>
 
-          <div class="field">
-            <label for="actSubject">Disciplina</label>
-            <input type="text" id="actSubject" required placeholder="Ex.: Banco de Dados" />
+          <div class="field full">
+            <div class="field-label-row">
+              <label>Disciplina</label>
+              <button type="button" class="btn-text-action" id="btnQuickAddSubject">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Nova Disciplina
+              </button>
+            </div>
+
+            <div class="custom-select-container" id="actSubjectDropdown">
+              <button type="button" class="custom-select-trigger" id="actSubjectTrigger">
+                <span class="trigger-text placeholder" id="actSubjectLabel">Selecione uma disciplina...</span>
+                <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div class="custom-select-menu" id="actSubjectMenu"></div>
+              <input type="hidden" id="actSubject" required />
+            </div>
           </div>
 
           <div class="field">
@@ -2346,6 +2611,45 @@
     </div>
   </div>
 
+  <!-- Modal: cadastrar disciplina -->
+  <div class="modal-backdrop modal-backdrop-top" id="subjectModal">
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <h3>Cadastrar Disciplina</h3>
+        <button class="icon-close" id="closeSubjectModal" type="button" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <form id="newSubjectForm">
+        <div class="field">
+          <label for="subName">Nome da Disciplina</label>
+          <input id="subName" type="text" required maxlength="100" placeholder="Ex.: Banco de Dados" />
+        </div>
+
+        <div class="field-grid" style="margin-top:12px;">
+          <div class="field">
+            <label for="subPeriod">Período</label>
+            <input id="subPeriod" type="text" maxlength="60" placeholder="Ex.: 7º semestre" />
+          </div>
+
+          <div class="field">
+            <label for="subProf">Professor(a)</label>
+            <input id="subProf" type="text" maxlength="100" placeholder="Ex.: Prof. Fábio" />
+          </div>
+        </div>
+
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" id="cancelSubjectModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="saveSubjectBtn">Salvar Disciplina</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Popup exclusivo do proprietário -->
   <div class="modal-backdrop" id="ownerUsersModal">
     <div class="modal" style="max-width: 780px;">
@@ -2454,7 +2758,9 @@
     let activeFilter = "all";
     let selectedSubject = "";
     let currentUser = null;
+    let currentProfile = null;
     let currentUserRole = null;
+    let subjects = [];
     let activeSection = "activities";
     let contentsState = {
       path: "",
@@ -2505,12 +2811,13 @@
     }
 
     async function loadCurrentProfile() {
+      currentProfile = null;
       currentUserRole = null;
       if (!currentUser) return;
 
       const { data, error } = await supabaseClient
         .from("profiles")
-        .select("role")
+        .select("display_name,email,role")
         .eq("id", currentUser.id)
         .maybeSingle();
 
@@ -2519,6 +2826,7 @@
         return;
       }
 
+      currentProfile = data || null;
       currentUserRole = data?.role || "student";
     }
 
@@ -2535,12 +2843,34 @@
       const logoutBtn = $("#logoutBtn");
       const addBtn = $("#openAddModal");
       const manageUsersBtn = $("#manageUsersBtn");
+      const userMenu = $("#userMenu");
+      const roleLabel =
+        currentUserRole === "owner" ? "Proprietário" :
+        currentUserRole === "admin" ? "Admin" :
+        currentUserRole === "editor" ? "Editor" : "Aluno";
 
       authBtn.hidden = Boolean(currentUser);
       logoutBtn.hidden = !currentUser;
       addBtn.hidden = !currentUser || !isStaff();
       manageUsersBtn.hidden = !currentUser || !isOwner();
       $("#authBtnLabel").textContent = "Entrar";
+
+      $("#userMenuName").textContent = currentUser
+        ? (currentProfile?.display_name || "Usuário")
+        : "Visitante";
+
+      $("#userMenuEmail").textContent = currentUser
+        ? (currentProfile?.email || currentUser.email || "")
+        : "Faça login para acessar sua conta";
+
+      $("#userMenuRole").textContent = roleLabel;
+      $("#userMenuRole").hidden = !currentUser;
+
+      if (!currentUser) {
+        userMenu.classList.remove("open");
+        userMenu.setAttribute("aria-hidden", "true");
+        $("#brandProfileBtn").setAttribute("aria-expanded", "false");
+      }
     }
 
     async function loadOwnerUsers() {
@@ -2966,20 +3296,76 @@
     const subjectTrigger = $("#subjectTrigger");
     const subjectMenu = $("#subjectMenu");
     const selectedSubjectLabel = $("#selectedSubjectLabel");
+    const actSubjectTrigger = $("#actSubjectTrigger");
+    const actSubjectMenu = $("#actSubjectMenu");
+    const actSubjectLabel = $("#actSubjectLabel");
+    const actSubjectInput = $("#actSubject");
+
+    function getAllSubjectNames() {
+      return [...new Set([
+        ...subjects.map(subject => subject.name),
+        ...activities.map(activity => activity.subject)
+      ].filter(Boolean))].sort((a, b) =>
+        a.localeCompare(b, "pt-BR", { sensitivity: "base" })
+      );
+    }
+
+    function findSubjectByName(name) {
+      return subjects.find(subject =>
+        subject.name.localeCompare(name, "pt-BR", { sensitivity: "base" }) === 0
+      ) || null;
+    }
+
+    async function loadSubjects() {
+      const { data, error } = await supabaseClient
+        .from("subjects")
+        .select("id,name,period,professor,created_by")
+        .order("name", { ascending: true });
+
+      if (error) {
+        console.error("Falha ao carregar disciplinas:", error);
+        subjects = [];
+      } else {
+        subjects = data || [];
+      }
+
+      renderSubjectOptions();
+      renderActivitySubjectMenu();
+    }
 
     function renderSubjectOptions() {
-      const subjects = [...new Set(activities.map(a => a.subject))].sort((a, b) => a.localeCompare(b));
-      let html = `<div class="custom-select-option ${selectedSubject === "" ? 'selected' : ''}" data-val="">Todas as disciplinas</div>`;
-      subjects.forEach(sub => {
-        const isSelected = selectedSubject === sub;
-        html += `<div class="custom-select-option ${isSelected ? 'selected' : ''}" data-val="${escapeHtml(sub)}">${escapeHtml(sub)}</div>`;
+      const names = getAllSubjectNames();
+      let html = `
+        <div class="custom-select-option ${selectedSubject === "" ? "selected" : ""}" data-val="">
+          Todas as disciplinas
+        </div>
+      `;
+
+      names.forEach(name => {
+        const subject = findSubjectByName(name);
+        const isSelected = selectedSubject === name;
+
+        html += `
+          <div class="custom-select-option ${isSelected ? "selected" : ""}" data-val="${escapeHtml(name)}">
+            <div class="discipline-option-content">
+              <span class="discipline-name">${escapeHtml(name)}</span>
+              ${subject ? `
+                <span class="discipline-subinfo">
+                  <span class="discipline-period-badge">${escapeHtml(subject.period || "Geral")}</span>
+                  <span>${escapeHtml(subject.professor || "Não informado")}</span>
+                </span>
+              ` : ""}
+            </div>
+          </div>
+        `;
       });
+
       subjectMenu.innerHTML = html;
       selectedSubjectLabel.textContent = selectedSubject || "Todas as disciplinas";
 
-      subjectMenu.querySelectorAll(".custom-select-option").forEach(opt => {
+      subjectMenu.querySelectorAll("[data-val]").forEach(opt => {
         opt.addEventListener("click", () => {
-          selectedSubject = opt.dataset.val;
+          selectedSubject = opt.dataset.val || "";
           selectedSubjectLabel.textContent = selectedSubject || "Todas as disciplinas";
           closeAllCustomSelects();
           renderList();
@@ -2987,15 +3373,156 @@
       });
     }
 
-    subjectTrigger.addEventListener("click", (e) => {
-      e.stopPropagation();
+    function setFormDiscipline(name = "") {
+      actSubjectInput.value = name;
+      actSubjectLabel.textContent = name || "Selecione uma disciplina...";
+      actSubjectLabel.classList.toggle("placeholder", !name);
+
+      actSubjectMenu.querySelectorAll("[data-subject-name]").forEach(option => {
+        option.classList.toggle("selected", option.dataset.subjectName === name);
+      });
+    }
+
+    function renderActivitySubjectMenu() {
+      const names = subjects
+        .map(subject => subject.name)
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }));
+
+      let html = `
+        <div class="custom-select-option menu-add-shortcut" data-new-subject>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Cadastrar nova disciplina...
+        </div>
+      `;
+
+      if (!names.length) {
+        html += `
+          <div style="padding:12px;color:var(--muted-dark);font-size:.78rem;">
+            Nenhuma disciplina cadastrada.
+          </div>
+        `;
+      }
+
+      names.forEach(name => {
+        const subject = findSubjectByName(name);
+        const isSelected = actSubjectInput.value === name;
+
+        html += `
+          <div class="custom-select-option ${isSelected ? "selected" : ""}" data-subject-name="${escapeHtml(name)}">
+            <div class="discipline-option-content">
+              <span class="discipline-name">${escapeHtml(name)}</span>
+              <span class="discipline-subinfo">
+                <span class="discipline-period-badge">${escapeHtml(subject?.period || "Geral")}</span>
+                <span>${escapeHtml(subject?.professor || "Não informado")}</span>
+              </span>
+            </div>
+
+            ${subject && isStaff() ? `
+              <button
+                type="button"
+                class="discipline-delete-btn"
+                data-delete-subject="${subject.id}"
+                data-delete-subject-name="${escapeHtml(subject.name)}"
+                title="Excluir disciplina"
+                aria-label="Excluir ${escapeHtml(subject.name)}"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+              </button>
+            ` : ""}
+          </div>
+        `;
+      });
+
+      actSubjectMenu.innerHTML = html;
+
+      actSubjectMenu.querySelector("[data-new-subject]")?.addEventListener("click", event => {
+        event.stopPropagation();
+        closeAllCustomSelects();
+        openSubjectModal();
+      });
+
+      actSubjectMenu.querySelectorAll("[data-subject-name]").forEach(option => {
+        option.addEventListener("click", event => {
+          if (event.target.closest("[data-delete-subject]")) return;
+          setFormDiscipline(option.dataset.subjectName || "");
+          closeAllCustomSelects();
+        });
+      });
+
+      actSubjectMenu.querySelectorAll("[data-delete-subject]").forEach(button => {
+        button.addEventListener("click", async event => {
+          event.preventDefault();
+          event.stopPropagation();
+          await deleteSubject(button.dataset.deleteSubject, button.dataset.deleteSubjectName);
+        });
+      });
+    }
+
+    function openSubjectModal() {
+      if (!requireLogin() || !isStaff()) return;
+      $("#newSubjectForm").reset();
+      $("#subjectModal").classList.add("open");
+      setTimeout(() => $("#subName").focus(), 80);
+    }
+
+    async function deleteSubject(subjectId, subjectName) {
+      if (!isStaff()) return;
+
+      const confirmed = window.confirm(
+        `Excluir a disciplina "${subjectName}" da lista? As atividades já registradas não serão apagadas.`
+      );
+      if (!confirmed) return;
+
+      const { error } = await supabaseClient
+        .from("subjects")
+        .delete()
+        .eq("id", subjectId);
+
+      if (error) {
+        console.error(error);
+        alert("Não foi possível excluir a disciplina.");
+        return;
+      }
+
+      if (actSubjectInput.value === subjectName) setFormDiscipline("");
+      if (selectedSubject === subjectName) selectedSubject = "";
+
+      await loadSubjects();
+      renderList();
+    }
+
+    subjectTrigger.addEventListener("click", event => {
+      event.stopPropagation();
       const isOpen = subjectMenu.classList.contains("open");
       closeAllCustomSelects();
+
       if (!isOpen) {
+        renderSubjectOptions();
         subjectMenu.classList.add("open");
         subjectTrigger.classList.add("active");
       }
     });
+
+    actSubjectTrigger.addEventListener("click", event => {
+      event.stopPropagation();
+      const isOpen = actSubjectMenu.classList.contains("open");
+      closeAllCustomSelects();
+
+      if (!isOpen) {
+        renderActivitySubjectMenu();
+        actSubjectMenu.classList.add("open");
+        actSubjectTrigger.classList.add("active");
+      }
+    });
+
+    $("#btnQuickAddSubject").addEventListener("click", openSubjectModal);
 
     $("#spinUp").addEventListener("click", () => {
       const input = $("#actPoints");
@@ -3331,6 +3858,7 @@
     }
 
     const addModal = $("#addModal");
+    const subjectModal = $("#subjectModal");
     const authModal = $("#authModal");
     const resetPasswordModal = $("#resetPasswordModal");
     const ownerUsersModal = $("#ownerUsersModal");
@@ -3490,7 +4018,38 @@
 
     setupBottomSheets();
 
+    function closeUserMenu() {
+      $("#userMenu").classList.remove("open");
+      $("#userMenu").setAttribute("aria-hidden", "true");
+      $("#brandProfileBtn").setAttribute("aria-expanded", "false");
+    }
+
+    $("#brandProfileBtn").addEventListener("click", event => {
+      event.stopPropagation();
+
+      if (!currentUser) {
+        $("#authMessage").textContent = "Entre com seu e-mail e senha.";
+        authModal.classList.add("open");
+        return;
+      }
+
+      const menu = $("#userMenu");
+      const willOpen = !menu.classList.contains("open");
+      closeUserMenu();
+
+      if (willOpen) {
+        menu.classList.add("open");
+        menu.setAttribute("aria-hidden", "false");
+        $("#brandProfileBtn").setAttribute("aria-expanded", "true");
+      }
+    });
+
+    document.addEventListener("click", event => {
+      if (!event.target.closest(".brand-account")) closeUserMenu();
+    });
+
     $("#manageUsersBtn").addEventListener("click", async () => {
+      closeUserMenu();
       if (!isOwner()) return;
       ownerUsersModal.classList.add("open");
       await loadOwnerUsers();
@@ -3508,11 +4067,66 @@
         return;
       }
 
+      setFormDiscipline("");
+      renderActivitySubjectMenu();
       addModal.classList.add("open");
     });
 
     $("#closeAddModal").addEventListener("click", () => addModal.classList.remove("open"));
     $("#cancelAddModal").addEventListener("click", () => addModal.classList.remove("open"));
+
+    $("#closeSubjectModal").addEventListener("click", () => subjectModal.classList.remove("open"));
+    $("#cancelSubjectModal").addEventListener("click", () => subjectModal.classList.remove("open"));
+
+    $("#newSubjectForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!requireLogin() || !isStaff()) return;
+
+      const name = $("#subName").value.trim();
+      const period = $("#subPeriod").value.trim() || "Geral";
+      const professor = $("#subProf").value.trim() || "Não informado";
+      const saveBtn = $("#saveSubjectBtn");
+
+      if (!name) return;
+
+      saveBtn.disabled = true;
+
+      try {
+        const { data, error } = await supabaseClient
+          .from("subjects")
+          .insert({
+            name,
+            period,
+            professor,
+            created_by: currentUser.id
+          })
+          .select("id,name,period,professor,created_by")
+          .single();
+
+        if (error) {
+          console.error(error);
+
+          if (error.code === "23505") {
+            alert("Essa disciplina já está cadastrada.");
+          } else {
+            alert("Não foi possível cadastrar a disciplina.");
+          }
+          return;
+        }
+
+        subjects.push(data);
+        subjects.sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }));
+
+        renderSubjectOptions();
+        renderActivitySubjectMenu();
+        setFormDiscipline(data.name);
+
+        subjectModal.classList.remove("open");
+        $("#newSubjectForm").reset();
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
 
     $("#authBtn").addEventListener("click", () => {
       if (currentUser) return;
@@ -3524,6 +4138,7 @@
     $("#cancelAuthModal").addEventListener("click", () => authModal.classList.remove("open"));
 
     $("#logoutBtn").addEventListener("click", async () => {
+      closeUserMenu();
       $("#logoutBtn").disabled = true;
       try {
         await supabaseClient.auth.signOut();
@@ -3775,6 +4390,7 @@
       currentUser = session?.user || null;
       await loadCurrentProfile();
       updateAuthUI();
+      await loadSubjects();
       await loadActivities();
 
       if (event === "PASSWORD_RECOVERY") {
@@ -3798,6 +4414,12 @@
         return;
       }
 
+      const rawSubject = $("#actSubject").value.trim();
+      if (!rawSubject) {
+        actSubjectTrigger.focus();
+        return;
+      }
+
       const rawDue = hiddenActDue.value;
       if (!rawDue) {
         datePickerTrigger.focus();
@@ -3808,7 +4430,7 @@
         .from("activities")
         .insert({
           title: $("#actTitle").value.trim(),
-          subject: $("#actSubject").value.trim(),
+          subject: rawSubject,
           type: $("#actType").value,
           modality: $("#actModality").value,
           due_at: rawDue,
@@ -3824,6 +4446,7 @@
       }
 
       e.target.reset();
+      setFormDiscipline("");
 
       selectedDate = null;
       updateDateDisplay();
@@ -3865,13 +4488,19 @@
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") {
         addModal.classList.remove("open");
+        subjectModal.classList.remove("open");
         authModal.classList.remove("open");
         ownerUsersModal.classList.remove("open");
+        closeUserMenu();
         closeAllCustomSelects();
       }
       if ((e.key === "n" || e.key === "N") && !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
         e.preventDefault();
-        if (requireLogin() && isStaff()) addModal.classList.add("open");
+        if (requireLogin() && isStaff()) {
+          setFormDiscipline("");
+          renderActivitySubjectMenu();
+          addModal.classList.add("open");
+        }
       }
     });
 
@@ -3881,6 +4510,7 @@
       await loadCurrentProfile();
       updateAuthUI();
       renderCalendar();
+      await loadSubjects();
       await loadActivities();
     }
 
