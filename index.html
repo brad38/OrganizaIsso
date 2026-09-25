@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Mural Académico</title>
+  <title>Mural Acadêmico</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -27,21 +27,38 @@
       --shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    html, body { min-height: 100vh; }
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      -webkit-tap-highlight-color: transparent; 
+    }
+
+    /* Barra de rolagem temática */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #100d0a; }
+    ::-webkit-scrollbar-thumb { background: #2a211a; border-radius: 4px; border: 1px solid #18130f; }
+    ::-webkit-scrollbar-thumb:hover { background: #3b2e23; }
+
+    html, body { min-height: 100vh; width: 100%; }
+
     body {
       background-color: var(--bg);
       color: var(--parchment);
       font-family: var(--font-sans);
       line-height: 1.5;
-      padding: 24px 16px 64px;
+      padding: 28px 16px 64px;
+      display: flex;
+      justify-content: center;
     }
 
     button, input, select, textarea { font: inherit; color: inherit; }
     button { cursor: pointer; border: none; background: none; }
 
+    /* Layout Centralizado e Proporcional para PC */
     .app {
-      max-width: 1060px;
+      width: 100%;
+      max-width: 1100px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
@@ -54,19 +71,20 @@
       align-items: center;
       justify-content: space-between;
       gap: 14px;
-      padding-bottom: 16px;
+      padding-bottom: 18px;
       border-bottom: 1px solid var(--border);
+      width: 100%;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
 
     .brand-icon {
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       border-radius: 10px;
       background: #18130f;
       border: 1px solid var(--brass-muted);
@@ -78,14 +96,14 @@
 
     .brand h1 {
       font-family: var(--font-display);
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       font-weight: 600;
       letter-spacing: -0.01em;
       color: var(--parchment);
     }
 
     .brand p {
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       color: var(--muted);
       letter-spacing: 0.01em;
     }
@@ -93,17 +111,17 @@
     .actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
-      padding: 9px 15px;
+      gap: 8px;
+      padding: 9px 18px;
       border-radius: var(--radius);
-      font-size: 0.84rem;
+      font-size: 0.86rem;
       font-weight: 600;
       transition: background 0.15s ease, border-color 0.15s ease;
       min-height: 42px;
@@ -133,14 +151,15 @@
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
+      gap: 14px;
+      width: 100%;
     }
 
     .kpi-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 16px;
+      padding: 16px 18px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -156,9 +175,9 @@
 
     .kpi-label {
       font-family: var(--font-display);
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       font-weight: 700;
-      letter-spacing: 0.07em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--muted);
     }
@@ -166,7 +185,7 @@
     .kpi-icon {
       width: 28px;
       height: 28px;
-      border-radius: 7px;
+      border-radius: 8px;
       background: #201913;
       border: 1px solid var(--border-accent);
       color: var(--muted);
@@ -231,17 +250,18 @@
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 12px;
+      padding: 12px 16px;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
+      width: 100%;
     }
 
     .search-box {
       flex: 1;
-      min-width: 220px;
+      min-width: 240px;
       position: relative;
       display: flex;
       align-items: center;
@@ -249,7 +269,7 @@
 
     .search-icon {
       position: absolute;
-      left: 12px;
+      left: 14px;
       color: var(--muted);
       pointer-events: none;
     }
@@ -259,7 +279,7 @@
       background: #110e0b;
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 10px 14px 10px 38px;
+      padding: 10px 14px 10px 40px;
       color: var(--parchment);
       font-size: 0.88rem;
       outline: none;
@@ -269,10 +289,14 @@
       border-color: var(--brass-muted);
     }
 
-    /* Seletor Customizado */
+    /* Submenus Customizados */
     .custom-select-container {
       position: relative;
-      min-width: 200px;
+      width: 100%;
+    }
+
+    .custom-select-container.toolbar-select {
+      width: 230px;
     }
 
     .custom-select-trigger {
@@ -281,31 +305,34 @@
       background: #110e0b;
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 10px 14px;
+      padding: 10px 18px 10px 14px;
       color: var(--parchment);
       font-size: 0.86rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
       cursor: pointer;
       user-select: none;
-      transition: border-color 0.15s ease;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
     }
 
     .custom-select-trigger:focus,
     .custom-select-trigger.active {
       border-color: var(--brass-muted);
+      background: #14100c;
     }
 
     .custom-select-trigger .chevron {
       color: var(--muted);
-      transition: transform 0.2s ease;
+      transition: transform 0.2s ease, color 0.15s ease;
       flex-shrink: 0;
+      margin-right: 2px;
     }
 
     .custom-select-trigger.active .chevron {
       transform: rotate(180deg);
+      color: var(--brass);
     }
 
     .custom-select-menu {
@@ -317,10 +344,10 @@
       background: #18130f;
       border: 1px solid var(--border-accent);
       border-radius: 8px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
-      max-height: 240px;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.85);
+      max-height: 230px;
       overflow-y: auto;
-      z-index: 100;
+      z-index: 1200;
       padding: 4px;
     }
 
@@ -351,27 +378,306 @@
       font-weight: 600;
     }
 
+    /* Input Numérico Customizado */
+    .custom-number-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .custom-number-wrapper input {
+      width: 100%;
+      background: #110e0b;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 42px 10px 12px;
+      color: var(--parchment);
+      font-size: 0.88rem;
+      outline: none;
+      min-height: 42px;
+      -moz-appearance: textfield;
+    }
+
+    .custom-number-wrapper input::-webkit-outer-spin-button,
+    .custom-number-wrapper input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .custom-number-wrapper input:focus {
+      border-color: var(--brass-muted);
+    }
+
+    .custom-spin-controls {
+      position: absolute;
+      right: 6px;
+      top: 5px;
+      bottom: 5px;
+      width: 26px;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--border);
+      padding-left: 3px;
+    }
+
+    .spin-btn {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      border-radius: 3px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .spin-btn:hover {
+      color: var(--brass);
+      background: #221a14;
+    }
+
+    /* Calendário Customizado */
+    .custom-datepicker-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .custom-datepicker-trigger {
+      width: 100%;
+      min-height: 42px;
+      background: #110e0b;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px 10px 12px;
+      color: var(--parchment);
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .custom-datepicker-trigger:focus,
+    .custom-datepicker-trigger.active {
+      border-color: var(--brass-muted);
+      background: #14100c;
+    }
+
+    .custom-datepicker-trigger .cal-icon {
+      color: var(--brass);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      margin-right: 2px;
+    }
+
+    .custom-datepicker-trigger .date-text.placeholder {
+      color: var(--muted-dark);
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+    }
+
+    .custom-datepicker-trigger .date-text {
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      color: var(--parchment);
+    }
+
+    .custom-calendar-popup {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      background: #18130f;
+      border: 1px solid var(--border-accent);
+      border-radius: 10px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.88);
+      z-index: 1300;
+      padding: 14px;
+      width: 320px;
+    }
+
+    .custom-calendar-popup.open {
+      display: block;
+    }
+
+    .cal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cal-title {
+      font-family: var(--font-display);
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: var(--parchment);
+      text-transform: capitalize;
+    }
+
+    .cal-nav-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      transition: background 0.15s, color 0.15s;
+    }
+    .cal-nav-btn:hover {
+      background: #241c15;
+      color: var(--brass);
+    }
+
+    .cal-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      color: var(--muted-dark);
+      margin-bottom: 6px;
+    }
+
+    .cal-days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+      margin-bottom: 12px;
+    }
+
+    .cal-day-cell {
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      border-radius: 6px;
+      color: var(--parchment);
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+    }
+
+    .cal-day-cell:hover {
+      background: #271e16;
+      color: var(--brass);
+    }
+
+    .cal-day-cell.other-month {
+      color: #4a3d31;
+    }
+
+    .cal-day-cell.today {
+      border: 1px solid var(--brass-muted);
+    }
+
+    .cal-day-cell.selected {
+      background: var(--brass) !important;
+      color: #120e0a !important;
+      font-weight: 700;
+    }
+
+    .cal-time-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px;
+      background: #110e0b;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .cal-time-label {
+      font-size: 0.74rem;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .cal-time-inputs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cal-time-select {
+      background: #1a1410;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 4px 8px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--parchment);
+      outline: none;
+    }
+    .cal-time-select:focus {
+      border-color: var(--brass-muted);
+    }
+
+    .cal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+
+    .cal-btn-text {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 4px 8px;
+      border-radius: 5px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .cal-btn-text:hover {
+      color: var(--parchment);
+      background: #241c15;
+    }
+
+    .cal-btn-confirm {
+      font-size: 0.78rem;
+      font-weight: 700;
+      background: var(--brass);
+      color: #120e0a;
+      padding: 5px 12px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .cal-btn-confirm:hover {
+      background: #cfb164;
+    }
+
     /* Separadores de Navegação */
     .tabs-wrapper {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
       border-bottom: 1px solid var(--border);
+      width: 100%;
     }
     .tabs-wrapper::-webkit-scrollbar { display: none; }
 
     .tabs {
       display: flex;
-      gap: 6px;
-      padding-bottom: 4px;
+      gap: 8px;
+      padding-bottom: 6px;
       width: max-content;
       min-width: 100%;
     }
 
     .tab-btn {
-      padding: 8px 14px;
+      padding: 8px 16px;
       border-radius: 8px;
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       font-weight: 600;
       color: var(--muted);
       white-space: nowrap;
@@ -390,18 +696,19 @@
       border: 1px solid var(--border-accent);
     }
 
-    /* Grelha de Atividades */
+    /* Grelha de Atividades Bounded */
     .activity-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 14px;
+      width: 100%;
     }
 
     .activity-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 16px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -419,14 +726,16 @@
     }
 
     .activity-card.expired {
-      opacity: 0.55;
+      opacity: 0.58;
+      border-color: #2b1f18;
+      background: #140f0c;
     }
 
     .card-top {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
     }
 
     .subject-tag {
@@ -435,12 +744,12 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--brass);
-      margin-bottom: 3px;
+      margin-bottom: 4px;
     }
 
     .card-title {
       font-family: var(--font-display);
-      font-size: 1.02rem;
+      font-size: 1.05rem;
       font-weight: 600;
       color: var(--parchment);
       line-height: 1.35;
@@ -449,7 +758,7 @@
     .score-badge {
       font-family: var(--font-mono);
       font-size: 0.74rem;
-      padding: 3px 7px;
+      padding: 4px 8px;
       border-radius: 6px;
       background: #201913;
       border: 1px solid var(--border-accent);
@@ -458,12 +767,11 @@
     }
 
     .card-desc {
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       color: var(--muted);
-      line-height: 1.45;
+      line-height: 1.5;
     }
 
-    /* Respiro corrigido para descolar os retângulos da linha divisória */
     .meta-tags {
       display: flex;
       flex-wrap: wrap;
@@ -489,7 +797,12 @@
       border-color: var(--border-accent);
     }
 
-    /* Linha divisória com espaçamento e clareza */
+    .tag.expired-badge {
+      color: #9c6c5a;
+      border-color: #442a22;
+      background: #1e1310;
+    }
+
     .card-footer {
       border-top: 1px solid var(--border);
       padding-top: 12px;
@@ -548,11 +861,12 @@
 
     .empty-state {
       text-align: center;
-      padding: 40px 16px;
+      padding: 48px 16px;
       background: var(--panel);
       border: 1px dashed var(--border);
       border-radius: var(--radius);
       color: var(--muted);
+      grid-column: 1 / -1;
     }
 
     /* Modais */
@@ -570,24 +884,25 @@
     .modal-backdrop.open { display: flex; }
 
     .modal {
-      width: min(540px, 100%);
+      width: min(560px, 100%);
       background: #18130f;
       border: 1px solid var(--border-accent);
       border-radius: var(--radius);
-      padding: 22px;
+      padding: 24px;
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+      position: relative;
     }
 
     .modal-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 18px;
+      margin-bottom: 20px;
     }
 
     .modal-head h3 {
       font-family: var(--font-display);
-      font-size: 1.12rem;
+      font-size: 1.15rem;
       font-weight: 600;
       color: var(--parchment);
     }
@@ -609,13 +924,14 @@
     .field-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 14px;
     }
 
     .field {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 6px;
+      position: relative;
     }
     .field.full { grid-column: 1 / -1; }
 
@@ -627,7 +943,7 @@
       color: var(--muted);
     }
 
-    .field input, .field select, .field textarea {
+    .field input, .field textarea {
       background: #110e0b;
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -637,24 +953,24 @@
       outline: none;
       min-height: 42px;
     }
-    .field input:focus, .field select:focus, .field textarea:focus {
+    .field input:focus, .field textarea:focus {
       border-color: var(--brass-muted);
     }
 
     .field textarea {
       resize: vertical;
-      min-height: 75px;
+      min-height: 80px;
     }
 
     .modal-foot {
       display: flex;
       justify-content: flex-end;
       gap: 10px;
-      margin-top: 20px;
+      margin-top: 22px;
     }
 
     /* Otimização Mobile */
-    @media (max-width: 768px) {
+    @media (max-width: 820px) {
       body {
         padding: 16px 12px 48px;
       }
@@ -686,7 +1002,7 @@
         align-items: stretch;
       }
 
-      .search-box, .custom-select-container {
+      .search-box, .custom-select-container.toolbar-select {
         width: 100%;
         min-width: 100%;
       }
@@ -710,6 +1026,15 @@
       .field-grid {
         grid-template-columns: 1fr;
       }
+
+      .custom-calendar-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90vw;
+        max-width: 320px;
+      }
     }
   </style>
 </head>
@@ -719,14 +1044,14 @@
     <header class="topbar">
       <div class="brand">
         <div class="brand-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
             <path d="M6 6h10M6 10h10M6 14h6"/>
           </svg>
         </div>
         <div>
-          <h1>Mural Académico</h1>
-          <p>Gestão sóbria de prazos e compromissos</p>
+          <h1>Mural Acadêmico</h1>
+          <p>Gestão contínua de prazos, disciplinas e atividades de estudo</p>
         </div>
       </div>
 
@@ -745,7 +1070,7 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 5v14M5 12h14"/>
           </svg>
-          Novo
+          Novo Registro
         </button>
       </div>
     </header>
@@ -756,7 +1081,7 @@
         <div class="kpi-header">
           <span class="kpi-label">Pendentes</span>
           <div class="kpi-icon">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
             </svg>
@@ -773,9 +1098,9 @@
 
       <div class="kpi-card">
         <div class="kpi-header">
-          <span class="kpi-label">Próximos</span>
+          <span class="kpi-label">Próximos Prazos</span>
           <div class="kpi-icon">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <circle cx="12" cy="12" r="10"/>
               <polyline points="12 6 12 12 16 14"/>
             </svg>
@@ -786,15 +1111,15 @@
           <span class="kpi-caption">&le; 48 horas</span>
         </div>
         <div class="kpi-footer">
-          <span class="bullet"></span> Atenção imediata
+          <span class="bullet"></span> Requer atenção imediata
         </div>
       </div>
 
       <div class="kpi-card">
         <div class="kpi-header">
-          <span class="kpi-label">Pontos</span>
+          <span class="kpi-label">Pontos em Jogo</span>
           <div class="kpi-icon">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
             </svg>
           </div>
@@ -804,15 +1129,15 @@
           <span class="kpi-caption">na média</span>
         </div>
         <div class="kpi-footer">
-          <span class="bullet"></span> Em aberto
+          <span class="bullet"></span> Atividades abertas
         </div>
       </div>
 
       <div class="kpi-card">
         <div class="kpi-header">
-          <span class="kpi-label">Concluídas</span>
+          <span class="kpi-label">Entregas Feitas</span>
           <div class="kpi-icon">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
               <polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
@@ -820,7 +1145,7 @@
         </div>
         <div class="kpi-value-row">
           <span class="kpi-value" id="kpiDone">0</span>
-          <span class="kpi-caption" id="kpiRate">0%</span>
+          <span class="kpi-caption" id="kpiRate">0% concluído</span>
         </div>
         <div class="progress-bar-wrap">
           <div class="progress-fill" id="kpiProgress"></div>
@@ -835,22 +1160,22 @@
           <circle cx="11" cy="11" r="8"/>
           <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        <input type="text" id="searchInput" class="search-input" placeholder="Pesquisar disciplina ou trabalho..." />
+        <input type="text" id="searchInput" class="search-input" placeholder="Pesquisar por matéria, título ou palavra-chave..." />
       </div>
 
-      <!-- Seletor de Disciplinas Customizado -->
-      <div class="custom-select-container" id="customSelectWrapper">
-        <button type="button" class="custom-select-trigger" id="customSelectTrigger">
+      <!-- Submenu Filtro de Disciplinas -->
+      <div class="custom-select-container toolbar-select" id="subjectDropdown">
+        <button type="button" class="custom-select-trigger" id="subjectTrigger">
           <span id="selectedSubjectLabel">Todas as disciplinas</span>
           <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="6 9 12 15 18 9"/>
           </svg>
         </button>
-        <div class="custom-select-menu" id="customSelectMenu"></div>
+        <div class="custom-select-menu" id="subjectMenu"></div>
       </div>
     </div>
 
-    <!-- Separadores com Scroll Suave no Telemóvel -->
+    <!-- Separadores -->
     <div class="tabs-wrapper">
       <nav class="tabs">
         <button class="tab-btn active" data-filter="all">Todas as Atividades</button>
@@ -860,7 +1185,7 @@
       </nav>
     </div>
 
-    <!-- Lista de Atividades -->
+    <!-- Grelha de Atividades (Ativas à esquerda, expiradas à direita) -->
     <section class="activity-grid" id="activityList"></section>
   </div>
 
@@ -868,7 +1193,7 @@
   <div class="modal-backdrop" id="addModal">
     <div class="modal">
       <div class="modal-head">
-        <h3>Registar Atividade</h3>
+        <h3>Registrar Atividade</h3>
         <button class="icon-close" id="closeAddModal">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"/>
@@ -881,59 +1206,135 @@
         <div class="field-grid">
           <div class="field full">
             <label for="actTitle">Título da Atividade</label>
-            <input type="text" id="actTitle" required placeholder="Ex.: Relatório de Base de Dados" />
+            <input type="text" id="actTitle" required placeholder="Ex.: Relatório de Banco de Dados" />
           </div>
 
           <div class="field">
             <label for="actSubject">Disciplina</label>
-            <input type="text" id="actSubject" required placeholder="Ex.: Base de Dados" />
+            <input type="text" id="actSubject" required placeholder="Ex.: Banco de Dados" />
           </div>
 
           <div class="field">
-            <label for="actType">Tipo</label>
-            <select id="actType">
-              <option>Exercício</option>
-              <option>Trabalho</option>
-              <option>Seminário</option>
-              <option>Frequência / Exame</option>
-              <option>Projeto</option>
-            </select>
+            <label>Tipo</label>
+            <div class="custom-select-container" id="typeDropdown">
+              <button type="button" class="custom-select-trigger" id="typeTrigger">
+                <span id="typeLabel">Exercício</span>
+                <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div class="custom-select-menu" id="typeMenu">
+                <div class="custom-select-option selected" data-value="Exercício">Exercício</div>
+                <div class="custom-select-option" data-value="Trabalho">Trabalho</div>
+                <div class="custom-select-option" data-value="Seminário">Seminário</div>
+                <div class="custom-select-option" data-value="Frequência / Exame">Frequência / Exame</div>
+                <div class="custom-select-option" data-value="Projeto">Projeto</div>
+              </div>
+              <input type="hidden" id="actType" value="Exercício" />
+            </div>
           </div>
 
           <div class="field">
-            <label for="actModality">Modalidade</label>
-            <select id="actModality">
-              <option value="Individual">Individual</option>
-              <option value="Em dupla">Em dupla</option>
-              <option value="Em grupo">Em grupo</option>
-            </select>
+            <label>Modalidade</label>
+            <div class="custom-select-container" id="modalityDropdown">
+              <button type="button" class="custom-select-trigger" id="modalityTrigger">
+                <span id="modalityLabel">Individual</span>
+                <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div class="custom-select-menu" id="modalityMenu">
+                <div class="custom-select-option selected" data-value="Individual">Individual</div>
+                <div class="custom-select-option" data-value="Em dupla">Em dupla</div>
+                <div class="custom-select-option" data-value="Em grupo">Em grupo</div>
+              </div>
+              <input type="hidden" id="actModality" value="Individual" />
+            </div>
           </div>
 
+          <!-- Calendário Dark Academia Customizado -->
           <div class="field">
-            <label for="actDue">Prazo Limite</label>
-            <input type="datetime-local" id="actDue" required />
+            <label>Prazo Limite</label>
+            <div class="custom-datepicker-container" id="customDatePicker">
+              <button type="button" class="custom-datepicker-trigger" id="datePickerTrigger">
+                <span class="date-text placeholder" id="datePickerLabel">dd/mm/aaaa --:--</span>
+                <span class="cal-icon">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                </span>
+              </button>
+              <input type="hidden" id="actDue" required />
+
+              <div class="custom-calendar-popup" id="calendarPopup">
+                <div class="cal-header">
+                  <button type="button" class="cal-nav-btn" id="calPrevMonth" title="Mês anterior">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                  </button>
+                  <span class="cal-title" id="calMonthYear">Setembro de 2026</span>
+                  <button type="button" class="cal-nav-btn" id="calNextMonth" title="Próximo mês">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
+
+                <div class="cal-weekdays">
+                  <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+                </div>
+
+                <div class="cal-days-grid" id="calDaysGrid"></div>
+
+                <div class="cal-time-bar">
+                  <span class="cal-time-label">Horário:</span>
+                  <div class="cal-time-inputs">
+                    <select class="cal-time-select" id="calHours"></select>
+                    <span>:</span>
+                    <select class="cal-time-select" id="calMinutes"></select>
+                  </div>
+                </div>
+
+                <div class="cal-actions">
+                  <button type="button" class="cal-btn-text" id="calClear">Limpar</button>
+                  <button type="button" class="cal-btn-text" id="calToday">Hoje</button>
+                  <button type="button" class="cal-btn-confirm" id="calConfirm">OK</button>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="field full">
+          <!-- Controle Numérico Customizado -->
+          <div class="field">
             <label for="actPoints">Pontuação (valores)</label>
-            <input type="number" id="actPoints" min="0" step="0.1" placeholder="Opcional" />
+            <div class="custom-number-wrapper">
+              <input type="number" id="actPoints" min="0" step="0.5" placeholder="Opcional" />
+              <div class="custom-spin-controls">
+                <button type="button" class="spin-btn" id="spinUp" title="Aumentar">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                </button>
+                <button type="button" class="spin-btn" id="spinDown" title="Diminuir">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+              </div>
+            </div>
           </div>
 
           <div class="field full">
             <label for="actDesc">Instruções / Notas</label>
-            <textarea id="actDesc" placeholder="Observações de entrega, integrantes da equipa, referências..."></textarea>
+            <textarea id="actDesc" placeholder="Observações de entrega, parceiros de grupo, bibliografia recomendada..."></textarea>
           </div>
         </div>
 
         <div class="modal-foot">
           <button type="button" class="btn btn-secondary" id="cancelAddModal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Registar</button>
+          <button type="submit" class="btn btn-primary">Registrar</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal Login -->
+  <!-- Modal de autenticação -->
   <div class="modal-backdrop" id="authModal">
     <div class="modal" style="max-width: 420px;">
       <div class="modal-head">
@@ -970,8 +1371,8 @@
       import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
     );
 
-    const STORE_KEY = "mural_academico_sober_v3";
-    const DONE_KEY = "mural_academico_done_v3";
+    const STORE_KEY = "mural_academico_bounded_v1";
+    const DONE_KEY = "mural_academico_done_bounded_v1";
 
     function futureDate(days, hour = 23, minute = 59) {
       const d = new Date();
@@ -995,17 +1396,17 @@
         modality: "Individual",
         due: futureDate(3),
         points: 2.5,
-        description: "Exercícios práticos de 1FN a Boyce-Codd."
+        description: "Exercícios práticos cobrindo 1FN até Boyce-Codd e redução relacional."
       },
       {
         id: crypto.randomUUID(),
-        title: "Treinamento de Redes Neuronais",
+        title: "Treinamento de Redes Neurais",
         subject: "Inteligência Artificial",
         type: "Trabalho",
         modality: "Em dupla",
         due: futureDate(1, 19, 0),
         points: 3.0,
-        description: "Implementação e teste do algoritmo de retropropagação."
+        description: "Implementação e teste comparativo do algoritmo de retropropagação com validação cruzada."
       },
       {
         id: crypto.randomUUID(),
@@ -1015,7 +1416,7 @@
         modality: "Em grupo",
         due: pastDate(2),
         points: 4.0,
-        description: "Relatório de implementação e testes de escalabilidade em nuvem."
+        description: "Relatório de implementação e testes de resiliência e escalabilidade em nuvem."
       }
     ];
 
@@ -1085,7 +1486,7 @@
 
     function formatDate(iso) {
       const d = new Date(iso);
-      return new Intl.DateTimeFormat("pt-PT", {
+      return new Intl.DateTimeFormat("pt-BR", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -1106,32 +1507,12 @@
 
     function getModalityIcon(modality) {
       if (modality === "Em grupo") {
-        return `
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
-        `;
+        return `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`;
       }
       if (modality === "Em dupla") {
-        return `
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
-        `;
+        return `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`;
       }
-      // Individual padrão
-      return `
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
-      `;
+      return `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
     }
 
     function updateKpis() {
@@ -1143,74 +1524,248 @@
 
       $("#kpiPending").textContent = pending.length;
       $("#kpiSoon").textContent = soon.length;
-      $("#kpiScore").textContent = totalPoints.toLocaleString("pt-PT", { maximumFractionDigits: 1 });
+      $("#kpiScore").textContent = totalPoints.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
       $("#kpiDone").textContent = done.length;
       $("#kpiRate").textContent = `${rate}% concluído`;
       $("#kpiProgress").style.width = `${rate}%`;
     }
 
-    // Gestor do Menu Suspenso
-    const customSelectWrapper = $("#customSelectWrapper");
-    const customSelectTrigger = $("#customSelectTrigger");
-    const customSelectMenu = $("#customSelectMenu");
+    function closeAllCustomSelects() {
+      $$(".custom-select-menu").forEach(m => m.classList.remove("open"));       $$
+(".custom-select-trigger").forEach(t => t.classList.remove("active"));
+      $("#calendarPopup").classList.remove("open");
+      $("#datePickerTrigger").classList.remove("active");
+    }
+
+    function setupGenericDropdown(wrapperId, triggerId, menuId, inputId, labelId) {
+      const trigger = document.getElementById(triggerId);
+      const menu = document.getElementById(menuId);
+      const hiddenInput = document.getElementById(inputId);
+      const label = document.getElementById(labelId);
+
+      trigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isOpen = menu.classList.contains("open");
+        closeAllCustomSelects();
+        if (!isOpen) {
+          menu.classList.add("open");
+          trigger.classList.add("active");
+        }
+      });
+
+      menu.querySelectorAll(".custom-select-option").forEach(opt => {
+        opt.addEventListener("click", () => {
+          const val = opt.dataset.value;
+          hiddenInput.value = val;
+          label.textContent = val;
+          menu.querySelectorAll(".custom-select-option").forEach(o => o.classList.remove("selected"));
+          opt.classList.add("selected");
+          closeAllCustomSelects();
+        });
+      });
+    }
+
+    setupGenericDropdown("typeDropdown", "typeTrigger", "typeMenu", "actType", "typeLabel");
+    setupGenericDropdown("modalityDropdown", "modalityTrigger", "modalityMenu", "actModality", "modalityLabel");
+
+    const subjectTrigger = $("#subjectTrigger");
+    const subjectMenu = $("#subjectMenu");
     const selectedSubjectLabel = $("#selectedSubjectLabel");
 
     function renderSubjectOptions() {
       const subjects = [...new Set(activities.map(a => a.subject))].sort((a, b) => a.localeCompare(b));
-      
-      let html = `
-        <div class="custom-select-option ${selectedSubject === "" ? 'selected' : ''}" data-val="">
-          Todas as disciplinas
-        </div>
-      `;
-
+      let html = `<div class="custom-select-option ${selectedSubject === "" ? 'selected' : ''}" data-val="">Todas as disciplinas</div>`;
       subjects.forEach(sub => {
         const isSelected = selectedSubject === sub;
-        html += `
-          <div class="custom-select-option ${isSelected ? 'selected' : ''}" data-val="${escapeHtml(sub)}">
-            ${escapeHtml(sub)}
-          </div>
-        `;
+        html += `<div class="custom-select-option ${isSelected ? 'selected' : ''}" data-val="${escapeHtml(sub)}">${escapeHtml(sub)}</div>`;
       });
-
-      customSelectMenu.innerHTML = html;
+      subjectMenu.innerHTML = html;
       selectedSubjectLabel.textContent = selectedSubject || "Todas as disciplinas";
 
-      $$(".custom-select-option").forEach(opt => {
+      subjectMenu.querySelectorAll(".custom-select-option").forEach(opt => {
         opt.addEventListener("click", () => {
           selectedSubject = opt.dataset.val;
           selectedSubjectLabel.textContent = selectedSubject || "Todas as disciplinas";
-          closeCustomSelect();
+          closeAllCustomSelects();
           renderList();
         });
       });
     }
 
-    function toggleCustomSelect() {
-      const isOpen = customSelectMenu.classList.contains("open");
-      if (isOpen) closeCustomSelect();
-      else openCustomSelect();
-    }
-
-    function openCustomSelect() {
-      customSelectMenu.classList.add("open");
-      customSelectTrigger.classList.add("active");
-    }
-
-    function closeCustomSelect() {
-      customSelectMenu.classList.remove("open");
-      customSelectTrigger.classList.remove("active");
-    }
-
-    customSelectTrigger.addEventListener("click", (e) => {
+    subjectTrigger.addEventListener("click", (e) => {
       e.stopPropagation();
-      toggleCustomSelect();
+      const isOpen = subjectMenu.classList.contains("open");
+      closeAllCustomSelects();
+      if (!isOpen) {
+        subjectMenu.classList.add("open");
+        subjectTrigger.classList.add("active");
+      }
     });
 
-    document.addEventListener("click", (e) => {
-      if (!customSelectWrapper.contains(e.target)) {
-        closeCustomSelect();
+    $("#spinUp").addEventListener("click", () => {
+      const input = $("#actPoints");
+      const current = parseFloat(input.value || 0);
+      input.value = (current + 0.5).toFixed(1);
+    });
+
+    $("#spinDown").addEventListener("click", () => {
+      const input = $("#actPoints");
+      const current = parseFloat(input.value || 0);
+      if (current >= 0.5) input.value = (current - 0.5).toFixed(1);
+      else input.value = "0";
+    });
+
+    /* CALENDÁRIO ACADÊMICO DARK */
+    const datePickerTrigger = $("#datePickerTrigger");
+    const datePickerLabel = $("#datePickerLabel");
+    const calendarPopup = $("#calendarPopup");
+    const hiddenActDue = $("#actDue");
+    const calMonthYear = $("#calMonthYear");
+    const calDaysGrid = $("#calDaysGrid");
+    const calHours = $("#calHours");
+    const calMinutes = $("#calMinutes");
+
+    for (let h = 0; h < 24; h++) {
+      const val = String(h).padStart(2, "0");
+      calHours.innerHTML += `<option value="${val}">${val}h</option>`;
+    }
+    for (let m = 0; m < 60; m += 5) {
+      const val = String(m).padStart(2, "0");
+      calMinutes.innerHTML += `<option value="${val}">${val}m</option>`;
+    }
+    calHours.value = "19";
+    calMinutes.value = "00";
+
+    let viewYear = new Date().getFullYear();
+    let viewMonth = new Date().getMonth();
+    let selectedDate = null;
+
+    const monthNames = [
+      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    ];
+
+    function renderCalendar() {
+      calMonthYear.textContent = `${monthNames[viewMonth]} de ${viewYear}`;
+      calDaysGrid.innerHTML = "";
+
+      const firstDayIndex = new Date(viewYear, viewMonth, 1).getDay();
+      const lastDay = new Date(viewYear, viewMonth + 1, 0).getDate();
+      const prevLastDay = new Date(viewYear, viewMonth, 0).getDate();
+
+      for (let x = firstDayIndex; x > 0; x--) {
+        const cell = document.createElement("div");
+        cell.className = "cal-day-cell other-month";
+        cell.textContent = prevLastDay - x + 1;
+        calDaysGrid.appendChild(cell);
       }
+
+      const today = new Date();
+      for (let day = 1; day <= lastDay; day++) {
+        const cell = document.createElement("div");
+        cell.className = "cal-day-cell";
+        cell.textContent = day;
+
+        if (
+          day === today.getDate() &&
+          viewMonth === today.getMonth() &&
+          viewYear === today.getFullYear()
+        ) {
+          cell.classList.add("today");
+        }
+
+        if (
+          selectedDate &&
+          day === selectedDate.getDate() &&
+          viewMonth === selectedDate.getMonth() &&
+          viewYear === selectedDate.getFullYear()
+        ) {
+          cell.classList.add("selected");
+        }
+
+        cell.addEventListener("click", () => {
+          selectedDate = new Date(viewYear, viewMonth, day, parseInt(calHours.value), parseInt(calMinutes.value));
+          renderCalendar();
+          updateDateDisplay();
+        });
+
+        calDaysGrid.appendChild(cell);
+      }
+    }
+
+    function updateDateDisplay() {
+      if (!selectedDate) {
+        datePickerLabel.textContent = "dd/mm/aaaa --:--";
+        datePickerLabel.classList.add("placeholder");
+        hiddenActDue.value = "";
+        return;
+      }
+      selectedDate.setHours(parseInt(calHours.value), parseInt(calMinutes.value), 0, 0);
+      const iso = selectedDate.toISOString();
+      hiddenActDue.value = iso;
+      datePickerLabel.textContent = formatDate(iso);
+      datePickerLabel.classList.remove("placeholder");
+    }
+
+    $("#calPrevMonth").addEventListener("click", (e) => {
+      e.stopPropagation();
+      viewMonth--;
+      if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+      renderCalendar();
+    });
+
+    $("#calNextMonth").addEventListener("click", (e) => {
+      e.stopPropagation();
+      viewMonth++;
+      if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+      renderCalendar();
+    });
+
+    calHours.addEventListener("change", updateDateDisplay);
+    calMinutes.addEventListener("change", updateDateDisplay);
+
+    $("#calClear").addEventListener("click", (e) => {
+      e.stopPropagation();
+      selectedDate = null;
+      renderCalendar();
+      updateDateDisplay();
+      closeAllCustomSelects();
+    });
+
+    $("#calToday").addEventListener("click", (e) => {
+      e.stopPropagation();
+      const now = new Date();
+      viewYear = now.getFullYear();
+      viewMonth = now.getMonth();
+      selectedDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(calHours.value), parseInt(calMinutes.value));
+      renderCalendar();
+      updateDateDisplay();
+    });
+
+    $("#calConfirm").addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!selectedDate) {
+        selectedDate = new Date();
+        updateDateDisplay();
+      }
+      closeAllCustomSelects();
+    });
+
+    datePickerTrigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = calendarPopup.classList.contains("open");
+      closeAllCustomSelects();
+      if (!isOpen) {
+        calendarPopup.classList.add("open");
+        datePickerTrigger.classList.add("active");
+        renderCalendar();
+      }
+    });
+
+    calendarPopup.addEventListener("click", e => e.stopPropagation());
+
+    document.addEventListener("click", () => {
+      closeAllCustomSelects();
     });
 
     function renderList() {
@@ -1220,6 +1775,7 @@
       const search = $("#searchInput").value.trim().toLowerCase();
       const container = $("#activityList");
 
+      // Atividades em aberto primeiro (da mais urgente à mais distante); vencidas jogadas para o final (direita/baixo)
       const filtered = activities.filter(a => {
         const info = getDueInfo(a.due);
         const isDone = doneIds.has(a.id);
@@ -1234,21 +1790,34 @@
           if (!hay.includes(search)) return false;
         }
         return true;
-      }).sort((a, b) => new Date(a.due) - new Date(b.due));
+      }).sort((a, b) => {
+        const isExpiredA = getDueInfo(a.due).status === "expired";
+        const isExpiredB = getDueInfo(b.due).status === "expired";
+
+        if (!isExpiredA && isExpiredB) return -1;
+        if (isExpiredA && !isExpiredB) return 1;
+
+        if (!isExpiredA && !isExpiredB) {
+          return new Date(a.due) - new Date(b.due);
+        } else {
+          return new Date(b.due) - new Date(a.due);
+        }
+      });
 
       if (!filtered.length) {
-        container.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;">Nenhuma atividade localizada no fichamento.</div>';
+        container.innerHTML = '<div class="empty-state">Nenhuma atividade localizada no fichamento do mural.</div>';
         return;
       }
 
       container.innerHTML = filtered.map(a => {
         const info = getDueInfo(a.due);
         const isDone = doneIds.has(a.id);
+        const isExpired = info.status === "expired";
         const modality = a.modality || "Individual";
         const cardClass = [
           "activity-card",
           isDone ? "done" : "",
-          info.status === "expired" ? "expired" : ""
+          isExpired ? "expired" : ""
         ].filter(Boolean).join(" ");
 
         return `
@@ -1260,7 +1829,7 @@
                   <h4 class="card-title">${escapeHtml(a.title)}</h4>
                 </div>
                 ${a.points !== null && a.points !== "" && a.points !== undefined
-                  ? `<div class="score-badge">${Number(a.points).toLocaleString("pt-PT")} pts</div>`
+                  ? `<div class="score-badge">${Number(a.points).toLocaleString("pt-BR")} pts</div>`
                   : ""}
               </div>
 
@@ -1283,7 +1852,10 @@
                   ${getModalityIcon(modality)}
                   ${escapeHtml(modality)}
                 </span>
-                <span class="tag">${info.text}</span>
+                ${isExpired 
+                  ? `<span class="tag expired-badge">Prazo Expirado</span>` 
+                  : `<span class="tag">${info.text}</span>`
+                }
               </div>
 
               <div class="card-footer">
@@ -1361,7 +1933,6 @@
       });
     }
 
-    // Janelas Modais
     const addModal = $("#addModal");
     const authModal = $("#authModal");
 
@@ -1421,8 +1992,11 @@
       e.preventDefault();
       if (!requireLogin()) return;
 
-      const rawDue = $("#actDue").value;
-      if (!rawDue) return;
+      const rawDue = hiddenActDue.value;
+      if (!rawDue) {
+        datePickerTrigger.focus();
+        return;
+      }
 
       const { error } = await supabaseClient
         .from("activities")
@@ -1431,7 +2005,7 @@
           subject: $("#actSubject").value.trim(),
           type: $("#actType").value,
           modality: $("#actModality").value,
-          due_at: new Date(rawDue).toISOString(),
+          due_at: rawDue,
           points: $("#actPoints").value === "" ? null : Number($("#actPoints").value),
           description: $("#actDesc").value.trim(),
           created_by: currentUser.id
@@ -1444,11 +2018,26 @@
       }
 
       e.target.reset();
+
+      selectedDate = null;
+      updateDateDisplay();
+
+      $("#actType").value = "Exercício";
+      $("#typeLabel").textContent = "Exercício";
+      $("#typeMenu").querySelectorAll(".custom-select-option").forEach((opt, idx) => {
+        opt.classList.toggle("selected", idx === 0);
+      });
+
+      $("#actModality").value = "Individual";
+      $("#modalityLabel").textContent = "Individual";
+      $("#modalityMenu").querySelectorAll(".custom-select-option").forEach((opt, idx) => {
+        opt.classList.toggle("selected", idx === 0);
+      });
+
       addModal.classList.remove("open");
       await loadActivities();
     });
 
-    // Filtros e Pesquisa
     $("#searchInput").addEventListener("input", renderList);
 
     $$(".tab-btn").forEach(tab => {       tab.addEventListener("click", () => {         $$
@@ -1459,7 +2048,6 @@
       });
     });
 
-    // Cópia de Segurança JSON
     $("#exportBtn").addEventListener("click", () => {
       const payload = JSON.stringify({ activities, doneIds: [...doneIds] }, null, 2);
       const blob = new Blob([payload], { type: "application/json" });
@@ -1471,14 +2059,12 @@
       URL.revokeObjectURL(url);
     });
 
-    // Teclas de Atalho
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") {
         addModal.classList.remove("open");
         authModal.classList.remove("open");
-        closeCustomSelect();
+        closeAllCustomSelects();
       }
-
       if ((e.key === "n" || e.key === "N") && !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
         e.preventDefault();
         if (requireLogin()) addModal.classList.add("open");
@@ -1489,6 +2075,7 @@
       const { data: { session } } = await supabaseClient.auth.getSession();
       currentUser = session?.user || null;
       updateAuthUI();
+      renderCalendar();
       await loadActivities();
     }
 
