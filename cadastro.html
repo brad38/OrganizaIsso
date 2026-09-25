@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Criar conta | Mural Acadêmico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Lora:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/legal.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="top">
+      <a class="brand" href="/">
+        <span class="brand-icon">☷</span>
+        <h1>Mural Acadêmico</h1>
+      </a>
+      <a class="back" href="/">Voltar</a>
+    </header>
+
+    <section class="card">
+      <div class="eyebrow">Cadastro</div>
+      <h2>Criar conta</h2>
+      <p class="lead">Use um nome de exibição. Seu e-mail é usado para autenticação e não é exibido na lista pública de usuários.</p>
+
+      <form id="signupForm">
+        <div class="field">
+          <label for="displayName">Nome de exibição</label>
+          <input id="displayName" type="text" minlength="2" maxlength="60" required autocomplete="name" placeholder="Ex.: Bradsson">
+        </div>
+
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input id="email" type="email" required autocomplete="email" placeholder="seuemail@exemplo.com">
+        </div>
+
+        <div class="field">
+          <label for="password">Senha</label>
+          <input id="password" type="password" minlength="8" required autocomplete="new-password" placeholder="Mínimo de 8 caracteres">
+        </div>
+
+        <div class="field">
+          <label for="confirmPassword">Confirmar senha</label>
+          <input id="confirmPassword" type="password" minlength="8" required autocomplete="new-password" placeholder="Repita a senha">
+        </div>
+
+        <label class="check">
+          <input id="termsAccepted" type="checkbox" required>
+          <span>Li e aceito os <a href="/termos.html" target="_blank" rel="noopener">Termos de Uso</a>.</span>
+        </label>
+
+        <label class="check">
+          <input id="privacyAcknowledged" type="checkbox" required>
+          <span>Li o <a href="/privacidade.html" target="_blank" rel="noopener">Aviso de Privacidade</a> e estou ciente de como os dados são tratados.</span>
+        </label>
+
+        <label class="check">
+          <input id="emailReminders" type="checkbox">
+          <span>Quero receber lembretes de prazos por e-mail. Esta opção é facultativa e poderá ser desativada depois.</span>
+        </label>
+
+        <div class="message" id="message"></div>
+
+        <div class="actions">
+          <a class="back" href="/">Já tenho conta</a>
+          <button class="btn btn-primary" id="submitBtn" type="submit">Criar conta</button>
+        </div>
+      </form>
+
+      <div class="footer-links">
+        <a href="/termos.html">Termos de Uso</a>
+        <a href="/privacidade.html">Aviso de Privacidade</a>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { createClient } from "@supabase/supabase-js";
+
+    const supabase = createClient(
+      import.meta.env.VITE_SUPABASE_URL,
+      import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+    );
+
+    const LEGAL_VERSION = "2026-09-25";
+    const COOLDOWN_MS = 60_000;
+    const COOLDOWN_KEY = "organizaisso_signup_cooldown_until";
+
+    const form = document.querySelector("#signupForm");
+    const submitBtn = document.querySelector("#submitBtn");
+    const message = document.querySelector("#message");
+    let timer = null;
+    let inFlight = false;
+
+    function remaining() {
+      return Math.max(0, Number(localStorage.getItem(COOLDOWN_KEY) || 0) - Date.now());
+    }
+
+    function renderCooldown() {
+      if (timer) clearInterval(timer);
+      const update = () => {
+        const ms = remaining();
+        if (ms <= 0) {
+          if (timer) clearInterval(timer);
+          timer = null;
+          submitBtn.disabled = inFlight;
+          submitBtn.textContent = "Criar conta";
+          return;
+        }
+        submitBtn.disabled = true;
+        submitBtn.textContent = `Aguarde ${Math.ceil(ms / 1000)}s`;
+      };
+      update();
+      if (remaining() > 0) timer = setInterval(update, 250);
+    }
+
+    renderCooldown();
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (inFlight || remaining() > 0) return;
+
+      const displayName = document.querySelector("#displayName").value.trim();
+      const email = document.querySelector("#email").value.trim();
+      const password = document.querySelector("#password").value;
+      const confirmation = document.querySelector("#confirmPassword").value;
+      const termsAccepted = document.querySelector("#termsAccepted").checked;
+      const privacyAcknowledged = document.querySelector("#privacyAcknowledged").checked;
+      const emailReminders = document.querySelector("#emailReminders").checked;
+
+      if (displayName.length < 2) {
+        message.textContent = "Informe um nome de exibição válido.";
+        return;
+      }
+
+      if (password.length < 8) {
+        message.textContent = "A senha precisa ter pelo menos 8 caracteres.";
+        return;
+      }
+
+      if (password !== confirmation) {
+        message.textContent = "As senhas não coincidem.";
+        return;
+      }
+
+      if (!termsAccepted || !privacyAcknowledged) {
+        message.textContent = "Leia e marque os Termos de Uso e o Aviso de Privacidade.";
+        return;
+      }
+
+      inFlight = true;
+      submitBtn.disabled = true;
+      message.textContent = "Criando conta...";
+
+      const now = new Date().toISOString();
+
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: {
+              display_name: displayName,
+              terms_version: LEGAL_VERSION,
+              privacy_version: LEGAL_VERSION,
+              terms_accepted_at: now,
+              privacy_acknowledged_at: now,
+              email_reminders_opt_in: emailReminders
+            }
+          }
+        });
+
+        localStorage.setItem(COOLDOWN_KEY, String(Date.now() + COOLDOWN_MS));
+
+        if (error) {
+          console.error(error);
+          message.textContent = "Não foi possível criar a conta agora. Aguarde e tente novamente.";
+          renderCooldown();
+          return;
+        }
+
+        if (data.session) {
+          message.textContent = "Conta criada. Redirecionando...";
+          setTimeout(() => window.location.href = "/", 700);
+        } else {
+          message.textContent = "Conta criada. Se a confirmação de e-mail estiver ativa, confirme o endereço antes de entrar.";
+          renderCooldown();
+        }
+      } finally {
+        inFlight = false;
+        if (remaining() <= 0) submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

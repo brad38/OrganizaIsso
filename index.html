@@ -1476,9 +1476,9 @@
     </div>
   </div>
 
-  <!-- Painel exclusivo do proprietário -->
-  <div class="owner-screen" id="ownerUsersModal">
-    <div class="owner-screen-shell">
+  <!-- Popup exclusivo do proprietário -->
+  <div class="modal-backdrop" id="ownerUsersModal">
+    <div class="modal" style="max-width: 780px;">
       <div class="modal-head">
         <h3>Permissões de Administrador</h3>
         <button class="icon-close" id="closeOwnerUsersModal" aria-label="Fechar">
@@ -1719,7 +1719,7 @@
 
       const { data, error } = await supabaseClient
         .from("profiles")
-        .select("id,email,display_name,role,created_at")
+        .select("id,display_name,role,created_at")
         .order("created_at", { ascending: true });
 
       if (error) {
@@ -1739,7 +1739,7 @@
           user.role === "admin" ? "Admin" :
           user.role === "editor" ? "Editor" : "Aluno";
 
-        const displayName = user.display_name || user.email || "Usuário";
+        const displayName = user.display_name || "Usuário";
         const canChange = user.role !== "owner";
         const isAdminUser = user.role === "admin";
 
@@ -1747,7 +1747,6 @@
           <div class="owner-user-row">
             <div class="owner-user-info">
               <div class="owner-user-name">${escapeHtml(displayName)}</div>
-              <div class="owner-user-email">${escapeHtml(user.email || "")}</div>
             </div>
 
             <div class="owner-user-actions">
@@ -2421,7 +2420,6 @@
       $("#authPassword").disabled = busy;
     }
 
-    refreshSignupCooldownUI();
     refreshResetCooldownUI();
 
     $("#authForm").addEventListener("submit", async e => {
@@ -2495,7 +2493,6 @@
           "Se essa conta existir, enviamos um link para você definir a senha.";
       } finally {
         setAuthBusy(false);
-        refreshSignupCooldownUI();
         refreshResetCooldownUI();
       }
     });
@@ -2544,60 +2541,8 @@
       }
     });
 
-    $("#signupBtn").addEventListener("click", async () => {
-      if (authRequestInFlight) return;
-
-      const remaining = getSignupCooldownRemaining();
-      if (remaining > 0) {
-        $("#authMessage").textContent =
-          `Aguarde ${Math.ceil(remaining / 1000)} segundos antes de tentar novamente.`;
-        refreshSignupCooldownUI();
-        return;
-      }
-
-      const email = $("#authEmail").value.trim();
-      const password = $("#authPassword").value;
-
-      if (!email) {
-        $("#authMessage").textContent = "Informe seu e-mail.";
-        $("#authEmail").focus();
-        return;
-      }
-
-      if (!password || password.length < 8) {
-        $("#authMessage").textContent = "A senha precisa ter pelo menos 8 caracteres.";
-        $("#authPassword").focus();
-        return;
-      }
-
-      $("#authMessage").textContent = "Criando conta...";
-      setAuthBusy(true);
-
-      try {
-        const { data, error } = await supabaseClient.auth.signUp({
-          email,
-          password
-        });
-
-        setSignupCooldown();
-
-        if (error) {
-          console.error(error);
-          $("#authMessage").textContent =
-            "Não foi possível criar a conta agora. Aguarde e tente novamente.";
-          return;
-        }
-
-        if (data.session) {
-          $("#authMessage").textContent = "Conta criada e login realizado.";
-        } else {
-          $("#authMessage").textContent =
-            "Conta criada. Se a confirmação de e-mail estiver ativa, confira sua caixa de entrada.";
-        }
-      } finally {
-        setAuthBusy(false);
-        refreshSignupCooldownUI();
-      }
+    $("#signupBtn").addEventListener("click", () => {
+      window.location.href = "/cadastro.html";
     });
 
     supabaseClient.auth.onAuthStateChange(async (event, session) => {
