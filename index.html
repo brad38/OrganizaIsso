@@ -731,6 +731,10 @@
       </div>
 
       <div class="actions">
+        <button class="btn btn-secondary" id="authBtn" title="Entrar no mural">
+          <span id="authBtnLabel">Entrar</span>
+        </button>
+        <button class="btn btn-secondary" id="logoutBtn" title="Sair da conta" hidden>Sair</button>
         <button class="btn btn-secondary" id="exportBtn" title="Exportar Backup JSON">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
@@ -929,7 +933,43 @@
     </div>
   </div>
 
-  <script>
+  <!-- Modal Login -->
+  <div class="modal-backdrop" id="authModal">
+    <div class="modal" style="max-width: 420px;">
+      <div class="modal-head">
+        <h3>Entrar no Mural</h3>
+        <button class="icon-close" id="closeAuthModal" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <form id="authForm">
+        <div class="field">
+          <label for="authEmail">E-mail</label>
+          <input type="email" id="authEmail" required placeholder="seuemail@exemplo.com" autocomplete="email" />
+        </div>
+        <p id="authMessage" style="margin-top: 10px; font-size: .78rem; color: var(--muted); line-height: 1.45;">
+          Você receberá um link de acesso por e-mail. Não precisa criar senha.
+        </p>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" id="cancelAuthModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Enviar link</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "@supabase/supabase-js";
+
+    const supabaseClient = createClient(
+      import.meta.env.VITE_SUPABASE_URL,
+      import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+    );
+
     const STORE_KEY = "mural_academico_sober_v3";
     const DONE_KEY = "mural_academico_done_v3";
 
@@ -979,17 +1019,59 @@
       }
     ];
 
-    let activities = JSON.parse(localStorage.getItem(STORE_KEY)) || initialData;
-    let doneIds = new Set(JSON.parse(localStorage.getItem(DONE_KEY)) || []);
+    let activities = [];
+    let doneIds = new Set();
     let activeFilter = "all";
     let selectedSubject = "";
+    let currentUser = null;
 
     const $ = s => document.querySelector(s);
     const $$ = s => [...document.querySelectorAll(s)];
 
-    function persist() {
-      localStorage.setItem(STORE_KEY, JSON.stringify(activities));
-      localStorage.setItem(DONE_KEY, JSON.stringify([...doneIds]));
+    async function loadActivities() {
+      const { data, error } = await supabaseClient
+        .from("activities")
+        .select("*")
+        .order("due_at", { ascending: true });
+
+      if (error) {
+        console.error("Falha ao carregar atividades:", error);
+        activities = [];
+      } else {
+        activities = (data || []).map(a => ({
+          ...a,
+          due: a.due_at
+        }));
+      }
+
+      doneIds = new Set();
+
+      if (currentUser) {
+        const { data: completionData, error: completionError } = await supabaseClient
+          .from("activity_completions")
+          .select("activity_id")
+          .eq("user_id", currentUser.id);
+
+        if (completionError) {
+          console.error("Falha ao carregar conclusões:", completionError);
+        } else {
+          doneIds = new Set((completionData || []).map(item => item.activity_id));
+        }
+      }
+
+      renderList();
+    }
+
+    function updateAuthUI() {
+      $("#authBtnLabel").textContent = currentUser?.email || "Entrar";
+      $("#logoutBtn").hidden = !currentUser;
+    }
+
+    function requireLogin() {
+      if (currentUser) return true;
+      $("#authMessage").textContent = "Entre com seu e-mail para alterar o mural ou marcar uma atividade como concluída.";
+      $("#authModal").classList.add("open");
+      return false;
     }
 
     function escapeHtml(str = "") {
@@ -1228,44 +1310,142 @@
         `;
       }).join("");
 
-      $$("[data-check]").forEach(btn => {         btn.addEventListener("click", () => {           const id = btn.dataset.check;           doneIds.has(id) ? doneIds.delete(id) : doneIds.add(id);           persist();           renderList();         });       });        $$
-("[data-delete]").forEach(btn => {
-        btn.addEventListener("click", () => {
+      $$("[data-check]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!requireLogin()) return;
+
+          const id = btn.dataset.check;
+          const isDone = doneIds.has(id);
+
+          const result = isDone
+            ? await supabaseClient
+                .from("activity_completions")
+                .delete()
+                .eq("user_id", currentUser.id)
+                .eq("activity_id", id)
+            : await supabaseClient
+                .from("activity_completions")
+                .insert({
+                  user_id: currentUser.id,
+                  activity_id: id
+                });
+
+          if (result.error) {
+            console.error(result.error);
+            alert("Não foi possível atualizar esta atividade.");
+            return;
+          }
+
+          await loadActivities();
+        });
+      });
+
+      $$("[data-delete]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!requireLogin()) return;
+
           const id = btn.dataset.delete;
-          activities = activities.filter(a => a.id !== id);
-          doneIds.delete(id);
-          persist();
-          renderList();
+          const { error } = await supabaseClient
+            .from("activities")
+            .delete()
+            .eq("id", id);
+
+          if (error) {
+            console.error(error);
+            alert("Você não tem permissão para excluir esta atividade.");
+            return;
+          }
+
+          await loadActivities();
         });
       });
     }
 
     // Janelas Modais
     const addModal = $("#addModal");
-    $("#openAddModal").addEventListener("click", () => addModal.classList.add("open"));
+    const authModal = $("#authModal");
+
+    $("#openAddModal").addEventListener("click", () => {
+      if (!requireLogin()) return;
+      addModal.classList.add("open");
+    });
+
     $("#closeAddModal").addEventListener("click", () => addModal.classList.remove("open"));
     $("#cancelAddModal").addEventListener("click", () => addModal.classList.remove("open"));
 
-    $("#activityForm").addEventListener("submit", e => {
+    $("#authBtn").addEventListener("click", () => {
+      if (currentUser) return;
+      $("#authMessage").textContent = "Você receberá um link de acesso por e-mail. Não precisa criar senha.";
+      authModal.classList.add("open");
+    });
+
+    $("#closeAuthModal").addEventListener("click", () => authModal.classList.remove("open"));
+    $("#cancelAuthModal").addEventListener("click", () => authModal.classList.remove("open"));
+
+    $("#logoutBtn").addEventListener("click", async () => {
+      await supabaseClient.auth.signOut();
+    });
+
+    $("#authForm").addEventListener("submit", async e => {
       e.preventDefault();
+      const email = $("#authEmail").value.trim();
+      if (!email) return;
+
+      $("#authMessage").textContent = "Enviando link de acesso...";
+
+      const { error } = await supabaseClient.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.origin
+        }
+      });
+
+      if (error) {
+        console.error(error);
+        $("#authMessage").textContent = "Não foi possível enviar o link. Verifique o e-mail e tente novamente.";
+        return;
+      }
+
+      $("#authMessage").textContent = "Link enviado. Abra seu e-mail e toque no link para entrar.";
+    });
+
+    supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+      currentUser = session?.user || null;
+      updateAuthUI();
+      await loadActivities();
+
+      if (currentUser) authModal.classList.remove("open");
+    });
+
+    $("#activityForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      if (!requireLogin()) return;
+
       const rawDue = $("#actDue").value;
       if (!rawDue) return;
 
-      activities.unshift({
-        id: crypto.randomUUID(),
-        title: $("#actTitle").value.trim(),
-        subject: $("#actSubject").value.trim(),
-        type: $("#actType").value,
-        modality: $("#actModality").value,
-        due: new Date(rawDue).toISOString(),
-        points: $("#actPoints").value === "" ? null : Number($("#actPoints").value),
-        description: $("#actDesc").value.trim()
-      });
+      const { error } = await supabaseClient
+        .from("activities")
+        .insert({
+          title: $("#actTitle").value.trim(),
+          subject: $("#actSubject").value.trim(),
+          type: $("#actType").value,
+          modality: $("#actModality").value,
+          due_at: new Date(rawDue).toISOString(),
+          points: $("#actPoints").value === "" ? null : Number($("#actPoints").value),
+          description: $("#actDesc").value.trim(),
+          created_by: currentUser.id
+        });
 
-      persist();
+      if (error) {
+        console.error(error);
+        alert("Não foi possível registrar a atividade.");
+        return;
+      }
+
       e.target.reset();
       addModal.classList.remove("open");
-      renderList();
+      await loadActivities();
     });
 
     // Filtros e Pesquisa
@@ -1295,15 +1475,24 @@
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") {
         addModal.classList.remove("open");
+        authModal.classList.remove("open");
         closeCustomSelect();
       }
+
       if ((e.key === "n" || e.key === "N") && !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
         e.preventDefault();
-        addModal.classList.add("open");
+        if (requireLogin()) addModal.classList.add("open");
       }
     });
 
-    renderList();
+    async function initializeApp() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      currentUser = session?.user || null;
+      updateAuthUI();
+      await loadActivities();
+    }
+
+    initializeApp();
   </script>
 </body>
 </html>
