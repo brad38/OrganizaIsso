@@ -54,6 +54,8 @@
 
     button, input, select, textarea { font: inherit; color: inherit; }
     button { cursor: pointer; border: none; background: none; }
+    /* O CSS de .btn não pode sobrescrever o atributo HTML hidden */
+    [hidden] { display: none !important; }
 
     /* Layout Centralizado e Proporcional para PC */
     .app {
@@ -145,6 +147,12 @@
     }
     .btn-primary:hover {
       background: #cfb164;
+    }
+
+    .btn:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+      pointer-events: none;
     }
 
     /* Grelha de Indicadores KPI */
@@ -1066,7 +1074,7 @@
           </svg>
           Backup
         </button>
-        <button class="btn btn-primary" id="openAddModal">
+        <button class="btn btn-primary" id="openAddModal" hidden>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 5v14M5 12h14"/>
           </svg>
@@ -1355,7 +1363,7 @@
 
         <div class="field" style="margin-top: 12px;">
           <label for="authPassword">Senha</label>
-          <input type="password" id="authPassword" required minlength="6" placeholder="Sua senha" autocomplete="current-password" />
+          <input type="password" id="authPassword" required minlength="8" placeholder="Sua senha" autocomplete="current-password" />
         </div>
 
         <p id="authMessage" style="margin-top: 10px; font-size: .78rem; color: var(--muted); line-height: 1.45;">
@@ -1366,7 +1374,7 @@
           <button type="button" class="btn btn-secondary" id="signupBtn">Criar conta</button>
           <div style="display:flex; gap:10px;">
             <button type="button" class="btn btn-secondary" id="cancelAuthModal">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Entrar</button>
+            <button type="submit" class="btn btn-primary" id="loginSubmitBtn">Entrar</button>
           </div>
         </div>
       </form>
@@ -1435,6 +1443,7 @@
     let activeFilter = "all";
     let selectedSubject = "";
     let currentUser = null;
+    let currentUserRole = null;
 
     const $ = s => document.querySelector(s);
     const $$ = s => [...document.querySelectorAll(s)];
@@ -1473,9 +1482,37 @@
       renderList();
     }
 
+    async function loadCurrentProfile() {
+      currentUserRole = null;
+      if (!currentUser) return;
+
+      const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("role")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Falha ao carregar perfil:", error);
+        return;
+      }
+
+      currentUserRole = data?.role || "student";
+    }
+
+    function isStaff() {
+      return currentUserRole === "admin" || currentUserRole === "editor";
+    }
+
     function updateAuthUI() {
-      $("#authBtnLabel").textContent = currentUser?.email || "Entrar";
-      $("#logoutBtn").hidden = !currentUser;
+      const authBtn = $("#authBtn");
+      const logoutBtn = $("#logoutBtn");
+      const addBtn = $("#openAddModal");
+
+      authBtn.hidden = Boolean(currentUser);
+      logoutBtn.hidden = !currentUser;
+      addBtn.hidden = !currentUser || !isStaff();
+      $("#authBtnLabel").textContent = "Entrar";
     }
 
     function requireLogin() {
@@ -1880,12 +1917,14 @@
                   <span>${isDone ? "Concluída" : "Marcar como feita"}</span>
                 </button>
 
-                <button class="del-btn" data-delete="${a.id}" title="Excluir">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                  </svg>
-                </button>
+                ${isStaff() ? `
+                  <button class="del-btn" data-delete="${a.id}" title="Excluir">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                ` : ""}
               </div>
             </div>
           </article>
@@ -1948,6 +1987,12 @@
 
     $("#openAddModal").addEventListener("click", () => {
       if (!requireLogin()) return;
+
+      if (!isStaff()) {
+        alert("Sua conta não tem permissão para registrar atividades.");
+        return;
+      }
+
       addModal.classList.add("open");
     });
 
@@ -1964,8 +2009,77 @@
     $("#cancelAuthModal").addEventListener("click", () => authModal.classList.remove("open"));
 
     $("#logoutBtn").addEventListener("click", async () => {
-      await supabaseClient.auth.signOut();
+      $("#logoutBtn").disabled = true;
+      try {
+        await supabaseClient.auth.signOut();
+      } finally {
+        $("#logoutBtn").disabled = false;
+      }
     });
+
+    const SIGNUP_COOLDOWN_MS = 60_000;
+    const SIGNUP_COOLDOWN_KEY = "organizaisso_signup_cooldown_until";
+    let authRequestInFlight = false;
+    let signupCountdownTimer = null;
+
+    function getSignupCooldownRemaining() {
+      const until = Number(localStorage.getItem(SIGNUP_COOLDOWN_KEY) || 0);
+      return Math.max(0, until - Date.now());
+    }
+
+    function setSignupCooldown() {
+      const until = Date.now() + SIGNUP_COOLDOWN_MS;
+      localStorage.setItem(SIGNUP_COOLDOWN_KEY, String(until));
+      refreshSignupCooldownUI();
+    }
+
+    function refreshSignupCooldownUI() {
+      const btn = $("#signupBtn");
+      const remaining = getSignupCooldownRemaining();
+
+      if (signupCountdownTimer) {
+        clearInterval(signupCountdownTimer);
+        signupCountdownTimer = null;
+      }
+
+      if (remaining <= 0) {
+        btn.disabled = authRequestInFlight;
+        btn.textContent = "Criar conta";
+        return;
+      }
+
+      const render = () => {
+        const ms = getSignupCooldownRemaining();
+
+        if (ms <= 0) {
+          clearInterval(signupCountdownTimer);
+          signupCountdownTimer = null;
+          btn.disabled = authRequestInFlight;
+          btn.textContent = "Criar conta";
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = `Aguarde ${Math.ceil(ms / 1000)}s`;
+      };
+
+      render();
+      signupCountdownTimer = setInterval(render, 250);
+    }
+
+    function setAuthBusy(busy) {
+      authRequestInFlight = busy;
+      $("#loginSubmitBtn").disabled = busy;
+
+      if (getSignupCooldownRemaining() <= 0) {
+        $("#signupBtn").disabled = busy;
+      }
+
+      $("#authEmail").disabled = busy;
+      $("#authPassword").disabled = busy;
+    }
+
+    refreshSignupCooldownUI();
 
     $("#authForm").addEventListener("submit", async e => {
       e.preventDefault();
@@ -1975,23 +2089,41 @@
 
       if (!email || !password) return;
 
+      if (authRequestInFlight) return;
+
       $("#authMessage").textContent = "Entrando...";
+      setAuthBusy(true);
 
-      const { error } = await supabaseClient.auth.signInWithPassword({
-        email,
-        password
-      });
+      try {
+        const { error } = await supabaseClient.auth.signInWithPassword({
+          email,
+          password
+        });
 
-      if (error) {
-        console.error(error);
-        $("#authMessage").textContent = "E-mail ou senha inválidos.";
-        return;
+        if (error) {
+          console.error(error);
+          $("#authMessage").textContent = "E-mail ou senha inválidos.";
+          return;
+        }
+
+        $("#authMessage").textContent = "Login realizado.";
+      } finally {
+        setAuthBusy(false);
+        refreshSignupCooldownUI();
       }
-
-      $("#authMessage").textContent = "Login realizado.";
     });
 
     $("#signupBtn").addEventListener("click", async () => {
+      if (authRequestInFlight) return;
+
+      const remaining = getSignupCooldownRemaining();
+      if (remaining > 0) {
+        $("#authMessage").textContent =
+          `Aguarde ${Math.ceil(remaining / 1000)} segundos antes de tentar novamente.`;
+        refreshSignupCooldownUI();
+        return;
+      }
+
       const email = $("#authEmail").value.trim();
       const password = $("#authPassword").value;
 
@@ -2001,34 +2133,45 @@
         return;
       }
 
-      if (!password || password.length < 6) {
-        $("#authMessage").textContent = "A senha precisa ter pelo menos 6 caracteres.";
+      if (!password || password.length < 8) {
+        $("#authMessage").textContent = "A senha precisa ter pelo menos 8 caracteres.";
         $("#authPassword").focus();
         return;
       }
 
       $("#authMessage").textContent = "Criando conta...";
+      setAuthBusy(true);
 
-      const { data, error } = await supabaseClient.auth.signUp({
-        email,
-        password
-      });
+      try {
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password
+        });
 
-      if (error) {
-        console.error(error);
-        $("#authMessage").textContent = error.message || "Não foi possível criar a conta.";
-        return;
-      }
+        setSignupCooldown();
 
-      if (data.session) {
-        $("#authMessage").textContent = "Conta criada e login realizado.";
-      } else {
-        $("#authMessage").textContent = "Conta criada. Confirme o e-mail uma vez para ativá-la.";
+        if (error) {
+          console.error(error);
+          $("#authMessage").textContent =
+            "Não foi possível criar a conta agora. Aguarde e tente novamente.";
+          return;
+        }
+
+        if (data.session) {
+          $("#authMessage").textContent = "Conta criada e login realizado.";
+        } else {
+          $("#authMessage").textContent =
+            "Conta criada. Se a confirmação de e-mail estiver ativa, confira sua caixa de entrada.";
+        }
+      } finally {
+        setAuthBusy(false);
+        refreshSignupCooldownUI();
       }
     });
 
     supabaseClient.auth.onAuthStateChange(async (_event, session) => {
       currentUser = session?.user || null;
+      await loadCurrentProfile();
       updateAuthUI();
       await loadActivities();
 
@@ -2038,6 +2181,11 @@
     $("#activityForm").addEventListener("submit", async e => {
       e.preventDefault();
       if (!requireLogin()) return;
+
+      if (!isStaff()) {
+        alert("Sua conta não tem permissão para registrar atividades.");
+        return;
+      }
 
       const rawDue = hiddenActDue.value;
       if (!rawDue) {
@@ -2114,13 +2262,14 @@
       }
       if ((e.key === "n" || e.key === "N") && !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
         e.preventDefault();
-        if (requireLogin()) addModal.classList.add("open");
+        if (requireLogin() && isStaff()) addModal.classList.add("open");
       }
     });
 
     async function initializeApp() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       currentUser = session?.user || null;
+      await loadCurrentProfile();
       updateAuthUI();
       renderCalendar();
       await loadActivities();
