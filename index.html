@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Mural Acadêmico</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1170,6 +1170,433 @@
         max-width: 320px;
       }
     }
+
+    /* Mobile: layout pensado para toque e telas estreitas */
+    @media (max-width: 640px) {
+      html {
+        overflow-x: hidden;
+      }
+
+      body {
+        width: 100%;
+        overflow-x: hidden;
+        padding:
+          max(12px, env(safe-area-inset-top))
+          max(10px, env(safe-area-inset-right))
+          calc(34px + env(safe-area-inset-bottom))
+          max(10px, env(safe-area-inset-left));
+      }
+
+      .app {
+        max-width: 100%;
+        min-width: 0;
+        gap: 14px;
+      }
+
+      .app > * {
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding-bottom: 14px;
+      }
+
+      .brand {
+        min-width: 0;
+        gap: 10px;
+      }
+
+      .brand-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 9px;
+      }
+
+      .brand h1 {
+        font-size: 1.08rem;
+        line-height: 1.2;
+      }
+
+      .brand p {
+        display: none;
+      }
+
+      .actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .actions .btn {
+        width: 100%;
+        min-width: 0;
+        min-height: 44px;
+        padding: 9px 10px;
+        font-size: .8rem;
+        white-space: nowrap;
+      }
+
+      .actions .btn svg {
+        flex-shrink: 0;
+      }
+
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .kpi-card {
+        min-width: 0;
+        min-height: 96px;
+        padding: 12px;
+      }
+
+      .kpi-header {
+        margin-bottom: 6px;
+        gap: 6px;
+      }
+
+      .kpi-label {
+        font-size: .64rem;
+        letter-spacing: .055em;
+      }
+
+      .kpi-icon {
+        width: 25px;
+        height: 25px;
+        border-radius: 7px;
+      }
+
+      .kpi-value-row {
+        gap: 5px;
+      }
+
+      .kpi-value {
+        font-size: 1.38rem;
+      }
+
+      .kpi-caption {
+        font-size: .68rem;
+        line-height: 1.2;
+      }
+
+      .kpi-footer {
+        font-size: .65rem;
+        line-height: 1.25;
+      }
+
+      .toolbar {
+        padding: 10px;
+        gap: 8px;
+      }
+
+      .search-box,
+      .custom-select-container.toolbar-select {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .search-input {
+        min-height: 44px;
+        font-size: 16px;
+      }
+
+      .custom-select-trigger {
+        min-height: 44px;
+      }
+
+      .custom-select-menu {
+        max-height: min(42dvh, 260px);
+      }
+
+      .tabs-wrapper {
+        margin-inline: -2px;
+        width: calc(100% + 4px);
+      }
+
+      .tabs {
+        gap: 4px;
+        min-width: max-content;
+        padding-right: 12px;
+      }
+
+      .tab-btn {
+        min-height: 42px;
+        padding: 9px 12px;
+        font-size: .78rem;
+      }
+
+      .activity-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+      }
+
+      .activity-card {
+        min-width: 0;
+        padding: 14px;
+        gap: 12px;
+      }
+
+      .card-top {
+        gap: 10px;
+      }
+
+      .card-top > div:first-child {
+        min-width: 0;
+      }
+
+      .subject-tag {
+        font-size: .67rem;
+      }
+
+      .card-title {
+        font-size: 1rem;
+        overflow-wrap: anywhere;
+      }
+
+      .score-badge {
+        padding: 4px 7px;
+        font-size: .69rem;
+        flex-shrink: 0;
+      }
+
+      .card-desc {
+        font-size: .82rem;
+      }
+
+      .meta-tags {
+        gap: 5px;
+        margin-bottom: 10px;
+      }
+
+      .tag {
+        font-size: .68rem;
+        padding: 4px 7px;
+      }
+
+      .card-footer {
+        gap: 6px;
+        padding-top: 10px;
+      }
+
+      .check-btn {
+        flex: 1;
+        min-width: 0;
+        min-height: 44px;
+        justify-content: flex-start;
+      }
+
+      .del-btn {
+        min-width: 44px;
+        min-height: 44px;
+      }
+
+      .empty-state {
+        padding: 34px 12px;
+        font-size: .84rem;
+      }
+
+      .modal-backdrop {
+        padding: 0;
+        align-items: flex-end;
+        background: rgba(0, 0, 0, .68);
+        backdrop-filter: blur(3px);
+      }
+
+      .modal {
+        width: 100%;
+        max-width: none !important;
+        max-height: 92dvh;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        border-radius: 18px 18px 0 0;
+        border-left: 0;
+        border-right: 0;
+        border-bottom: 0;
+        padding:
+          18px
+          max(14px, env(safe-area-inset-right))
+          calc(20px + env(safe-area-inset-bottom))
+          max(14px, env(safe-area-inset-left));
+      }
+
+      .modal-head {
+        margin-bottom: 16px;
+      }
+
+      .modal-head h3 {
+        font-size: 1.05rem;
+      }
+
+      .icon-close {
+        width: 44px;
+        height: 44px;
+        margin: -8px -8px -8px 0;
+      }
+
+      .field-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .field input,
+      .field textarea,
+      .search-input {
+        font-size: 16px;
+      }
+
+      .field textarea {
+        min-height: 96px;
+      }
+
+      .custom-number-wrapper input {
+        font-size: 16px;
+        min-height: 44px;
+      }
+
+      .custom-datepicker-trigger,
+      .custom-select-trigger {
+        font-size: .88rem;
+      }
+
+      .custom-calendar-popup {
+        position: fixed;
+        top: auto;
+        left: max(10px, env(safe-area-inset-left));
+        right: max(10px, env(safe-area-inset-right));
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        transform: none;
+        width: auto;
+        max-width: none;
+        max-height: 82dvh;
+        overflow-y: auto;
+        border-radius: 14px;
+        padding: 12px;
+      }
+
+      .cal-day-cell {
+        min-height: 38px;
+        aspect-ratio: 1;
+      }
+
+      .cal-time-bar {
+        gap: 6px;
+        padding: 9px;
+      }
+
+      .cal-time-select {
+        min-height: 36px;
+        font-size: 16px;
+      }
+
+      .cal-actions {
+        gap: 6px;
+      }
+
+      .cal-btn-text,
+      .cal-btn-confirm {
+        min-height: 40px;
+        padding-inline: 12px;
+      }
+
+      .modal-foot {
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .modal-foot .btn {
+        min-height: 44px;
+      }
+
+      #authModal .modal-foot {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      #authModal .modal-foot > .btn {
+        width: 100%;
+      }
+
+      #authModal .modal-foot > div {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px !important;
+      }
+
+      #authModal .modal-foot > div .btn {
+        width: 100%;
+        padding-inline: 10px;
+      }
+
+      .owner-note {
+        font-size: .77rem;
+        line-height: 1.45;
+      }
+
+      .owner-users-list {
+        max-height: 55dvh;
+      }
+
+      .owner-user-row {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px;
+      }
+
+      .owner-user-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .owner-user-actions .btn {
+        flex: 1;
+        min-height: 42px;
+        padding-inline: 12px;
+      }
+
+      .role-badge {
+        display: inline-flex;
+        align-items: center;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .kpi-card {
+        padding: 10px;
+      }
+
+      .kpi-label {
+        font-size: .59rem;
+      }
+
+      .kpi-caption {
+        display: none;
+      }
+
+      .actions .btn {
+        font-size: .75rem;
+        padding-inline: 8px;
+      }
+
+      .tab-btn {
+        padding-inline: 10px;
+      }
+
+      .activity-card {
+        padding: 12px;
+      }
+
+      .card-footer {
+        align-items: stretch;
+      }
+    }
+
   </style>
 </head>
 <body>
