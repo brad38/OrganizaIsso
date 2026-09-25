@@ -1527,12 +1527,45 @@
           Entre com seu e-mail e senha.
         </p>
 
+        <button type="button" class="cal-btn-text" id="forgotPasswordBtn" style="margin-top: 8px; padding-left: 0;">
+          Esqueci / definir senha
+        </button>
+
         <div class="modal-foot" style="justify-content: space-between;">
           <button type="button" class="btn btn-secondary" id="signupBtn">Criar conta</button>
           <div style="display:flex; gap:10px;">
             <button type="button" class="btn btn-secondary" id="cancelAuthModal">Cancelar</button>
             <button type="submit" class="btn btn-primary" id="loginSubmitBtn">Entrar</button>
           </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de definição/recuperação de senha -->
+  <div class="modal-backdrop" id="resetPasswordModal">
+    <div class="modal" style="max-width: 420px;">
+      <div class="modal-head">
+        <h3>Definir nova senha</h3>
+      </div>
+
+      <form id="resetPasswordForm">
+        <div class="field">
+          <label for="newPassword">Nova senha</label>
+          <input type="password" id="newPassword" required minlength="8" placeholder="Mínimo de 8 caracteres" autocomplete="new-password" />
+        </div>
+
+        <div class="field" style="margin-top: 12px;">
+          <label for="confirmNewPassword">Confirmar senha</label>
+          <input type="password" id="confirmNewPassword" required minlength="8" placeholder="Repita a nova senha" autocomplete="new-password" />
+        </div>
+
+        <p id="resetPasswordMessage" style="margin-top: 10px; font-size: .78rem; color: var(--muted); line-height: 1.45;">
+          Defina uma senha para esta conta.
+        </p>
+
+        <div class="modal-foot">
+          <button type="submit" class="btn btn-primary" id="saveNewPasswordBtn">Salvar nova senha</button>
         </div>
       </form>
     </div>
@@ -2229,6 +2262,7 @@
 
     const addModal = $("#addModal");
     const authModal = $("#authModal");
+    const resetPasswordModal = $("#resetPasswordModal");
     const ownerUsersModal = $("#ownerUsersModal");
 
     $("#manageUsersBtn").addEventListener("click", async () => {
@@ -2275,8 +2309,11 @@
 
     const SIGNUP_COOLDOWN_MS = 60_000;
     const SIGNUP_COOLDOWN_KEY = "organizaisso_signup_cooldown_until";
+    const RESET_COOLDOWN_MS = 60_000;
+    const RESET_COOLDOWN_KEY = "organizaisso_reset_cooldown_until";
     let authRequestInFlight = false;
     let signupCountdownTimer = null;
+    let resetCountdownTimer = null;
 
     function getSignupCooldownRemaining() {
       const until = Number(localStorage.getItem(SIGNUP_COOLDOWN_KEY) || 0);
@@ -2323,6 +2360,51 @@
       signupCountdownTimer = setInterval(render, 250);
     }
 
+    function getResetCooldownRemaining() {
+      const until = Number(localStorage.getItem(RESET_COOLDOWN_KEY) || 0);
+      return Math.max(0, until - Date.now());
+    }
+
+    function setResetCooldown() {
+      const until = Date.now() + RESET_COOLDOWN_MS;
+      localStorage.setItem(RESET_COOLDOWN_KEY, String(until));
+      refreshResetCooldownUI();
+    }
+
+    function refreshResetCooldownUI() {
+      const btn = $("#forgotPasswordBtn");
+      const remaining = getResetCooldownRemaining();
+
+      if (resetCountdownTimer) {
+        clearInterval(resetCountdownTimer);
+        resetCountdownTimer = null;
+      }
+
+      if (remaining <= 0) {
+        btn.disabled = authRequestInFlight;
+        btn.textContent = "Esqueci / definir senha";
+        return;
+      }
+
+      const render = () => {
+        const ms = getResetCooldownRemaining();
+
+        if (ms <= 0) {
+          clearInterval(resetCountdownTimer);
+          resetCountdownTimer = null;
+          btn.disabled = authRequestInFlight;
+          btn.textContent = "Esqueci / definir senha";
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = `Aguarde ${Math.ceil(ms / 1000)}s para reenviar`;
+      };
+
+      render();
+      resetCountdownTimer = setInterval(render, 250);
+    }
+
     function setAuthBusy(busy) {
       authRequestInFlight = busy;
       $("#loginSubmitBtn").disabled = busy;
@@ -2331,11 +2413,16 @@
         $("#signupBtn").disabled = busy;
       }
 
+      if (getResetCooldownRemaining() <= 0) {
+        $("#forgotPasswordBtn").disabled = busy;
+      }
+
       $("#authEmail").disabled = busy;
       $("#authPassword").disabled = busy;
     }
 
     refreshSignupCooldownUI();
+    refreshResetCooldownUI();
 
     $("#authForm").addEventListener("submit", async e => {
       e.preventDefault();
@@ -2366,6 +2453,94 @@
       } finally {
         setAuthBusy(false);
         refreshSignupCooldownUI();
+      }
+    });
+
+    $("#forgotPasswordBtn").addEventListener("click", async () => {
+      if (authRequestInFlight) return;
+
+      const email = $("#authEmail").value.trim();
+      if (!email) {
+        $("#authMessage").textContent = "Informe o e-mail da conta primeiro.";
+        $("#authEmail").focus();
+        return;
+      }
+
+      const remaining = getResetCooldownRemaining();
+      if (remaining > 0) {
+        $("#authMessage").textContent =
+          `Aguarde ${Math.ceil(remaining / 1000)} segundos antes de reenviar.`;
+        refreshResetCooldownUI();
+        return;
+      }
+
+      $("#authMessage").textContent = "Enviando link para definir a senha...";
+      setAuthBusy(true);
+
+      try {
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin
+        });
+
+        setResetCooldown();
+
+        if (error) {
+          console.error(error);
+          $("#authMessage").textContent =
+            "Não foi possível enviar agora. Aguarde e tente novamente.";
+          return;
+        }
+
+        $("#authMessage").textContent =
+          "Se essa conta existir, enviamos um link para você definir a senha.";
+      } finally {
+        setAuthBusy(false);
+        refreshSignupCooldownUI();
+        refreshResetCooldownUI();
+      }
+    });
+
+    $("#resetPasswordForm").addEventListener("submit", async e => {
+      e.preventDefault();
+
+      const password = $("#newPassword").value;
+      const confirmation = $("#confirmNewPassword").value;
+
+      if (password.length < 8) {
+        $("#resetPasswordMessage").textContent = "A senha precisa ter pelo menos 8 caracteres.";
+        return;
+      }
+
+      if (password !== confirmation) {
+        $("#resetPasswordMessage").textContent = "As senhas não coincidem.";
+        return;
+      }
+
+      const saveBtn = $("#saveNewPasswordBtn");
+      saveBtn.disabled = true;
+      $("#resetPasswordMessage").textContent = "Salvando senha...";
+
+      try {
+        const { error } = await supabaseClient.auth.updateUser({ password });
+
+        if (error) {
+          console.error(error);
+          $("#resetPasswordMessage").textContent = "Não foi possível salvar a nova senha.";
+          return;
+        }
+
+        await loadCurrentProfile();
+        updateAuthUI();
+
+        $("#resetPasswordMessage").textContent =
+          "Senha definida. Você já está conectado nesta conta.";
+
+        setTimeout(() => {
+          resetPasswordModal.classList.remove("open");
+          $("#resetPasswordForm").reset();
+        }, 900);
+      } finally {
+        saveBtn.disabled = false;
       }
     });
 
@@ -2425,13 +2600,21 @@
       }
     });
 
-    supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
       currentUser = session?.user || null;
       await loadCurrentProfile();
       updateAuthUI();
       await loadActivities();
 
-      if (currentUser) authModal.classList.remove("open");
+      if (event === "PASSWORD_RECOVERY") {
+        authModal.classList.remove("open");
+        resetPasswordModal.classList.add("open");
+        $("#resetPasswordMessage").textContent =
+          "Defina uma nova senha para continuar usando esta conta.";
+      } else if (currentUser) {
+        authModal.classList.remove("open");
+      }
+
       if (!isOwner()) ownerUsersModal.classList.remove("open");
     });
 
