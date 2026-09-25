@@ -138,6 +138,7 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
+      transform: translateY(-3px);
     }
 
     .user-menu {
@@ -1390,6 +1391,8 @@
     }
     .modal-backdrop.open { display: flex; }
 
+    .modal.modal-sm { width: min(440px, 100%); }
+
     .modal {
       width: min(560px, 100%);
       background: #2A2A2A;
@@ -1586,6 +1589,130 @@
     }
 
     /* Otimização Mobile */
+    .subject-header-block {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      margin-bottom: 6px;
+    }
+
+    .subject-prof-tag {
+      display: block;
+      font-size: .73rem;
+      color: var(--muted-dark);
+      line-height: 1.3;
+    }
+
+    .fab-share {
+      position: fixed;
+      right: 28px;
+      bottom: 28px;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      z-index: 900;
+      display: grid;
+      place-items: center;
+      color: var(--parchment);
+      background: linear-gradient(135deg, #444 0%, #2D2D2D 55%, #1F1F1F 100%);
+      border: 1px solid rgba(255,255,255,.15);
+      box-shadow: 0 10px 28px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.18);
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
+    }
+
+    .fab-share:hover {
+      transform: translateY(-2px) scale(1.06);
+      background: linear-gradient(135deg, #505050 0%, #363636 55%, #262626 100%);
+      border-color: rgba(255,255,255,.28);
+    }
+
+    .fab-share:active {
+      transform: scale(.95);
+    }
+
+    .share-filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+
+    .share-filter-label {
+      width: 100%;
+      margin-bottom: 1px;
+      color: var(--muted-dark);
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .share-filter-btn {
+      min-height: 36px;
+      padding: 7px 11px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 650;
+      transition: background .12s ease, color .12s ease, border-color .12s ease;
+    }
+
+    .share-filter-btn:hover {
+      background: var(--panel-raised);
+      color: var(--parchment);
+    }
+
+    .share-filter-btn.active {
+      background: var(--parchment);
+      border-color: var(--parchment);
+      color: #111;
+    }
+
+    .share-stats-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      align-self: flex-start;
+      padding: 4px 10px;
+      margin: 2px 0 10px;
+      border-radius: 6px;
+      background: var(--panel-raised);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: .75rem;
+    }
+
+    .share-preview-box {
+      width: 100%;
+      max-height: 310px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      user-select: text;
+      padding: 14px;
+      border-radius: 8px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      color: var(--parchment);
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      line-height: 1.55;
+    }
+
+    .share-range-note {
+      margin: -2px 0 12px;
+      color: var(--muted-dark);
+      font-size: .72rem;
+      line-height: 1.4;
+    }
+
+    .modal-backdrop.modal-backdrop-mid { z-index: 1400; }
+    .modal-backdrop.modal-backdrop-share { z-index: 1500; }
+    .modal-backdrop.modal-backdrop-top { z-index: 1700; }
+
     @media (max-width: 820px) {
       body {
         padding: 16px 12px 48px;
@@ -1800,6 +1927,13 @@
 
       .actions .btn svg {
         flex-shrink: 0;
+      }
+
+      .fab-share {
+        right: 18px;
+        bottom: calc(18px + env(safe-area-inset-bottom));
+        width: 52px;
+        height: 52px;
       }
 
       .kpi-grid {
@@ -2376,7 +2510,7 @@
           <circle cx="11" cy="11" r="8"/>
           <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        <input type="text" id="searchInput" class="search-input" placeholder="Pesquisar por matéria, título ou palavra-chave..." />
+        <input type="text" id="searchInput" class="search-input" placeholder="Pesquisar por matéria, professor, título ou palavra-chave..." />
       </div>
 
       <!-- Submenu Filtro de Disciplinas -->
@@ -2447,6 +2581,14 @@
     </section>
   </div>
 
+  <button class="fab-share" id="fabShareBtn" type="button" title="Compartilhar atividades" aria-label="Compartilhar atividades">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+      <polyline points="16 6 12 2 8 6"/>
+      <line x1="12" y1="2" x2="12" y2="15"/>
+    </svg>
+  </button>
+
   <!-- Modal Adicionar Atividade -->
   <div class="modal-backdrop" id="addModal">
     <div class="modal">
@@ -2468,17 +2610,7 @@
           </div>
 
           <div class="field full">
-            <div class="field-label-row">
-              <label>Disciplina</label>
-              <button type="button" class="btn-text-action" id="btnQuickAddSubject">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <line x1="12" y1="5" x2="12" y2="19"/>
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                Nova Disciplina
-              </button>
-            </div>
-
+            <label>Disciplina</label>
             <div class="custom-select-container" id="actSubjectDropdown">
               <button type="button" class="custom-select-trigger" id="actSubjectTrigger">
                 <span class="trigger-text placeholder" id="actSubjectLabel">Selecione uma disciplina...</span>
@@ -2625,20 +2757,29 @@
       </div>
 
       <form id="newSubjectForm">
-        <div class="field">
-          <label for="subName">Nome da Disciplina</label>
-          <input id="subName" type="text" required maxlength="100" placeholder="Ex.: Banco de Dados" />
-        </div>
-
-        <div class="field-grid" style="margin-top:12px;">
-          <div class="field">
-            <label for="subPeriod">Período</label>
-            <input id="subPeriod" type="text" maxlength="60" placeholder="Ex.: 7º semestre" />
+        <div class="field-grid">
+          <div class="field full">
+            <label for="subName">Nome da Disciplina</label>
+            <input id="subName" type="text" required maxlength="100" placeholder="Ex.: Engenharia de Software" autocomplete="off" />
           </div>
 
-          <div class="field">
-            <label for="subProf">Professor(a)</label>
-            <input id="subProf" type="text" maxlength="100" placeholder="Ex.: Prof. Fábio" />
+          <div class="field full">
+            <label for="subPeriod">Período / Semestre</label>
+            <input id="subPeriod" type="text" required maxlength="60" placeholder="Ex.: 7º Período / 2026.2" autocomplete="off" />
+          </div>
+
+          <div class="field full">
+            <label>Professor Responsável</label>
+            <div class="custom-select-container" id="subProfDropdown">
+              <button type="button" class="custom-select-trigger" id="subProfTrigger">
+                <span class="trigger-text placeholder" id="subProfLabel">Selecione um professor...</span>
+                <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div class="custom-select-menu" id="subProfMenu"></div>
+              <input type="hidden" id="subProfId" required />
+            </div>
           </div>
         </div>
 
@@ -2647,6 +2788,75 @@
           <button type="submit" class="btn btn-primary" id="saveSubjectBtn">Salvar Disciplina</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal: cadastrar professor -->
+  <div class="modal-backdrop modal-backdrop-top" id="professorModal">
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <h3>Cadastrar Professor</h3>
+        <button class="icon-close" id="closeProfessorModal" type="button" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <form id="newProfessorForm">
+        <div class="field">
+          <label for="profName">Nome do Professor</label>
+          <input id="profName" type="text" required maxlength="100" placeholder="Ex.: Marcos Silveira" autocomplete="off" />
+        </div>
+
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" id="cancelProfessorModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="saveProfessorBtn">Salvar Professor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: compartilhar atividades -->
+  <div class="modal-backdrop modal-backdrop-share" id="shareModal">
+    <div class="modal" style="max-width: 620px;">
+      <div class="modal-head">
+        <div>
+          <h3>Compartilhar Atividades</h3>
+          <p style="font-size:.78rem;color:var(--muted);margin-top:3px;">Monte o resumo antes de copiar, baixar ou enviar.</p>
+        </div>
+        <button class="icon-close" id="closeShareModal" type="button" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="share-filter-group">
+        <div class="share-filter-label">Período</div>
+        <button type="button" class="share-filter-btn active" data-share-range="14">Últimas 2 semanas</button>
+        <button type="button" class="share-filter-btn" data-share-range="60">Últimos 2 meses</button>
+      </div>
+
+      <div class="share-filter-group">
+        <div class="share-filter-label">Estado</div>
+        <button type="button" class="share-filter-btn active" data-share-status="pending">Só pendentes</button>
+        <button type="button" class="share-filter-btn" data-share-status="all">Todas, inclusive feitas</button>
+      </div>
+
+      <p class="share-range-note" id="shareRangeNote"></p>
+      <div class="share-stats-badge" id="shareCountLabel">0 atividades</div>
+      <div class="share-preview-box" id="shareSummaryText"></div>
+
+      <div class="modal-foot" style="flex-wrap:wrap;justify-content:space-between;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="btn btn-secondary" id="downloadTxtBtn">Baixar .txt</button>
+          <button type="button" class="btn btn-secondary" id="shareWhatsappBtn">WhatsApp</button>
+        </div>
+        <button type="button" class="btn btn-primary" id="copySummaryBtn">Copiar Resumo</button>
+      </div>
     </div>
   </div>
 
@@ -2760,7 +2970,12 @@
     let currentUser = null;
     let currentProfile = null;
     let currentUserRole = null;
+    let professors = [];
     let subjects = [];
+    let completionRealtimeChannel = null;
+    let shareRangeDays = 14;
+    let shareStatusFilter = "pending";
+    let currentSummaryRawText = "";
     let activeSection = "activities";
     let contentsState = {
       path: "",
@@ -2808,6 +3023,35 @@
       }
 
       renderList();
+    }
+
+    async function subscribeToCompletionRealtime() {
+      if (completionRealtimeChannel) {
+        await supabaseClient.removeChannel(completionRealtimeChannel);
+        completionRealtimeChannel = null;
+      }
+
+      if (!currentUser) return;
+
+      completionRealtimeChannel = supabaseClient
+        .channel(`activity-completions-${currentUser.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "activity_completions",
+            filter: `user_id=eq.${currentUser.id}`
+          },
+          async () => {
+            await loadActivities();
+
+            if (shareModal?.classList.contains("open")) {
+              generateAndDisplaySummary();
+            }
+          }
+        )
+        .subscribe();
     }
 
     async function loadCurrentProfile() {
@@ -3199,6 +3443,7 @@
 
       $("#activitiesView").hidden = activeSection !== "activities";
       $("#contentsView").hidden = activeSection !== "contents";
+      $("#fabShareBtn").hidden = activeSection !== "activities";
 
       $$("[data-section]").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.section === activeSection);
@@ -3316,10 +3561,44 @@
       ) || null;
     }
 
+    async function loadProfessors() {
+      const { data, error } = await supabaseClient
+        .from("professors")
+        .select("id,name,created_by")
+        .order("name", { ascending: true });
+
+      if (error) {
+        console.error("Falha ao carregar professores:", error);
+        professors = [];
+      } else {
+        professors = data || [];
+      }
+
+      renderSubjectProfessorMenu();
+    }
+
+    function getSubjectProfessor(subject) {
+      if (!subject) return null;
+
+      const linked = subject.professor_id
+        ? professors.find(professor => professor.id === subject.professor_id)
+        : null;
+
+      if (linked) return linked;
+
+      const legacyName = String(subject.professor || "").trim();
+      if (!legacyName || legacyName.toLowerCase() === "não informado") return null;
+
+      return {
+        id: null,
+        name: legacyName
+      };
+    }
+
     async function loadSubjects() {
       const { data, error } = await supabaseClient
         .from("subjects")
-        .select("id,name,period,professor,created_by")
+        .select("id,name,period,professor,professor_id,created_by")
         .order("name", { ascending: true });
 
       if (error) {
@@ -3352,7 +3631,7 @@
               ${subject ? `
                 <span class="discipline-subinfo">
                   <span class="discipline-period-badge">${escapeHtml(subject.period || "Geral")}</span>
-                  <span>${escapeHtml(subject.professor || "Não informado")}</span>
+                  <span>${escapeHtml(getSubjectProfessor(subject)?.name || "Professor não atribuído")}</span>
                 </span>
               ` : ""}
             </div>
@@ -3417,7 +3696,7 @@
               <span class="discipline-name">${escapeHtml(name)}</span>
               <span class="discipline-subinfo">
                 <span class="discipline-period-badge">${escapeHtml(subject?.period || "Geral")}</span>
-                <span>${escapeHtml(subject?.professor || "Não informado")}</span>
+                <span>${escapeHtml(getSubjectProfessor(subject)?.name || "Professor não atribuído")}</span>
               </span>
             </div>
 
@@ -3465,9 +3744,159 @@
       });
     }
 
+    const subProfTrigger = $("#subProfTrigger");
+    const subProfMenu = $("#subProfMenu");
+    const subProfLabel = $("#subProfLabel");
+    const subProfIdInput = $("#subProfId");
+
+    function setSubjectProfessor(professorId = "") {
+      subProfIdInput.value = professorId;
+      const professor = professors.find(item => item.id === professorId);
+
+      subProfLabel.textContent = professor?.name || "Selecione um professor...";
+      subProfLabel.classList.toggle("placeholder", !professor);
+
+      subProfMenu.querySelectorAll("[data-professor-id]").forEach(option => {
+        option.classList.toggle("selected", option.dataset.professorId === professorId);
+      });
+    }
+
+    function renderSubjectProfessorMenu() {
+      if (!subProfMenu) return;
+
+      let html = `
+        <div class="custom-select-option menu-add-shortcut" data-new-professor>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Cadastrar novo professor...
+        </div>
+      `;
+
+      if (!professors.length) {
+        html += `
+          <div style="padding:12px;color:var(--muted-dark);font-size:.78rem;">
+            Nenhum professor cadastrado.
+          </div>
+        `;
+      }
+
+      professors.forEach(professor => {
+        const selected = subProfIdInput.value === professor.id;
+
+        html += `
+          <div class="custom-select-option ${selected ? "selected" : ""}" data-professor-id="${professor.id}">
+            <span class="discipline-name">${escapeHtml(professor.name)}</span>
+
+            ${isStaff() ? `
+              <button
+                type="button"
+                class="discipline-delete-btn"
+                data-delete-professor="${professor.id}"
+                data-delete-professor-name="${escapeHtml(professor.name)}"
+                title="Excluir professor"
+                aria-label="Excluir ${escapeHtml(professor.name)}"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+              </button>
+            ` : ""}
+          </div>
+        `;
+      });
+
+      subProfMenu.innerHTML = html;
+
+      subProfMenu.querySelector("[data-new-professor]")?.addEventListener("click", event => {
+        event.stopPropagation();
+        closeAllCustomSelects();
+        openProfessorModal();
+      });
+
+      subProfMenu.querySelectorAll("[data-professor-id]").forEach(option => {
+        option.addEventListener("click", event => {
+          if (event.target.closest("[data-delete-professor]")) return;
+          setSubjectProfessor(option.dataset.professorId || "");
+          closeAllCustomSelects();
+        });
+      });
+
+      subProfMenu.querySelectorAll("[data-delete-professor]").forEach(button => {
+        button.addEventListener("click", async event => {
+          event.preventDefault();
+          event.stopPropagation();
+          await deleteProfessor(button.dataset.deleteProfessor, button.dataset.deleteProfessorName);
+        });
+      });
+    }
+
+    function openProfessorModal() {
+      if (!requireLogin() || !isStaff()) return;
+      $("#newProfessorForm").reset();
+      $("#professorModal").classList.add("open");
+      setTimeout(() => $("#profName").focus(), 80);
+    }
+
+    async function deleteProfessor(professorId, professorName) {
+      if (!isStaff()) return;
+
+      const confirmed = window.confirm(
+        `Excluir o professor "${professorName}"? As disciplinas vinculadas ficarão sem professor.`
+      );
+      if (!confirmed) return;
+
+      const { error: unlinkError } = await supabaseClient
+        .from("subjects")
+        .update({
+          professor_id: null,
+          professor: "Não informado"
+        })
+        .eq("professor_id", professorId);
+
+      if (unlinkError) {
+        console.error(unlinkError);
+        alert("Não foi possível desvincular esse professor das disciplinas.");
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from("professors")
+        .delete()
+        .eq("id", professorId);
+
+      if (error) {
+        console.error(error);
+        alert("Não foi possível excluir o professor.");
+        return;
+      }
+
+      if (subProfIdInput.value === professorId) setSubjectProfessor("");
+
+      await loadProfessors();
+      await loadSubjects();
+      renderList();
+    }
+
+    subProfTrigger.addEventListener("click", event => {
+      event.stopPropagation();
+      const isOpen = subProfMenu.classList.contains("open");
+      closeAllCustomSelects();
+
+      if (!isOpen) {
+        renderSubjectProfessorMenu();
+        subProfMenu.classList.add("open");
+        subProfTrigger.classList.add("active");
+      }
+    });
+
     function openSubjectModal() {
       if (!requireLogin() || !isStaff()) return;
       $("#newSubjectForm").reset();
+      setSubjectProfessor("");
+      renderSubjectProfessorMenu();
       $("#subjectModal").classList.add("open");
       setTimeout(() => $("#subName").focus(), 80);
     }
@@ -3521,8 +3950,6 @@
         actSubjectTrigger.classList.add("active");
       }
     });
-
-    $("#btnQuickAddSubject").addEventListener("click", openSubjectModal);
 
     $("#spinUp").addEventListener("click", () => {
       const input = $("#actPoints");
@@ -3708,7 +4135,9 @@
         if (selectedSubject && a.subject !== selectedSubject) return false;
 
         if (search) {
-          const hay = `${a.title} ${a.subject} ${a.modality || ""} ${a.description || ""}`.toLowerCase();
+          const subjectDetails = findSubjectByName(a.subject);
+          const professorName = getSubjectProfessor(subjectDetails)?.name || "";
+          const hay = `${a.title} ${a.subject} ${professorName} ${a.modality || ""} ${a.description || ""}`.toLowerCase();
           if (!hay.includes(search)) return false;
         }
         return true;
@@ -3742,12 +4171,21 @@
           isExpired ? "expired" : ""
         ].filter(Boolean).join(" ");
 
+        const subjectDetails = findSubjectByName(a.subject);
+        const professorDetails = getSubjectProfessor(subjectDetails);
+        const professorPeriodText = professorDetails
+          ? `${professorDetails.name}${subjectDetails?.period ? ` (${subjectDetails.period})` : ""}`
+          : (subjectDetails?.period || "");
+
         return `
           <article class="${cardClass}">
             <div>
               <div class="card-top">
                 <div>
-                  <div class="subject-tag">${escapeHtml(a.subject)}</div>
+                  <div class="subject-header-block">
+                    <span class="subject-tag">${escapeHtml(a.subject)}</span>
+                    ${professorPeriodText ? `<span class="subject-prof-tag">${escapeHtml(professorPeriodText)}</span>` : ""}
+                  </div>
                   <h4 class="card-title">${escapeHtml(a.title)}</h4>
                 </div>
                 ${a.points !== null && a.points !== "" && a.points !== undefined
@@ -3813,18 +4251,10 @@
           const id = btn.dataset.check;
           const isDone = doneIds.has(id);
 
-          const result = isDone
-            ? await supabaseClient
-                .from("activity_completions")
-                .delete()
-                .eq("user_id", currentUser.id)
-                .eq("activity_id", id)
-            : await supabaseClient
-                .from("activity_completions")
-                .insert({
-                  user_id: currentUser.id,
-                  activity_id: id
-                });
+          const result = await supabaseClient.rpc("set_activity_completion", {
+            p_activity_id: id,
+            p_completed: !isDone
+          });
 
           if (result.error) {
             console.error(result.error);
@@ -3859,6 +4289,8 @@
 
     const addModal = $("#addModal");
     const subjectModal = $("#subjectModal");
+    const professorModal = $("#professorModal");
+    const shareModal = $("#shareModal");
     const authModal = $("#authModal");
     const resetPasswordModal = $("#resetPasswordModal");
     const ownerUsersModal = $("#ownerUsersModal");
@@ -4077,17 +4509,67 @@
 
     $("#closeSubjectModal").addEventListener("click", () => subjectModal.classList.remove("open"));
     $("#cancelSubjectModal").addEventListener("click", () => subjectModal.classList.remove("open"));
+    $("#closeProfessorModal").addEventListener("click", () => professorModal.classList.remove("open"));
+    $("#cancelProfessorModal").addEventListener("click", () => professorModal.classList.remove("open"));
+
+    $("#newProfessorForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!requireLogin() || !isStaff()) return;
+
+      const name = $("#profName").value.trim();
+      const saveBtn = $("#saveProfessorBtn");
+      if (!name) return;
+
+      saveBtn.disabled = true;
+
+      try {
+        const { data, error } = await supabaseClient
+          .from("professors")
+          .insert({
+            name,
+            created_by: currentUser.id
+          })
+          .select("id,name,created_by")
+          .single();
+
+        if (error) {
+          console.error(error);
+          alert(error.code === "23505"
+            ? "Esse professor já está cadastrado."
+            : "Não foi possível cadastrar o professor.");
+          return;
+        }
+
+        professors.push(data);
+        professors.sort((a, b) =>
+          a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" })
+        );
+
+        renderSubjectProfessorMenu();
+        setSubjectProfessor(data.id);
+        professorModal.classList.remove("open");
+        $("#newProfessorForm").reset();
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
 
     $("#newSubjectForm").addEventListener("submit", async event => {
       event.preventDefault();
       if (!requireLogin() || !isStaff()) return;
 
       const name = $("#subName").value.trim();
-      const period = $("#subPeriod").value.trim() || "Geral";
-      const professor = $("#subProf").value.trim() || "Não informado";
+      const period = $("#subPeriod").value.trim();
+      const professorId = $("#subProfId").value;
+      const professor = professors.find(item => item.id === professorId);
       const saveBtn = $("#saveSubjectBtn");
 
-      if (!name) return;
+      if (!name || !period) return;
+
+      if (!professorId || !professor) {
+        subProfTrigger.focus();
+        return;
+      }
 
       saveBtn.disabled = true;
 
@@ -4097,10 +4579,11 @@
           .insert({
             name,
             period,
-            professor,
+            professor_id: professorId,
+            professor: professor.name,
             created_by: currentUser.id
           })
-          .select("id,name,period,professor,created_by")
+          .select("id,name,period,professor,professor_id,created_by")
           .single();
 
         if (error) {
@@ -4123,9 +4606,164 @@
 
         subjectModal.classList.remove("open");
         $("#newSubjectForm").reset();
+        setSubjectProfessor("");
       } finally {
         saveBtn.disabled = false;
       }
+    });
+
+    function getShareActivities() {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - shareRangeDays);
+      cutoff.setHours(0, 0, 0, 0);
+
+      return activities
+        .filter(activity => {
+          const due = new Date(activity.due);
+          if (Number.isNaN(due.getTime()) || due < cutoff) return false;
+
+          if (shareStatusFilter === "pending" && doneIds.has(activity.id)) {
+            return false;
+          }
+
+          return true;
+        })
+        .sort((a, b) => new Date(a.due) - new Date(b.due));
+    }
+
+    function generateAndDisplaySummary() {
+      const list = getShareActivities();
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - shareRangeDays);
+      cutoff.setHours(0, 0, 0, 0);
+
+      const rangeLabel = shareRangeDays === 14 ? "Últimas 2 semanas" : "Últimos 2 meses";
+      const statusLabel = shareStatusFilter === "pending" ? "só pendentes" : "todas, inclusive feitas";
+
+      $("#shareRangeNote").textContent =
+        `${rangeLabel}: inclui atividades com prazo desde ${cutoff.toLocaleDateString("pt-BR")} e os próximos prazos. Modalidades individual, dupla e grupo entram normalmente.`;
+
+      $("#shareCountLabel").textContent =
+        `${list.length} atividade${list.length === 1 ? "" : "s"} no resumo`;
+
+      const header =
+        `ATIVIDADES - MURAL ACADÊMICO\n` +
+        `Filtro: ${rangeLabel} | ${statusLabel}\n` +
+        `Atualizado em: ${new Date().toLocaleString("pt-BR")}\n` +
+        `Total: ${list.length}\n`;
+
+      if (!list.length) {
+        currentSummaryRawText = header + "\nNenhuma atividade encontrada com esses filtros.";
+        $("#shareSummaryText").textContent = currentSummaryRawText;
+        return;
+      }
+
+      const blocks = list.map((activity, index) => {
+        const subject = findSubjectByName(activity.subject);
+        const professor = getSubjectProfessor(subject);
+        const state = doneIds.has(activity.id) ? "Eu já fiz" : "Pendente";
+        const dueInfo = getDueInfo(activity.due);
+
+        const lines = [
+          `${index + 1}. ${activity.title}`,
+          `Disciplina: ${activity.subject}`,
+          professor?.name ? `Professor: ${professor.name}` : null,
+          `Modalidade: ${activity.modality || "Individual"}`,
+          `Prazo: ${formatDate(activity.due)}`,
+          `Estado: ${state}`,
+          dueInfo.status === "expired" && state === "Pendente" ? "Prazo: expirado" : null
+        ].filter(Boolean);
+
+        return lines.join("\n");
+      });
+
+      currentSummaryRawText = header + "\n" + blocks.join("\n\n");
+      $("#shareSummaryText").textContent = currentSummaryRawText;
+    }
+
+    function copyTextToClipboard(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+      }
+
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand("copy");
+      area.remove();
+      return Promise.resolve();
+    }
+
+    function openShareModal() {
+      generateAndDisplaySummary();
+      shareModal.classList.add("open");
+    }
+
+    $("#fabShareBtn").addEventListener("click", openShareModal);
+    $("#closeShareModal").addEventListener("click", () => shareModal.classList.remove("open"));
+
+    $$("[data-share-range]").forEach(button => {
+      button.addEventListener("click", () => {
+        shareRangeDays = Number(button.dataset.shareRange) || 14;
+        $$("[data-share-range]").forEach(item => item.classList.remove("active"));
+        button.classList.add("active");
+        generateAndDisplaySummary();
+      });
+    });
+
+    $$("[data-share-status]").forEach(button => {
+      button.addEventListener("click", () => {
+        shareStatusFilter = button.dataset.shareStatus || "pending";
+        $$("[data-share-status]").forEach(item => item.classList.remove("active"));
+        button.classList.add("active");
+        generateAndDisplaySummary();
+      });
+    });
+
+    $("#copySummaryBtn").addEventListener("click", async () => {
+      generateAndDisplaySummary();
+      const button = $("#copySummaryBtn");
+      const original = button.textContent;
+
+      try {
+        await copyTextToClipboard(currentSummaryRawText);
+        button.textContent = "Copiado!";
+      } catch (error) {
+        console.error(error);
+        button.textContent = "Falha ao copiar";
+      }
+
+      setTimeout(() => {
+        button.textContent = original;
+      }, 1600);
+    });
+
+    $("#downloadTxtBtn").addEventListener("click", () => {
+      generateAndDisplaySummary();
+
+      const blob = new Blob([currentSummaryRawText], {
+        type: "text/plain;charset=utf-8"
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = `atividades_${shareRangeDays}d_${shareStatusFilter}_${new Date().toISOString().slice(0, 10)}.txt`;
+      link.click();
+
+      URL.revokeObjectURL(url);
+    });
+
+    $("#shareWhatsappBtn").addEventListener("click", () => {
+      generateAndDisplaySummary();
+      window.open(
+        `https://api.whatsapp.com/send?text=${encodeURIComponent(currentSummaryRawText)}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
     });
 
     $("#authBtn").addEventListener("click", () => {
@@ -4390,6 +5028,8 @@
       currentUser = session?.user || null;
       await loadCurrentProfile();
       updateAuthUI();
+      await subscribeToCompletionRealtime();
+      await loadProfessors();
       await loadSubjects();
       await loadActivities();
 
@@ -4489,6 +5129,8 @@
       if (e.key === "Escape") {
         addModal.classList.remove("open");
         subjectModal.classList.remove("open");
+        professorModal.classList.remove("open");
+        shareModal.classList.remove("open");
         authModal.classList.remove("open");
         ownerUsersModal.classList.remove("open");
         closeUserMenu();
@@ -4510,6 +5152,8 @@
       await loadCurrentProfile();
       updateAuthUI();
       renderCalendar();
+      await subscribeToCompletionRealtime();
+      await loadProfessors();
       await loadSubjects();
       await loadActivities();
     }
