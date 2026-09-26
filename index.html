@@ -947,6 +947,18 @@
       background: #302323;
     }
 
+    .discipline-admin-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .discipline-edit-btn:hover {
+      color: var(--parchment);
+      background: #303030;
+    }
+
     .menu-add-shortcut {
       border-bottom: 1px solid var(--border);
       padding-bottom: 8px;
@@ -1084,6 +1096,11 @@
 
     .custom-calendar-popup.open {
       display: block;
+    }
+
+    .custom-calendar-popup.open-up {
+      top: auto;
+      bottom: calc(100% + 6px);
     }
 
     .cal-header {
@@ -1320,7 +1337,19 @@
       flex-direction: column;
       justify-content: space-between;
       gap: 14px;
+      height: 270px;
+      min-height: 270px;
+      overflow: hidden;
       transition: border-color 0.15s ease;
+    }
+
+    .activity-card > .card-main {
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .activity-card > .card-bottom {
+      flex-shrink: 0;
     }
 
     .activity-card:hover {
@@ -1377,6 +1406,50 @@
       font-size: 0.84rem;
       color: var(--muted);
       line-height: 1.5;
+      max-height: 92px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding-right: 5px;
+      scrollbar-width: thin;
+      scrollbar-color: #555 #252525;
+    }
+
+    .card-desc::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .card-desc::-webkit-scrollbar-track {
+      background: #252525;
+      border-radius: 999px;
+    }
+
+    .card-desc::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 999px;
+    }
+
+    .card-desc::-webkit-scrollbar-thumb:hover {
+      background: #707070;
+    }
+
+    .semester-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .semester-input-wrap input {
+      width: 100%;
+      padding-right: 36px;
+    }
+
+    .semester-suffix {
+      position: absolute;
+      right: 13px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: .86rem;
+      pointer-events: none;
     }
 
     .meta-tags {
@@ -2406,11 +2479,13 @@
 
       .custom-calendar-popup {
         position: fixed;
-        top: 50%;
+        top: calc(var(--visual-viewport-top, 0px) + 10px);
         left: 50%;
-        transform: translate(-50%, -50%);
-        width: 90vw;
+        transform: translateX(-50%);
+        width: min(90vw, 320px);
         max-width: 320px;
+        max-height: calc(var(--visual-viewport-height, 100dvh) - 20px);
+        overflow-y: auto;
       }
     }
 
@@ -2616,6 +2691,8 @@
         min-width: 0;
         padding: 14px;
         gap: 12px;
+        height: 280px;
+        min-height: 280px;
       }
 
       .card-top {
@@ -2742,14 +2819,14 @@
 
       .custom-calendar-popup {
         position: fixed;
-        top: auto;
+        top: calc(var(--visual-viewport-top, 0px) + 8px);
         left: max(10px, env(safe-area-inset-left));
         right: max(10px, env(safe-area-inset-right));
-        bottom: calc(10px + env(safe-area-inset-bottom));
+        bottom: auto;
         transform: none;
         width: auto;
         max-width: none;
-        max-height: 82dvh;
+        max-height: calc(var(--visual-viewport-height, 100dvh) - 16px);
         overflow-y: auto;
         border-radius: 14px;
         padding: 12px;
@@ -2981,6 +3058,8 @@
 
       .activity-card {
         padding: 12px;
+        height: 278px;
+        min-height: 278px;
       }
 
       .card-footer {
@@ -3665,7 +3744,7 @@
   <div class="modal-backdrop modal-backdrop-top" id="subjectModal">
     <div class="modal modal-sm">
       <div class="modal-head">
-        <h3>Cadastrar Disciplina</h3>
+        <h3 id="subjectModalTitle">Cadastrar Disciplina</h3>
         <button class="icon-close" id="closeSubjectModal" type="button" aria-label="Fechar">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"/>
@@ -3682,8 +3761,20 @@
           </div>
 
           <div class="field full">
-            <label for="subPeriod">Período / Semestre</label>
-            <input id="subPeriod" type="text" required maxlength="60" placeholder="Ex.: 7º Período / 2026.2" autocomplete="off" />
+            <label for="subPeriod">Semestre</label>
+            <div class="semester-input-wrap">
+              <input
+                id="subPeriod"
+                type="text"
+                required
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="2"
+                placeholder="Ex.: 7"
+                autocomplete="off"
+              />
+              <span class="semester-suffix">º</span>
+            </div>
           </div>
 
           <div class="field full">
@@ -3713,7 +3804,7 @@
   <div class="modal-backdrop modal-backdrop-top" id="professorModal">
     <div class="modal modal-sm">
       <div class="modal-head">
-        <h3>Cadastrar Professor</h3>
+        <h3 id="professorModalTitle">Cadastrar Professor</h3>
         <button class="icon-close" id="closeProfessorModal" type="button" aria-label="Fechar">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"/>
@@ -3904,6 +3995,8 @@
     let currentUserRole = null;
     let professors = [];
     let subjects = [];
+    let editingProfessorId = null;
+    let editingSubjectId = null;
     let topicItems = [];
     let topicTeams = [];
     let topicTeamMembers = [];
@@ -4554,7 +4647,23 @@
     function closeAllCustomSelects() {
       $$(".custom-select-menu").forEach(m => m.classList.remove("open"));       $$
 (".custom-select-trigger").forEach(t => t.classList.remove("active"));
-      $("#calendarPopup").classList.remove("open");
+      const calendar = $("#calendarPopup");
+      calendar.classList.remove("open", "open-up");
+      calendar.style.removeProperty("position");
+      calendar.style.removeProperty("top");
+      calendar.style.removeProperty("left");
+      calendar.style.removeProperty("right");
+      calendar.style.removeProperty("bottom");
+      calendar.style.removeProperty("transform");
+      calendar.style.removeProperty("width");
+      calendar.style.removeProperty("max-height");
+      calendar.style.removeProperty("overflow-y");
+
+      const calendarHost = $("#customDatePicker");
+      if (calendarHost && calendar.parentElement !== calendarHost) {
+        calendarHost.appendChild(calendar);
+      }
+
       $("#datePickerTrigger").classList.remove("active");
     }
 
@@ -5432,6 +5541,21 @@
                 </span>
               ` : ""}
             </div>
+
+            ${subject && isStaff() ? `
+              <button
+                type="button"
+                class="discipline-delete-btn discipline-edit-btn"
+                data-filter-edit-subject="${subject.id}"
+                title="Editar disciplina"
+                aria-label="Editar ${escapeHtml(subject.name)}"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 20h9"/>
+                  <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
+                </svg>
+              </button>
+            ` : ""}
           </div>
         `;
       });
@@ -5440,11 +5564,22 @@
       selectedSubjectLabel.textContent = selectedSubject || "Todas as disciplinas";
 
       subjectMenu.querySelectorAll("[data-val]").forEach(opt => {
-        opt.addEventListener("click", () => {
+        opt.addEventListener("click", event => {
+          if (event.target.closest("[data-filter-edit-subject]")) return;
+
           selectedSubject = opt.dataset.val || "";
           selectedSubjectLabel.textContent = selectedSubject || "Todas as disciplinas";
           closeAllCustomSelects();
           renderList();
+        });
+      });
+
+      subjectMenu.querySelectorAll("[data-filter-edit-subject]").forEach(button => {
+        button.addEventListener("click", event => {
+          event.preventDefault();
+          event.stopPropagation();
+          closeAllCustomSelects();
+          openSubjectModal(button.dataset.filterEditSubject);
         });
       });
     }
@@ -5498,19 +5633,33 @@
             </div>
 
             ${subject && isStaff() ? `
-              <button
-                type="button"
-                class="discipline-delete-btn"
-                data-delete-subject="${subject.id}"
-                data-delete-subject-name="${escapeHtml(subject.name)}"
-                title="Excluir disciplina"
-                aria-label="Excluir ${escapeHtml(subject.name)}"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                </svg>
-              </button>
+              <span class="discipline-admin-actions">
+                <button
+                  type="button"
+                  class="discipline-delete-btn discipline-edit-btn"
+                  data-edit-subject="${subject.id}"
+                  title="Editar disciplina"
+                  aria-label="Editar ${escapeHtml(subject.name)}"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="discipline-delete-btn"
+                  data-delete-subject="${subject.id}"
+                  data-delete-subject-name="${escapeHtml(subject.name)}"
+                  title="Excluir disciplina"
+                  aria-label="Excluir ${escapeHtml(subject.name)}"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
+              </span>
             ` : ""}
           </div>
         `;
@@ -5526,9 +5675,22 @@
 
       actSubjectMenu.querySelectorAll("[data-subject-name]").forEach(option => {
         option.addEventListener("click", event => {
-          if (event.target.closest("[data-delete-subject]")) return;
+          if (
+            event.target.closest("[data-delete-subject]") ||
+            event.target.closest("[data-edit-subject]")
+          ) return;
+
           setFormDiscipline(option.dataset.subjectName || "");
           closeAllCustomSelects();
+        });
+      });
+
+      actSubjectMenu.querySelectorAll("[data-edit-subject]").forEach(button => {
+        button.addEventListener("click", event => {
+          event.preventDefault();
+          event.stopPropagation();
+          closeAllCustomSelects();
+          openSubjectModal(button.dataset.editSubject);
         });
       });
 
@@ -5587,19 +5749,33 @@
             <span class="discipline-name">${escapeHtml(professor.name)}</span>
 
             ${isStaff() ? `
-              <button
-                type="button"
-                class="discipline-delete-btn"
-                data-delete-professor="${professor.id}"
-                data-delete-professor-name="${escapeHtml(professor.name)}"
-                title="Excluir professor"
-                aria-label="Excluir ${escapeHtml(professor.name)}"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                </svg>
-              </button>
+              <span class="discipline-admin-actions">
+                <button
+                  type="button"
+                  class="discipline-delete-btn discipline-edit-btn"
+                  data-edit-professor="${professor.id}"
+                  title="Editar professor"
+                  aria-label="Editar ${escapeHtml(professor.name)}"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="discipline-delete-btn"
+                  data-delete-professor="${professor.id}"
+                  data-delete-professor-name="${escapeHtml(professor.name)}"
+                  title="Excluir professor"
+                  aria-label="Excluir ${escapeHtml(professor.name)}"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
+              </span>
             ` : ""}
           </div>
         `;
@@ -5615,9 +5791,22 @@
 
       subProfMenu.querySelectorAll("[data-professor-id]").forEach(option => {
         option.addEventListener("click", event => {
-          if (event.target.closest("[data-delete-professor]")) return;
+          if (
+            event.target.closest("[data-delete-professor]") ||
+            event.target.closest("[data-edit-professor]")
+          ) return;
+
           setSubjectProfessor(option.dataset.professorId || "");
           closeAllCustomSelects();
+        });
+      });
+
+      subProfMenu.querySelectorAll("[data-edit-professor]").forEach(button => {
+        button.addEventListener("click", event => {
+          event.preventDefault();
+          event.stopPropagation();
+          closeAllCustomSelects();
+          openProfessorModal(button.dataset.editProfessor);
         });
       });
 
@@ -5630,9 +5819,27 @@
       });
     }
 
-    function openProfessorModal() {
+    function openProfessorModal(professorId = "") {
       if (!requireLogin() || !isStaff()) return;
+
+      editingProfessorId = professorId || null;
       $("#newProfessorForm").reset();
+
+      const professor = editingProfessorId
+        ? professors.find(item => item.id === editingProfessorId)
+        : null;
+
+      $("#professorModalTitle").textContent = professor
+        ? "Editar Professor"
+        : "Cadastrar Professor";
+      $("#saveProfessorBtn").textContent = professor
+        ? "Salvar alterações"
+        : "Salvar Professor";
+
+      if (professor) {
+        $("#profName").value = professor.name || "";
+      }
+
       $("#professorModal").classList.add("open");
       setTimeout(() => $("#profName").focus(), 80);
     }
@@ -5689,10 +5896,41 @@
       }
     });
 
-    function openSubjectModal() {
+    function getSemesterNumber(period = "") {
+      const match = String(period).match(/\d+/);
+      return match ? match[0] : "";
+    }
+
+    function formatSemester(period = "") {
+      const number = getSemesterNumber(period);
+      return number ? `${Number(number)}º` : "";
+    }
+
+    function openSubjectModal(subjectId = "") {
       if (!requireLogin() || !isStaff()) return;
+
+      editingSubjectId = subjectId || null;
       $("#newSubjectForm").reset();
-      setSubjectProfessor("");
+
+      const subject = editingSubjectId
+        ? subjects.find(item => item.id === editingSubjectId)
+        : null;
+
+      $("#subjectModalTitle").textContent = subject
+        ? "Editar Disciplina"
+        : "Cadastrar Disciplina";
+      $("#saveSubjectBtn").textContent = subject
+        ? "Salvar alterações"
+        : "Salvar Disciplina";
+
+      if (subject) {
+        $("#subName").value = subject.name || "";
+        $("#subPeriod").value = getSemesterNumber(subject.period);
+        setSubjectProfessor(subject.professor_id || "");
+      } else {
+        setSubjectProfessor("");
+      }
+
       renderSubjectProfessorMenu();
       $("#subjectModal").classList.add("open");
       setTimeout(() => $("#subName").focus(), 80);
@@ -6042,9 +6280,70 @@
           viewMonth = earliest.getMonth();
         }
 
+        if (mobileSheetMedia.matches && calendarPopup.parentElement !== document.body) {
+          document.body.appendChild(calendarPopup);
+        }
+
         calendarPopup.classList.add("open");
         datePickerTrigger.classList.add("active");
         renderCalendar();
+
+        requestAnimationFrame(() => {
+          calendarPopup.classList.remove("open-up");
+
+          const viewport = window.visualViewport;
+          const visualTop = viewport?.offsetTop || 0;
+          const visualLeft = viewport?.offsetLeft || 0;
+          const visualHeight = viewport?.height || window.innerHeight;
+          const visualWidth = viewport?.width || window.innerWidth;
+          const visualBottom = visualTop + visualHeight;
+          const visualRight = visualLeft + visualWidth;
+          const margin = mobileSheetMedia.matches ? 8 : 10;
+          const triggerRect = datePickerTrigger.getBoundingClientRect();
+          const initialRect = calendarPopup.getBoundingClientRect();
+          const availableHeight = Math.max(180, visualHeight - margin * 2);
+
+          let popupWidth = initialRect.width;
+          let top;
+          let left;
+
+          if (mobileSheetMedia.matches) {
+            popupWidth = Math.min(
+              window.innerWidth <= 640 ? visualWidth - margin * 2 : 320,
+              visualWidth - margin * 2
+            );
+            top = visualTop + margin;
+            left = visualLeft + Math.max(margin, (visualWidth - popupWidth) / 2);
+          } else {
+            popupWidth = Math.min(initialRect.width, visualWidth - margin * 2);
+            const popupHeight = Math.min(initialRect.height, availableHeight);
+
+            top = triggerRect.bottom + 6;
+            if (top + popupHeight > visualBottom - margin) {
+              top = triggerRect.top - popupHeight - 6;
+            }
+
+            top = Math.max(
+              visualTop + margin,
+              Math.min(top, visualBottom - popupHeight - margin)
+            );
+
+            left = Math.max(
+              visualLeft + margin,
+              Math.min(triggerRect.left, visualRight - popupWidth - margin)
+            );
+          }
+
+          calendarPopup.style.position = "fixed";
+          calendarPopup.style.top = `${Math.round(top)}px`;
+          calendarPopup.style.left = `${Math.round(left)}px`;
+          calendarPopup.style.right = "auto";
+          calendarPopup.style.bottom = "auto";
+          calendarPopup.style.transform = "none";
+          calendarPopup.style.width = `${Math.round(popupWidth)}px`;
+          calendarPopup.style.maxHeight = `${Math.round(availableHeight)}px`;
+          calendarPopup.style.overflowY = "auto";
+        });
       }
     });
 
@@ -6206,7 +6505,7 @@
 
         return `
           <article class="${cardClass}">
-            <div>
+            <div class="card-main">
               <div class="card-top">
                 <div>
                   <div class="subject-header-block">
@@ -6223,7 +6522,7 @@
               ${a.description ? `<p class="card-desc" style="margin-top: 8px;">${escapeHtml(a.description)}</p>` : ""}
             </div>
 
-            <div>
+            <div class="card-bottom">
               <div class="meta-tags">
                 <span class="tag">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -6971,6 +7270,10 @@
       }
     });
 
+    $("#subPeriod").addEventListener("input", event => {
+      event.target.value = event.target.value.replace(/\D/g, "").slice(0, 2);
+    });
+
     $("#closeSubjectModal").addEventListener("click", () => subjectModal.classList.remove("open"));
     $("#cancelSubjectModal").addEventListener("click", () => subjectModal.classList.remove("open"));
     $("#closeProfessorModal").addEventListener("click", () => professorModal.classList.remove("open"));
@@ -6982,37 +7285,53 @@
 
       const name = $("#profName").value.trim();
       const saveBtn = $("#saveProfessorBtn");
+      const isEditing = Boolean(editingProfessorId);
+      const previousSelectedProfessorId = subProfIdInput.value;
+
       if (!name) return;
 
       saveBtn.disabled = true;
 
       try {
-        const { data, error } = await supabaseClient
-          .from("professors")
-          .insert({
-            name,
-            created_by: currentUser.id
-          })
-          .select("id,name,created_by")
-          .single();
+        const query = supabaseClient.from("professors");
+        const result = isEditing
+          ? await query
+              .update({ name })
+              .eq("id", editingProfessorId)
+              .select("id,name,created_by")
+              .single()
+          : await query
+              .insert({
+                name,
+                created_by: currentUser.id
+              })
+              .select("id,name,created_by")
+              .single();
 
-        if (error) {
-          console.error(error);
-          alert(error.code === "23505"
+        if (result.error) {
+          console.error(result.error);
+          alert(result.error.code === "23505"
             ? "Esse professor já está cadastrado."
-            : "Não foi possível cadastrar o professor.");
+            : isEditing
+              ? "Não foi possível editar o professor."
+              : "Não foi possível cadastrar o professor.");
           return;
         }
 
-        professors.push(data);
-        professors.sort((a, b) =>
-          a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" })
-        );
+        await loadProfessors();
+        await loadSubjects();
+
+        if (!isEditing || previousSelectedProfessorId === result.data.id) {
+          setSubjectProfessor(result.data.id);
+        }
 
         renderSubjectProfessorMenu();
-        setSubjectProfessor(data.id);
+        renderActivitySubjectMenu();
+        renderList();
+
         professorModal.classList.remove("open");
         $("#newProfessorForm").reset();
+        editingProfessorId = null;
       } finally {
         saveBtn.disabled = false;
       }
@@ -7023,12 +7342,24 @@
       if (!requireLogin() || !isStaff()) return;
 
       const name = $("#subName").value.trim();
-      const period = $("#subPeriod").value.trim();
+      const semesterDigits = $("#subPeriod").value.replace(/\D/g, "");
+      const semesterNumber = Number(semesterDigits);
+      const period = formatSemester(semesterDigits);
       const professorId = $("#subProfId").value;
       const professor = professors.find(item => item.id === professorId);
       const saveBtn = $("#saveSubjectBtn");
+      const isEditing = Boolean(editingSubjectId);
+      const oldSubject = isEditing
+        ? subjects.find(item => item.id === editingSubjectId)
+        : null;
 
-      if (!name || !period) return;
+      if (!name) return;
+
+      if (!Number.isInteger(semesterNumber) || semesterNumber < 1 || semesterNumber > 99) {
+        alert("Informe um semestre entre 1 e 99.");
+        $("#subPeriod").focus();
+        return;
+      }
 
       if (!professorId || !professor) {
         subProfTrigger.focus();
@@ -7038,45 +7369,70 @@
       saveBtn.disabled = true;
 
       try {
-        const { data, error } = await supabaseClient
-          .from("subjects")
-          .insert({
-            name,
-            period,
-            professor_id: professorId,
-            professor: professor.name,
-            created_by: currentUser.id
-          })
-          .select("id,name,period,professor,professor_id,created_by")
-          .single();
+        const payload = {
+          name,
+          period,
+          professor_id: professorId,
+          professor: professor.name
+        };
 
-        if (error) {
-          console.error(error);
+        const query = supabaseClient.from("subjects");
+        const result = isEditing
+          ? await query
+              .update(payload)
+              .eq("id", editingSubjectId)
+              .select("id,name,period,professor,professor_id,created_by")
+              .single()
+          : await query
+              .insert({
+                ...payload,
+                created_by: currentUser.id
+              })
+              .select("id,name,period,professor,professor_id,created_by")
+              .single();
 
-          if (error.code === "23505") {
+        if (result.error) {
+          console.error(result.error);
+
+          if (result.error.code === "23505") {
             alert("Essa disciplina já está cadastrada.");
           } else {
-            alert("Não foi possível cadastrar a disciplina.");
+            alert(isEditing
+              ? "Não foi possível editar a disciplina."
+              : "Não foi possível cadastrar a disciplina.");
           }
           return;
         }
 
-        subjects.push(data);
-        subjects.sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }));
+        const oldName = oldSubject?.name || "";
+        await loadSubjects();
+
+        if (isEditing && oldName && oldName !== result.data.name) {
+          if (selectedSubject === oldName) selectedSubject = result.data.name;
+          if (actSubjectInput.value === oldName) setFormDiscipline(result.data.name);
+          if ($("#topicSubject").value === oldName) setTopicSubject(result.data.name);
+
+          await loadActivities();
+          await loadTopicBoardData();
+        }
 
         renderSubjectOptions();
         renderActivitySubjectMenu();
         renderTopicSubjectMenu();
 
-        if (topicModal.classList.contains("open")) {
-          setTopicSubject(data.name);
-        } else {
-          setFormDiscipline(data.name);
+        if (!isEditing) {
+          if (topicModal.classList.contains("open")) {
+            setTopicSubject(result.data.name);
+          } else {
+            setFormDiscipline(result.data.name);
+          }
         }
 
         subjectModal.classList.remove("open");
         $("#newSubjectForm").reset();
         setSubjectProfessor("");
+        editingSubjectId = null;
+        renderList();
       } finally {
         saveBtn.disabled = false;
       }
