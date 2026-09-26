@@ -2155,38 +2155,83 @@
     }
 
     .share-team-toggle {
+      position: relative;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 11px;
       width: 100%;
-      padding: 10px 11px;
+      padding: 11px 12px;
       margin-bottom: 11px;
-      border-radius: 8px;
+      border-radius: 9px;
       border: 1px solid var(--border);
       background: var(--input-bg);
       color: var(--muted);
       cursor: pointer;
       user-select: none;
-      transition: background .12s ease, border-color .12s ease, color .12s ease;
+      transition: background .15s ease, border-color .15s ease;
     }
 
     .share-team-toggle:hover {
       background: var(--panel-raised);
-      color: var(--parchment);
+      border-color: #505050;
     }
 
     .share-team-toggle input {
-      width: 17px;
-      height: 17px;
-      flex-shrink: 0;
-      accent-color: #F3F3F3;
-      cursor: pointer;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .share-team-check {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 5px;
+      border: 1px solid #555555;
+      background: #1C1C1C;
+      color: #111111;
+      transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .share-team-check svg {
+      width: 12px;
+      height: 12px;
+      opacity: 0;
+      transform: scale(.75);
+      transition: opacity .14s ease, transform .14s ease;
+    }
+
+    .share-team-check path {
+      stroke: currentColor;
+      stroke-width: 2.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .share-team-toggle input:checked + .share-team-check {
+      background: var(--parchment);
+      border-color: var(--parchment);
+      box-shadow: 0 0 0 3px rgba(243, 239, 232, .07);
+    }
+
+    .share-team-toggle input:checked + .share-team-check svg {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .share-team-toggle:has(input:focus-visible) {
+      outline: 2px solid rgba(243, 239, 232, .18);
+      outline-offset: 2px;
     }
 
     .share-team-toggle-copy {
       display: flex;
       flex-direction: column;
-      gap: 1px;
+      gap: 2px;
       min-width: 0;
     }
 
@@ -3711,6 +3756,11 @@
 
       <label class="share-team-toggle" for="shareTeamOnly">
         <input type="checkbox" id="shareTeamOnly" />
+        <span class="share-team-check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M5 12.5 9.2 16.7 19 7.5"/>
+          </svg>
+        </span>
         <span class="share-team-toggle-copy">
           <strong>Somente atividades em equipe</strong>
           <span>Inclui atividades em dupla e em grupo.</span>
