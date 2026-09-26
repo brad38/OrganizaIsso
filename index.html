@@ -2299,14 +2299,25 @@
       line-height: 1.3;
     }
 
-    .fab-share {
+    .fab-action-cluster {
       position: fixed;
       right: var(--fab-share-right, 28px);
       bottom: 28px;
+      z-index: 900;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .fab-quick-options {
+      display: none;
+    }
+
+    .fab-share {
       width: 54px;
       height: 54px;
       border-radius: 50%;
-      z-index: 900;
       display: grid;
       place-items: center;
       color: var(--parchment);
@@ -2324,6 +2335,61 @@
 
     .fab-share:active {
       transform: scale(.95);
+    }
+
+    .fab-mobile-plus-icon {
+      display: none;
+      transition: transform .25s cubic-bezier(.16,1,.3,1);
+    }
+
+    .fab-desktop-share-icon {
+      display: block;
+    }
+
+    .fab-quick-action {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 9px;
+      border: 0;
+      background: transparent;
+      color: var(--parchment);
+      padding: 0;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(14px) scale(.94);
+      pointer-events: none;
+      transition: opacity .2s cubic-bezier(.16,1,.3,1), transform .2s cubic-bezier(.16,1,.3,1);
+    }
+
+    .fab-quick-label {
+      min-width: 132px;
+      min-height: 36px;
+      padding: 8px 11px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #1C1C1C;
+      border: 1px solid var(--border);
+      color: var(--parchment);
+      font-size: .78rem;
+      font-weight: 650;
+      white-space: nowrap;
+      box-shadow: 0 7px 20px rgba(0,0,0,.42);
+    }
+
+    .fab-quick-icon {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--parchment);
+      box-shadow: 0 7px 20px rgba(0,0,0,.42);
     }
 
     .share-filter-group {
@@ -2734,7 +2800,11 @@
       }
 
       .brand p {
-        display: none;
+        display: block;
+        margin-top: 2px;
+        font-size: .72rem;
+        line-height: 1.25;
+        color: var(--muted);
       }
 
       .actions {
@@ -2776,11 +2846,57 @@
         flex-shrink: 0;
       }
 
-      .fab-share {
+      #openAddModal {
+        display: none !important;
+      }
+
+      .fab-action-cluster {
         right: var(--fab-share-right-mobile, 18px);
         bottom: calc(18px + env(safe-area-inset-bottom));
+        gap: 10px;
+      }
+
+      .fab-quick-options {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 9px;
+        pointer-events: none;
+      }
+
+      .fab-action-cluster.open .fab-quick-options {
+        pointer-events: auto;
+      }
+
+      .fab-action-cluster.open .fab-quick-action {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+      }
+
+      .fab-action-cluster.open .fab-quick-action:nth-child(2) {
+        transition-delay: .03s;
+      }
+
+      .fab-action-cluster.open .fab-quick-action:nth-child(1) {
+        transition-delay: .06s;
+      }
+
+      .fab-action-cluster.open .fab-mobile-plus-icon {
+        transform: rotate(135deg);
+      }
+
+      .fab-share {
         width: 52px;
         height: 52px;
+      }
+
+      .fab-mobile-plus-icon {
+        display: block;
+      }
+
+      .fab-desktop-share-icon {
+        display: none;
       }
 
       .kpi-grid {
@@ -3610,13 +3726,40 @@
     </section>
   </div>
 
-  <button class="fab-share" id="fabShareBtn" type="button" title="Compartilhar atividades" aria-label="Compartilhar atividades">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-      <polyline points="16 6 12 2 8 6"/>
-      <line x1="12" y1="2" x2="12" y2="15"/>
-    </svg>
-  </button>
+  <div class="fab-action-cluster" id="fabActionCluster">
+    <div class="fab-quick-options" id="fabQuickOptions">
+      <button type="button" class="fab-quick-action" id="fabQuickAddBtn">
+        <span class="fab-quick-label" id="fabQuickAddLabel">Nova atividade</span>
+        <span class="fab-quick-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </span>
+      </button>
+
+      <button type="button" class="fab-quick-action" id="fabQuickShareBtn">
+        <span class="fab-quick-label">Compartilhar</span>
+        <span class="fab-quick-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+            <polyline points="16 6 12 2 8 6"/>
+            <line x1="12" y1="2" x2="12" y2="15"/>
+          </svg>
+        </span>
+      </button>
+    </div>
+
+    <button class="fab-share" id="fabShareBtn" type="button" title="Ações rápidas" aria-label="Abrir ações rápidas" aria-expanded="false">
+      <svg class="fab-mobile-plus-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      <svg class="fab-desktop-share-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+        <polyline points="16 6 12 2 8 6"/>
+        <line x1="12" y1="2" x2="12" y2="15"/>
+      </svg>
+    </button>
+  </div>
 
   <!-- Modal Adicionar Atividade -->
   <div class="modal-backdrop" id="addModal">
@@ -4620,6 +4763,39 @@
       return currentUserRole === "owner";
     }
 
+    function closeFabActionMenu() {
+      const cluster = $("#fabActionCluster");
+      const main = $("#fabShareBtn");
+      if (!cluster || !main) return;
+
+      cluster.classList.remove("open");
+      main.setAttribute("aria-expanded", "false");
+    }
+
+    function syncFabActionMenu() {
+      const cluster = $("#fabActionCluster");
+      const quickAdd = $("#fabQuickAddBtn");
+      const quickShare = $("#fabQuickShareBtn");
+      const quickAddLabel = $("#fabQuickAddLabel");
+      if (!cluster || !quickAdd || !quickShare || !quickAddLabel) return;
+
+      const isMobileFab = window.innerWidth <= 640;
+      const canCreate = Boolean(currentUser && isStaff() && activeSection !== "contents");
+      const canShare = activeSection === "activities";
+
+      quickAdd.hidden = !canCreate;
+      quickShare.hidden = !canShare;
+      quickAddLabel.textContent = activeSection === "topics"
+        ? "Novo artigo / tema"
+        : "Nova atividade";
+
+      cluster.hidden = isMobileFab
+        ? (!canCreate && !canShare)
+        : !canShare;
+
+      if (!isMobileFab || cluster.hidden) closeFabActionMenu();
+    }
+
     function syncPrimaryAddButton() {
       const addBtn = $("#openAddModal");
       const label = $("#openAddModalLabel");
@@ -4633,6 +4809,8 @@
       label.textContent = activeSection === "topics"
         ? "Novo Artigo / Tema"
         : "Novo Registro";
+
+      syncFabActionMenu();
     }
 
     function updateAuthUI() {
@@ -5001,7 +5179,6 @@
       $("#activitiesView").hidden = activeSection !== "activities";
       $("#contentsView").hidden = activeSection !== "contents";
       $("#topicsView").hidden = activeSection !== "topics";
-      $("#fabShareBtn").hidden = activeSection !== "activities";
 
       $$("[data-section]").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.section === activeSection);
@@ -7462,6 +7639,7 @@
         $(".custom-select-menu.open") ||
         $("#calendarPopup.open") ||
         $("#userMenu.open") ||
+        $("#fabActionCluster.open") ||
         activeSection !== "activities"
       );
     }
@@ -7489,6 +7667,11 @@
 
       if ($("#userMenu.open")) {
         closeUserMenu();
+        return true;
+      }
+
+      if ($("#fabActionCluster.open")) {
+        closeFabActionMenu();
         return true;
       }
 
@@ -7550,6 +7733,7 @@
 
     updateVisualViewportVars();
     window.addEventListener("resize", updateVisualViewportVars);
+    window.addEventListener("resize", syncFabActionMenu);
 
     if (window.visualViewport) {
       window.visualViewport.addEventListener("resize", () => {
@@ -8381,7 +8565,37 @@
       shareModal.classList.add("open");
     }
 
-    $("#fabShareBtn").addEventListener("click", openShareModal);
+    $("#fabShareBtn").addEventListener("click", event => {
+      if (window.innerWidth <= 640) {
+        event.stopPropagation();
+        const cluster = $("#fabActionCluster");
+        const willOpen = !cluster.classList.contains("open");
+        cluster.classList.toggle("open", willOpen);
+        $("#fabShareBtn").setAttribute("aria-expanded", String(willOpen));
+        return;
+      }
+
+      openShareModal();
+    });
+
+    $("#fabQuickAddBtn").addEventListener("click", event => {
+      event.stopPropagation();
+      closeFabActionMenu();
+      $("#openAddModal").click();
+    });
+
+    $("#fabQuickShareBtn").addEventListener("click", event => {
+      event.stopPropagation();
+      closeFabActionMenu();
+      openShareModal();
+    });
+
+    document.addEventListener("click", event => {
+      const cluster = $("#fabActionCluster");
+      if (!cluster?.classList.contains("open")) return;
+      if (!cluster.contains(event.target)) closeFabActionMenu();
+    });
+
     $("#closeShareModal").addEventListener("click", () => shareModal.classList.remove("open"));
 
     $$("[data-share-range]").forEach(button => {
@@ -8889,6 +9103,7 @@
 
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") {
+        closeFabActionMenu();
         addModal.classList.remove("open");
         invitesModal.classList.remove("open");
         topicModal.classList.remove("open");
