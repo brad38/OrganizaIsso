@@ -1773,11 +1773,20 @@
       font-size: .7rem;
     }
 
-    .share-range-note {
-      margin: -2px 0 12px;
-      color: var(--muted-dark);
-      font-size: .72rem;
-      line-height: 1.4;
+    .share-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .share-actions .btn {
+      width: 100%;
+      min-width: 0;
+      min-height: 40px;
+      padding-inline: 8px;
+      white-space: nowrap;
+      font-size: .76rem;
     }
 
     .modal-backdrop.modal-backdrop-mid { z-index: 1400; }
@@ -2913,6 +2922,8 @@
 
       <div class="share-filter-group">
         <div class="share-filter-label">Período</div>
+        <button type="button" class="share-filter-btn" data-share-range="today">Hoje</button>
+        <button type="button" class="share-filter-btn" data-share-range="yesterday">Ontem</button>
         <button type="button" class="share-filter-btn active" data-share-range="14">Últimas 2 semanas</button>
         <button type="button" class="share-filter-btn" data-share-range="60">Últimos 2 meses</button>
       </div>
@@ -2920,7 +2931,7 @@
       <div class="share-filter-group">
         <div class="share-filter-label">Estado</div>
         <button type="button" class="share-filter-btn active" data-share-status="pending">Só pendentes</button>
-        <button type="button" class="share-filter-btn" data-share-status="all">Pendentes + feitas (2 sem.)</button>
+        <button type="button" class="share-filter-btn" data-share-status="all">Pendente + Feitas</button>
       </div>
 
       <label class="share-team-toggle" for="shareTeamOnly">
@@ -2931,16 +2942,13 @@
         </span>
       </label>
 
-      <p class="share-range-note" id="shareRangeNote"></p>
       <div class="share-stats-badge" id="shareCountLabel">0 atividades</div>
       <div class="share-preview-box" id="shareSummaryText"></div>
 
-      <div class="modal-foot" style="flex-wrap:wrap;justify-content:space-between;">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button type="button" class="btn btn-secondary" id="downloadTxtBtn">Baixar .txt</button>
-          <button type="button" class="btn btn-secondary" id="shareWhatsappBtn">WhatsApp</button>
-        </div>
-        <button type="button" class="btn btn-primary" id="copySummaryBtn">Copiar Resumo</button>
+      <div class="share-actions">
+        <button type="button" class="btn btn-primary" id="copySummaryBtn">Copiar</button>
+        <button type="button" class="btn btn-secondary" id="downloadTxtBtn">Baixar .txt</button>
+        <button type="button" class="btn btn-secondary" id="shareWhatsappBtn">Whatsapp</button>
       </div>
     </div>
   </div>
@@ -3060,7 +3068,7 @@
     let completionRealtimeChannel = null;
     let completionDates = new Map();
     let teamInfoByActivity = new Map();
-    let shareRangeDays = 14;
+    let shareRangeFilter = "14";
     let shareStatusFilter = "pending";
     let shareTeamOnly = false;
     let currentSummaryRawText = "";
@@ -5096,11 +5104,58 @@
       }
     });
 
-    function getShareActivities() {
-      const pendingCutoff = new Date();
-      pendingCutoff.setDate(pendingCutoff.getDate() - shareRangeDays);
-      pendingCutoff.setHours(0, 0, 0, 0);
+    function getShareRangeConfig() {
+      const now = new Date();
+      const todayStart = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        0, 0, 0, 0
+      );
 
+      if (shareRangeFilter === "today") {
+        const tomorrowStart = new Date(todayStart);
+        tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+
+        return {
+          label: "Hoje",
+          start: todayStart,
+          end: tomorrowStart
+        };
+      }
+
+      if (shareRangeFilter === "yesterday") {
+        const yesterdayStart = new Date(todayStart);
+        yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+
+        return {
+          label: "Ontem",
+          start: yesterdayStart,
+          end: todayStart
+        };
+      }
+
+      const days = shareRangeFilter === "60" ? 60 : 14;
+      const start = new Date(todayStart);
+      start.setDate(start.getDate() - days);
+
+      return {
+        label: days === 14 ? "Últimas 2 semanas" : "Últimos 2 meses",
+        start,
+        end: null
+      };
+    }
+
+    function isDueInSelectedShareRange(due) {
+      const range = getShareRangeConfig();
+
+      if (due < range.start) return false;
+      if (range.end && due >= range.end) return false;
+
+      return true;
+    }
+
+    function getShareActivities() {
       const completedCutoff = new Date();
       completedCutoff.setDate(completedCutoff.getDate() - 14);
       completedCutoff.setHours(0, 0, 0, 0);
@@ -5109,6 +5164,7 @@
         .filter(activity => {
           const due = new Date(activity.due);
           if (Number.isNaN(due.getTime())) return false;
+          if (!isDueInSelectedShareRange(due)) return false;
 
           const isDone = doneIds.has(activity.id);
           const modality = activity.modality || "Individual";
@@ -5118,34 +5174,33 @@
           }
 
           if (shareStatusFilter === "pending") {
-            return !isDone && due >= pendingCutoff;
+            return !isDone;
           }
 
           if (isDone) {
             const completedAtRaw = completionDates.get(activity.id);
             const completedAt = completedAtRaw ? new Date(completedAtRaw) : due;
-            return !Number.isNaN(completedAt.getTime()) && completedAt >= completedCutoff;
+
+            return (
+              !Number.isNaN(completedAt.getTime()) &&
+              completedAt >= completedCutoff
+            );
           }
 
-          return due >= pendingCutoff;
+          return true;
         })
         .sort((a, b) => new Date(a.due) - new Date(b.due));
     }
 
     function generateAndDisplaySummary() {
       const list = getShareActivities();
-      const cutoff = new Date();
-      cutoff.setDate(cutoff.getDate() - shareRangeDays);
-      cutoff.setHours(0, 0, 0, 0);
-
-      const rangeLabel = shareRangeDays === 14 ? "Últimas 2 semanas" : "Últimos 2 meses";
-      const statusLabel = shareStatusFilter === "pending" ? "só pendentes" : "pendentes + feitas recentes";
-      const teamLabel = shareTeamOnly ? "somente atividades em equipe" : "todas as modalidades";
-
-      $("#shareRangeNote").textContent =
-        shareStatusFilter === "pending"
-          ? `${rangeLabel}: considera as pendentes com prazo desde ${cutoff.toLocaleDateString("pt-BR")} e os próximos prazos. ${shareTeamOnly ? "Somente dupla e grupo." : "Individual, dupla e grupo."}`
-          : `${rangeLabel}: pendentes seguem o período escolhido; atividades já feitas aparecem somente se foram concluídas nas últimas 2 semanas. ${shareTeamOnly ? "Somente dupla e grupo." : "Individual, dupla e grupo."}`;
+      const rangeLabel = getShareRangeConfig().label;
+      const statusLabel = shareStatusFilter === "pending"
+        ? "Só pendentes"
+        : "Pendente + Feitas";
+      const teamLabel = shareTeamOnly
+        ? "somente atividades em equipe"
+        : "todas as modalidades";
 
       $("#shareCountLabel").textContent =
         `${list.length} atividade${list.length === 1 ? "" : "s"} no resumo`;
@@ -5223,7 +5278,7 @@
 
     $$("[data-share-range]").forEach(button => {
       button.addEventListener("click", () => {
-        shareRangeDays = Number(button.dataset.shareRange) || 14;
+        shareRangeFilter = button.dataset.shareRange || "14";
         $$("[data-share-range]").forEach(item => item.classList.remove("active"));
         button.classList.add("active");
         generateAndDisplaySummary();
@@ -5272,7 +5327,7 @@
       const link = document.createElement("a");
 
       link.href = url;
-      link.download = `atividades_${shareRangeDays}d_${shareStatusFilter}_${new Date().toISOString().slice(0, 10)}.txt`;
+      link.download = `atividades_${shareRangeFilter}_${shareStatusFilter}_${new Date().toISOString().slice(0, 10)}.txt`;
       link.click();
 
       URL.revokeObjectURL(url);
