@@ -4887,7 +4887,13 @@
           .eq("status", "accepted"),
         supabaseClient
           .from("user_directory")
-          .select("user_id,display_name")
+          .select("user_id,display_name"),
+        supabaseClient
+          .from("activity_group_assignments")
+          .select("activity_id,team_id,assigned_by"),
+        supabaseClient
+          .from("activity_pair_assignments")
+          .select("activity_id,member_a,member_b,assigned_by")
       ]);
 
       const results = [
@@ -9656,6 +9662,8 @@
     });
 
     supabaseClient.auth.onAuthStateChange(async (event, session) => {
+      if (event === "INITIAL_SESSION") return;
+
       currentUser = session?.user || null;
       await loadCurrentProfile();
       updateAuthUI();
