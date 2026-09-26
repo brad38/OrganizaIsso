@@ -237,14 +237,74 @@
       background: #302323;
     }
 
+    .my-works-view {
+      min-height: 520px;
+    }
+
+    .my-works-page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .my-works-title {
+      margin-top: 8px;
+      font-family: var(--font-display);
+      font-size: 1.45rem;
+      font-weight: 650;
+      color: var(--parchment);
+    }
+
+    .my-works-subtitle {
+      max-width: 680px;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: .82rem;
+      line-height: 1.55;
+    }
+
+    .my-works-layout {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
     .my-works-form {
       display: grid;
       gap: 14px;
-      padding: 14px;
-      margin-bottom: 16px;
+      padding: 16px;
       border: 1px solid var(--border);
       border-radius: 12px;
       background: #1C1C1C;
+      position: sticky;
+      top: 16px;
+    }
+
+    .my-works-saved {
+      min-width: 0;
+    }
+
+    .my-works-saved-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .my-works-saved-head h3 {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      color: var(--parchment);
+    }
+
+    .my-works-saved-head span {
+      color: var(--muted-dark);
+      font-size: .69rem;
+      text-align: right;
     }
 
     .my-works-scope {
@@ -342,6 +402,39 @@
       color: var(--muted);
       text-align: center;
       font-size: .78rem;
+    }
+
+    @media (max-width: 820px) {
+      .my-works-page-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .my-works-page-header > .btn {
+        align-self: flex-start;
+      }
+
+      .my-works-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .my-works-form {
+        position: static;
+      }
+
+      .my-works-list {
+        max-height: none;
+      }
+
+      .my-works-saved-head {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .my-works-saved-head span {
+        text-align: left;
+      }
     }
 
     .brand h1 {
@@ -3851,7 +3944,7 @@
       </div>
     </header>
 
-    <nav class="section-nav" aria-label="Seções principais">
+    <nav class="section-nav" id="mainSectionNav" aria-label="Seções principais">
       <button type="button" class="section-nav-btn active" data-section="activities">Atividades</button>
       <button type="button" class="section-nav-btn" data-section="contents">Conteúdos</button>
       <button type="button" class="section-nav-btn" data-section="topics">Artigos &amp; Equipes</button>
@@ -4056,6 +4149,90 @@
       </div>
 
       <section class="topic-grid" id="topicsList" aria-live="polite"></section>
+    </section>
+
+    <section class="section-view my-works-view" id="myWorksView" hidden>
+      <div class="my-works-page-header">
+        <div>
+          <div class="subject-tag">Área privada</div>
+          <h2 class="my-works-title">Meus trabalhos</h2>
+          <p class="my-works-subtitle">
+            Use uma atividade do mural e, se quiser, defina uma descrição privada para você, sua dupla ou sua equipe.
+          </p>
+        </div>
+
+        <button type="button" class="btn btn-secondary" id="backFromMyWorks">
+          Voltar ao mural
+        </button>
+      </div>
+
+      <div class="my-works-layout">
+        <form id="myWorksForm" class="my-works-form">
+          <div class="field">
+            <label>Escolher atividade</label>
+            <div class="custom-select-container" id="myWorkActivityDropdown">
+              <button type="button" class="custom-select-trigger" id="myWorkActivityTrigger">
+                <span id="myWorkActivityLabel" class="placeholder">Selecione uma atividade do mural</span>
+                <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div class="custom-select-menu" id="myWorkActivityMenu"></div>
+              <input type="hidden" id="myWorkActivity" />
+            </div>
+          </div>
+
+          <div class="my-works-scope" id="myWorkScopeInfo" hidden></div>
+
+          <div class="field" id="myWorkTeamField" hidden>
+            <label>Minha equipe</label>
+            <div class="custom-select-container" id="myWorkTeamDropdown">
+              <button type="button" class="custom-select-trigger" id="myWorkTeamTrigger">
+                <span id="myWorkTeamLabel" class="placeholder">Selecione uma equipe</span>
+                <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div class="custom-select-menu" id="myWorkTeamMenu"></div>
+              <input type="hidden" id="myWorkTeam" />
+            </div>
+          </div>
+
+          <div class="field" id="myWorkPartnerField" hidden>
+            <label>Minha dupla</label>
+            <div class="custom-select-container" id="myWorkPartnerDropdown">
+              <button type="button" class="custom-select-trigger" id="myWorkPartnerTrigger">
+                <span id="myWorkPartnerLabel" class="placeholder">Selecione a pessoa da sua dupla</span>
+                <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div class="custom-select-menu" id="myWorkPartnerMenu"></div>
+              <input type="hidden" id="myWorkPartner" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="myWorkDescription">Descrição personalizada <span style="color:var(--muted-dark);font-weight:500;">opcional</span></label>
+            <textarea id="myWorkDescription" rows="5" placeholder="Deixe vazio para continuar usando a descrição pública da atividade."></textarea>
+          </div>
+
+          <div class="modal-foot" style="margin-top:0;">
+            <button type="button" class="btn btn-secondary" id="cancelMyWorkBtn">Limpar</button>
+            <button type="submit" class="btn btn-primary" id="saveMyWorkBtn">Salvar trabalho</button>
+          </div>
+        </form>
+
+        <section class="my-works-saved">
+          <div class="my-works-saved-head">
+            <h3>Trabalhos salvos</h3>
+            <span>Privados para você, sua dupla ou sua equipe</span>
+          </div>
+          <div class="my-works-list" id="myWorksList">
+            <div class="my-work-empty">Nenhum trabalho privado cadastrado.</div>
+          </div>
+        </section>
+      </div>
     </section>
   </div>
 
@@ -4470,6 +4647,7 @@
       </div>
       <p id="siteNoticeMessage" style="color:var(--muted);font-size:.84rem;line-height:1.55;"></p>
       <div class="modal-foot">
+        <button type="button" class="btn btn-secondary" id="cancelSiteNoticeBtn" hidden>Cancelar</button>
         <button type="button" class="btn btn-primary" id="confirmSiteNoticeBtn">Entendi</button>
       </div>
     </div>
@@ -4750,59 +4928,6 @@
     </div>
   </div>
 
-  <!-- Meus trabalhos privados -->
-  <div class="modal-backdrop" id="myWorksModal">
-    <div class="modal" style="max-width: 720px;">
-      <div class="modal-head">
-        <div>
-          <h3>Meus trabalhos</h3>
-          <p style="margin-top:4px;color:var(--muted);font-size:.73rem;">Use uma atividade do mural e, se quiser, defina uma descrição privada para você, sua dupla ou sua equipe.</p>
-        </div>
-        <button class="icon-close" id="closeMyWorksModal" aria-label="Fechar">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
-
-      <form id="myWorksForm" class="my-works-form">
-        <div class="field">
-          <label for="myWorkActivity">Escolher atividade</label>
-          <select id="myWorkActivity" required>
-            <option value="">Selecione uma atividade do mural</option>
-          </select>
-        </div>
-
-        <div class="my-works-scope" id="myWorkScopeInfo" hidden></div>
-
-        <div class="field" id="myWorkTeamField" hidden>
-          <label for="myWorkTeam">Minha equipe</label>
-          <select id="myWorkTeam"></select>
-        </div>
-
-        <div class="field" id="myWorkPartnerField" hidden>
-          <label for="myWorkPartner">Minha dupla</label>
-          <select id="myWorkPartner"></select>
-        </div>
-
-        <div class="field">
-          <label for="myWorkDescription">Descrição personalizada <span style="color:var(--muted-dark);font-weight:500;">opcional</span></label>
-          <textarea id="myWorkDescription" rows="4" placeholder="Deixe vazio para continuar usando a descrição pública da atividade."></textarea>
-        </div>
-
-        <div class="modal-foot" style="margin-top:0;">
-          <button type="button" class="btn btn-secondary" id="cancelMyWorkBtn">Cancelar</button>
-          <button type="submit" class="btn btn-primary" id="saveMyWorkBtn">Salvar trabalho</button>
-        </div>
-      </form>
-
-      <div class="my-works-list" id="myWorksList">
-        <div class="my-work-empty">Nenhum trabalho privado cadastrado.</div>
-      </div>
-    </div>
-  </div>
-
   <!-- Popup exclusivo do proprietário -->
   <div class="modal-backdrop" id="ownerUsersModal">
     <div class="modal" style="max-width: 780px;">
@@ -4954,6 +5079,7 @@
     let shareShowState = false;
     let currentSummaryRawText = "";
     let privateActivityWorks = [];
+    let siteNoticeResolver = null;
     let activeSection = "activities";
     let contentsState = {
       path: "",
@@ -5288,24 +5414,119 @@
       return `Dupla com ${getPrivateWorkPartnerName(work)}`;
     }
 
-    function populateMyWorkActivityOptions(selectedId = "") {
-      const select = $("#myWorkActivity");
-      if (!select) return;
+    function setMyWorkActivity(activityId = "") {
+      const activity = activities.find(item => item.id === activityId);
+      $("#myWorkActivity").value = activity?.id || "";
+      $("#myWorkActivityLabel").textContent = activity
+        ? `${activity.title} (${activity.subject})`
+        : "Selecione uma atividade do mural";
+      $("#myWorkActivityLabel").classList.toggle("placeholder", !activity);
+      renderMyWorkActivityMenu();
+    }
 
+    function renderMyWorkActivityMenu() {
+      const menu = $("#myWorkActivityMenu");
+      if (!menu) return;
+
+      const selectedId = $("#myWorkActivity").value || "";
       const ordered = [...activities].sort((a, b) => {
         const aDue = new Date(getActivityReferenceDue(a)).getTime();
         const bDue = new Date(getActivityReferenceDue(b)).getTime();
         return aDue - bDue;
       });
 
-      select.innerHTML = [
-        '<option value="">Selecione uma atividade do mural</option>',
-        ...ordered.map(activity => `
-          <option value="${activity.id}" ${activity.id === selectedId ? "selected" : ""}>
-            ${escapeHtml(activity.title)} (${escapeHtml(activity.subject)})
-          </option>
-        `)
-      ].join("");
+      menu.innerHTML = ordered.length
+        ? ordered.map(activity => `
+            <div class="custom-select-option ${activity.id === selectedId ? "selected" : ""}" data-my-work-activity="${activity.id}">
+              <div class="discipline-option-content">
+                <span class="discipline-name">${escapeHtml(activity.title)}</span>
+                <span class="discipline-subinfo">${escapeHtml(activity.subject)}</span>
+              </div>
+            </div>
+          `).join("")
+        : '<div class="custom-select-option disabled">Nenhuma atividade disponível</div>';
+
+      menu.querySelectorAll("[data-my-work-activity]").forEach(option => {
+        option.addEventListener("click", () => {
+          setMyWorkActivity(option.dataset.myWorkActivity || "");
+          closeAllCustomSelects();
+          syncMyWorkScopeFields();
+        });
+      });
+    }
+
+    function setMyWorkTeam(teamId = "") {
+      const team = getMyPrivateWorkTeams().find(item => item.id === teamId);
+      $("#myWorkTeam").value = team?.id || "";
+      $("#myWorkTeamLabel").textContent = team?.name || "Selecione uma equipe";
+      $("#myWorkTeamLabel").classList.toggle("placeholder", !team);
+      renderMyWorkTeamMenu();
+    }
+
+    function renderMyWorkTeamMenu() {
+      const menu = $("#myWorkTeamMenu");
+      if (!menu) return;
+
+      const teams = getMyPrivateWorkTeams();
+      const selectedId = $("#myWorkTeam").value || "";
+
+      menu.innerHTML = teams.length
+        ? teams.map(team => `
+            <div class="custom-select-option ${team.id === selectedId ? "selected" : ""}" data-my-work-team="${team.id}">
+              <span class="discipline-name">${escapeHtml(team.name || "Equipe")}</span>
+            </div>
+          `).join("")
+        : '<div class="custom-select-option disabled">Você ainda não participa de uma equipe</div>';
+
+      menu.querySelectorAll("[data-my-work-team]").forEach(option => {
+        option.addEventListener("click", () => {
+          setMyWorkTeam(option.dataset.myWorkTeam || "");
+          closeAllCustomSelects();
+          prefillExistingPrivateWork();
+        });
+      });
+    }
+
+    function getMyWorkPartners() {
+      return topicDirectory
+        .filter(person => person.user_id !== currentUser?.id)
+        .sort((a, b) => (a.display_name || "").localeCompare(b.display_name || "", "pt-BR"));
+    }
+
+    function setMyWorkPartner(partnerId = "") {
+      const person = getMyWorkPartners().find(item => item.user_id === partnerId);
+      $("#myWorkPartner").value = person?.user_id || "";
+      $("#myWorkPartnerLabel").textContent = person?.display_name || "Selecione a pessoa da sua dupla";
+      $("#myWorkPartnerLabel").classList.toggle("placeholder", !person);
+      renderMyWorkPartnerMenu();
+    }
+
+    function renderMyWorkPartnerMenu() {
+      const menu = $("#myWorkPartnerMenu");
+      if (!menu) return;
+
+      const people = getMyWorkPartners();
+      const selectedId = $("#myWorkPartner").value || "";
+
+      menu.innerHTML = people.length
+        ? people.map(person => `
+            <div class="custom-select-option ${person.user_id === selectedId ? "selected" : ""}" data-my-work-partner="${person.user_id}">
+              <span class="discipline-name">${escapeHtml(person.display_name || "Usuário")}</span>
+            </div>
+          `).join("")
+        : '<div class="custom-select-option disabled">Nenhum outro usuário disponível</div>';
+
+      menu.querySelectorAll("[data-my-work-partner]").forEach(option => {
+        option.addEventListener("click", () => {
+          setMyWorkPartner(option.dataset.myWorkPartner || "");
+          closeAllCustomSelects();
+          prefillExistingPrivateWork();
+        });
+      });
+    }
+
+    function populateMyWorkActivityOptions(selectedId = "") {
+      setMyWorkActivity(selectedId);
     }
 
     function findMatchingPrivateWork(activityId, teamId = "", partnerId = "") {
@@ -5352,16 +5573,14 @@
       const info = $("#myWorkScopeInfo");
       const teamField = $("#myWorkTeamField");
       const partnerField = $("#myWorkPartnerField");
-      const teamSelect = $("#myWorkTeam");
-      const partnerSelect = $("#myWorkPartner");
 
       teamField.hidden = true;
       partnerField.hidden = true;
+      setMyWorkTeam("");
+      setMyWorkPartner("");
 
       if (!activity) {
         info.hidden = true;
-        teamSelect.innerHTML = "";
-        partnerSelect.innerHTML = "";
         if (!preserveDescription) $("#myWorkDescription").value = "";
         $("#saveMyWorkBtn").textContent = "Salvar trabalho";
         return;
@@ -5371,24 +5590,12 @@
       info.hidden = false;
 
       if (modality === "Em grupo") {
-        const teams = getMyPrivateWorkTeams();
         teamField.hidden = false;
-        teamSelect.innerHTML = teams.length
-          ? teams.map(team => `<option value="${team.id}">${escapeHtml(team.name || "Equipe")}</option>`).join("")
-          : '<option value="">Você ainda não participa de uma equipe</option>';
+        renderMyWorkTeamMenu();
         info.innerHTML = "<strong>Em grupo.</strong> A descrição personalizada ficará visível somente para os integrantes da equipe escolhida.";
       } else if (modality === "Em dupla") {
-        const people = topicDirectory
-          .filter(person => person.user_id !== currentUser?.id)
-          .sort((a, b) => (a.display_name || "").localeCompare(b.display_name || "", "pt-BR"));
-
         partnerField.hidden = false;
-        partnerSelect.innerHTML = people.length
-          ? [
-              '<option value="">Selecione a pessoa da sua dupla</option>',
-              ...people.map(person => `<option value="${person.user_id}">${escapeHtml(person.display_name || "Usuário")}</option>`)
-            ].join("")
-          : '<option value="">Nenhum outro usuário disponível</option>';
+        renderMyWorkPartnerMenu();
         info.innerHTML = "<strong>Em dupla.</strong> A descrição personalizada ficará visível somente para você e a pessoa selecionada.";
       } else {
         info.innerHTML = "<strong>Individual.</strong> A descrição personalizada ficará visível somente para você.";
@@ -5481,10 +5688,10 @@
           syncMyWorkScopeFields({ preserveDescription: true });
 
           if (work.scope_type === "group") {
-            $("#myWorkTeam").value = work.team_id || "";
+            setMyWorkTeam(work.team_id || "");
           } else if (work.scope_type === "pair") {
             const partnerId = work.member_a === currentUser?.id ? work.member_b : work.member_a;
-            $("#myWorkPartner").value = partnerId || "";
+            setMyWorkPartner(partnerId || "");
           }
 
           $("#myWorkDescription").value = work.custom_description || "";
@@ -5512,11 +5719,14 @@
 
     function resetMyWorkForm() {
       $("#myWorksForm")?.reset();
-      populateMyWorkActivityOptions();
+      setMyWorkActivity("");
+      setMyWorkTeam("");
+      setMyWorkPartner("");
       syncMyWorkScopeFields();
+      closeAllCustomSelects();
     }
 
-    async function openMyWorksModal() {
+    async function openMyWorksScreen() {
       if (!requireLogin()) return;
 
       if (!activities.length) await loadActivities();
@@ -5524,7 +5734,8 @@
 
       await loadPrivateActivityWorks();
       resetMyWorkForm();
-      $("#myWorksModal").classList.add("open");
+      setActiveSection("myworks");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function getRelevantTeamInfo(activityId) {
@@ -5548,14 +5759,48 @@
     }
 
     function showSiteNotice(title, message) {
+      if (siteNoticeResolver) {
+        siteNoticeResolver(false);
+        siteNoticeResolver = null;
+      }
+
       $("#siteNoticeTitle").textContent = title || "Aviso";
       $("#siteNoticeMessage").textContent = message || "";
+      $("#cancelSiteNoticeBtn").hidden = true;
+      $("#confirmSiteNoticeBtn").textContent = "Entendi";
       $("#siteNoticeModal").classList.add("open");
     }
 
-    function closeSiteNotice() {
-      $("#siteNoticeModal").classList.remove("open");
+    function confirmSiteAction(title, message, confirmLabel = "Confirmar") {
+      if (siteNoticeResolver) {
+        siteNoticeResolver(false);
+        siteNoticeResolver = null;
+      }
+
+      $("#siteNoticeTitle").textContent = title || "Confirmar";
+      $("#siteNoticeMessage").textContent = message || "";
+      $("#cancelSiteNoticeBtn").hidden = false;
+      $("#confirmSiteNoticeBtn").textContent = confirmLabel;
+      $("#siteNoticeModal").classList.add("open");
+
+      return new Promise(resolve => {
+        siteNoticeResolver = resolve;
+      });
     }
+
+    function closeSiteNotice(confirmed = false) {
+      $("#siteNoticeModal").classList.remove("open");
+
+      if (siteNoticeResolver) {
+        const resolve = siteNoticeResolver;
+        siteNoticeResolver = null;
+        resolve(Boolean(confirmed));
+      }
+    }
+
+    window.alert = message => {
+      showSiteNotice("Aviso", String(message ?? ""));
+    };
 
     function closeGroupCompletionModal() {
       pendingGroupCompletionActivityId = null;
@@ -5818,8 +6063,8 @@
       if (!cluster || !quickAdd || !quickGroup || !quickShare || !quickAddLabel) return;
 
       const isMobileFab = window.innerWidth <= 640;
-      const canCreateContent = Boolean(currentUser && isStaff() && activeSection !== "contents");
-      const canCreateGroup = Boolean(currentUser);
+      const canCreateContent = Boolean(currentUser && isStaff() && !["contents", "myworks"].includes(activeSection));
+      const canCreateGroup = Boolean(currentUser && activeSection !== "myworks");
       const canShare = activeSection === "activities";
 
       quickAdd.hidden = !canCreateContent;
@@ -5845,8 +6090,8 @@
       const canCreateGroup = Boolean(currentUser);
       const canCreateContent = Boolean(currentUser && isStaff());
 
-      wrap.hidden = !currentUser;
-      addBtn.hidden = !currentUser;
+      wrap.hidden = !currentUser || activeSection === "myworks";
+      addBtn.hidden = !currentUser || activeSection === "myworks";
       label.textContent = "Novo Registro";
 
       newActivityBtn.hidden = !canCreateContent;
@@ -6219,13 +6464,15 @@
 
     function setActiveSection(section) {
       closeCreateMenu();
-      activeSection = ["activities", "contents", "topics"].includes(section)
+      activeSection = ["activities", "contents", "topics", "myworks"].includes(section)
         ? section
         : "activities";
 
       $("#activitiesView").hidden = activeSection !== "activities";
       $("#contentsView").hidden = activeSection !== "contents";
       $("#topicsView").hidden = activeSection !== "topics";
+      $("#myWorksView").hidden = activeSection !== "myworks";
+      $("#mainSectionNav").hidden = activeSection === "myworks";
 
       $$("[data-section]").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.section === activeSection);
@@ -7204,8 +7451,10 @@
           const topic = topicItems.find(item => item.id === button.dataset.topicDelete);
           if (!topic) return;
 
-          const confirmed = window.confirm(
-            `Excluir "${topic.title}"? As escolhas das equipes nessa opção também serão removidas.`
+          const confirmed = await confirmSiteAction(
+            "Excluir artigo ou tema",
+            `Excluir "${topic.title}"? As escolhas das equipes nessa opção também serão removidas.`,
+            "Excluir"
           );
           if (!confirmed) return;
 
@@ -7800,8 +8049,10 @@
     async function deleteProfessor(professorId, professorName) {
       if (!isStaff()) return;
 
-      const confirmed = window.confirm(
-        `Excluir o professor "${professorName}"? As disciplinas vinculadas ficarão sem professor.`
+      const confirmed = await confirmSiteAction(
+        "Excluir professor",
+        `Excluir o professor "${professorName}"? As disciplinas vinculadas ficarão sem professor.`,
+        "Excluir"
       );
       if (!confirmed) return;
 
@@ -7892,8 +8143,10 @@
     async function deleteSubject(subjectId, subjectName) {
       if (!isStaff()) return;
 
-      const confirmed = window.confirm(
-        `Excluir a disciplina "${subjectName}" da lista? As atividades já registradas não serão apagadas.`
+      const confirmed = await confirmSiteAction(
+        "Excluir disciplina",
+        `Excluir a disciplina "${subjectName}" da lista? As atividades já registradas não serão apagadas.`,
+        "Excluir"
       );
       if (!confirmed) return;
 
@@ -8656,7 +8909,6 @@
     const authModal = $("#authModal");
     const resetPasswordModal = $("#resetPasswordModal");
     const ownerUsersModal = $("#ownerUsersModal");
-    const myWorksModal = $("#myWorksModal");
 
     const mobileSheetMedia = window.matchMedia("(max-width: 820px)");
 
@@ -8820,7 +9072,11 @@
 
       const backdrop = getTopOpenBackdrop();
       if (backdrop) {
-        backdrop.classList.remove("open");
+        if (backdrop.id === "siteNoticeModal") {
+          closeSiteNotice(false);
+        } else {
+          backdrop.classList.remove("open");
+        }
         return true;
       }
 
@@ -9085,23 +9341,39 @@
 
     $("#myWorksBtn").addEventListener("click", async () => {
       closeUserMenu();
-      await openMyWorksModal();
+      await openMyWorksScreen();
     });
 
-    $("#closeMyWorksModal").addEventListener("click", () => {
-      myWorksModal.classList.remove("open");
+    $("#backFromMyWorks").addEventListener("click", () => {
+      setActiveSection("activities");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
     $("#cancelMyWorkBtn").addEventListener("click", () => {
       resetMyWorkForm();
     });
 
-    $("#myWorkActivity").addEventListener("change", () => {
-      syncMyWorkScopeFields();
-    });
+    function toggleMyWorkSelect(triggerId, menuId, renderMenu) {
+      const trigger = $(triggerId);
+      const menu = $(menuId);
+      if (!trigger || !menu) return;
 
-    $("#myWorkTeam").addEventListener("change", prefillExistingPrivateWork);
-    $("#myWorkPartner").addEventListener("change", prefillExistingPrivateWork);
+      trigger.addEventListener("click", event => {
+        event.stopPropagation();
+        const isOpen = menu.classList.contains("open");
+        closeAllCustomSelects();
+
+        if (!isOpen) {
+          renderMenu();
+          menu.classList.add("open");
+          trigger.classList.add("active");
+        }
+      });
+    }
+
+    toggleMyWorkSelect("#myWorkActivityTrigger", "#myWorkActivityMenu", renderMyWorkActivityMenu);
+    toggleMyWorkSelect("#myWorkTeamTrigger", "#myWorkTeamMenu", renderMyWorkTeamMenu);
+    toggleMyWorkSelect("#myWorkPartnerTrigger", "#myWorkPartnerMenu", renderMyWorkPartnerMenu);
 
     $("#myWorksForm").addEventListener("submit", async event => {
       event.preventDefault();
@@ -9115,19 +9387,19 @@
       const saveBtn = $("#saveMyWorkBtn");
 
       if (!activity) {
-        $("#myWorkActivity").focus();
+        $("#myWorkActivityTrigger").focus();
         return;
       }
 
       if (activity.modality === "Em grupo" && !teamId) {
         alert("Selecione uma equipe da qual você participa.");
-        $("#myWorkTeam").focus();
+        $("#myWorkTeamTrigger").focus();
         return;
       }
 
       if (activity.modality === "Em dupla" && !partnerId) {
         alert("Selecione a pessoa da sua dupla.");
-        $("#myWorkPartner").focus();
+        $("#myWorkPartnerTrigger").focus();
         return;
       }
 
@@ -9213,8 +9485,9 @@
     $("#cancelGroupCompletionModal").addEventListener("click", closeGroupCompletionModal);
     $("#confirmGroupCompletionBtn").addEventListener("click", confirmGroupActivityCompletion);
     $("#completionPickerSearch").addEventListener("input", renderCompletionPickerList);
-    $("#closeSiteNoticeModal").addEventListener("click", closeSiteNotice);
-    $("#confirmSiteNoticeBtn").addEventListener("click", closeSiteNotice);
+    $("#closeSiteNoticeModal").addEventListener("click", () => closeSiteNotice(false));
+    $("#cancelSiteNoticeBtn").addEventListener("click", () => closeSiteNotice(false));
+    $("#confirmSiteNoticeBtn").addEventListener("click", () => closeSiteNotice(true));
     $("#closeTopicClaimModal").addEventListener("click", () => topicClaimModal.classList.remove("open"));
     $("#cancelTopicClaimModal").addEventListener("click", () => topicClaimModal.classList.remove("open"));
     $("#closeTopicTeamModal").addEventListener("click", () => topicTeamModal.classList.remove("open"));
@@ -10190,6 +10463,13 @@
       if (event === "INITIAL_SESSION") return;
 
       currentUser = session?.user || null;
+
+      if (!currentUser) {
+        privateActivityWorks = [];
+        renderPrivateActivityWorks();
+        if (activeSection === "myworks") setActiveSection("activities");
+      }
+
       await loadCurrentProfile();
       updateAuthUI();
       await subscribeToCompletionRealtime();
@@ -10370,7 +10650,8 @@
         professorModal.classList.remove("open");
         shareModal.classList.remove("open");
         authModal.classList.remove("open");
-        myWorksModal.classList.remove("open");
+        closeSiteNotice(false);
+        if (activeSection === "myworks") setActiveSection("activities");
         ownerUsersModal.classList.remove("open");
         closeUserMenu();
         closeAllCustomSelects();
