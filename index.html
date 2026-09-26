@@ -1593,6 +1593,19 @@
       align-items: center;
       gap: 12px;
       width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #1C1C1C;
+    }
+
+    .topics-toolbar .search-box {
+      flex: 1 1 auto;
+    }
+
+    .topics-toolbar .toolbar-select {
+      width: 230px;
+      min-width: 230px;
     }
 
     .topics-filter-tabs {
@@ -1622,9 +1635,20 @@
       padding: 18px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       min-width: 0;
+      height: 360px;
+      min-height: 360px;
+      overflow: hidden;
       transition: border-color .15s ease, background .15s ease;
+    }
+
+    .topic-card-main {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: hidden;
     }
 
     .topic-card:hover {
@@ -1684,6 +1708,50 @@
       font-size: .82rem;
       line-height: 1.5;
       overflow-wrap: anywhere;
+      max-height: 72px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding-right: 5px;
+      scrollbar-width: thin;
+      scrollbar-color: #555 #252525;
+    }
+
+    .topic-notes::-webkit-scrollbar,
+    .topic-teams-box::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .topic-notes::-webkit-scrollbar-track,
+    .topic-teams-box::-webkit-scrollbar-track {
+      background: #252525;
+      border-radius: 999px;
+    }
+
+    .topic-notes::-webkit-scrollbar-thumb,
+    .topic-teams-box::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 999px;
+    }
+
+    .topic-linked-activity {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      padding: 7px 8px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: #202020;
+      color: var(--muted);
+      font-size: .72rem;
+    }
+
+    .topic-linked-activity strong {
+      color: var(--parchment);
+      font-weight: 650;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .topic-teams-box {
@@ -1694,6 +1762,13 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+      min-height: 74px;
+      max-height: 112px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: #555 #252525;
+      flex-shrink: 0;
     }
 
     .topic-teams-head {
@@ -1738,10 +1813,15 @@
     .topic-card-actions {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: center;
       gap: 8px;
       margin-top: auto;
       padding-top: 2px;
+    }
+
+    .topic-card-actions .btn {
+      width: min(100%, 222px);
+      justify-content: center;
     }
 
     .topic-empty {
@@ -2944,6 +3024,11 @@
         align-items: stretch;
       }
 
+      .topics-toolbar .toolbar-select {
+        width: 100%;
+        min-width: 100%;
+      }
+
       .topics-filter-tabs {
         width: 100%;
       }
@@ -2955,6 +3040,8 @@
 
       .topic-card {
         padding: 14px;
+        height: 390px;
+        min-height: 390px;
       }
 
       .topic-card-actions .btn {
@@ -3326,6 +3413,16 @@
             autocomplete="off"
           />
         </div>
+
+        <div class="custom-select-container toolbar-select" id="topicFilterSubjectDropdown">
+          <button type="button" class="custom-select-trigger" id="topicFilterSubjectTrigger">
+            <span id="topicFilterSubjectLabel">Todas as disciplinas</span>
+            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="custom-select-menu" id="topicFilterSubjectMenu"></div>
+        </div>
       </div>
 
       <div class="topics-filter-tabs">
@@ -3527,7 +3624,7 @@
     <div class="modal">
       <div class="modal-head">
         <div>
-          <h3>Cadastrar Artigo ou Tema</h3>
+          <h3 id="topicModalTitle">Cadastrar Artigo ou Tema</h3>
           <p style="font-size:.76rem;color:var(--muted);margin-top:3px;">
             Cadastre uma opção e defina se ela pode ser escolhida por uma ou várias equipes.
           </p>
@@ -3584,6 +3681,23 @@
               </div>
               <input type="hidden" id="topicType" value="Artigo" />
             </div>
+          </div>
+
+          <div class="field full">
+            <label>Atividade vinculada</label>
+            <div class="custom-select-container" id="topicActivityDropdown">
+              <button type="button" class="custom-select-trigger" id="topicActivityTrigger">
+                <span class="trigger-text placeholder" id="topicActivityLabel">Nenhuma atividade vinculada</span>
+                <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div class="custom-select-menu" id="topicActivityMenu"></div>
+              <input type="hidden" id="topicActivityId" />
+            </div>
+            <span style="font-size:.7rem;color:var(--muted-dark);margin-top:5px;">
+              Se vinculada, a atividade usa a divisão de equipes definida aqui.
+            </span>
           </div>
 
           <div class="field full">
@@ -3652,10 +3766,7 @@
         <input type="hidden" id="topicClaimId" />
 
         <div class="field">
-          <label>
-            <span>Minha equipe</span>
-            <button type="button" class="btn-text-action" id="openTopicTeamModal">+ Nova equipe</button>
-          </label>
+          <label>Minha equipe</label>
 
           <div class="custom-select-container" id="topicTeamDropdown">
             <button type="button" class="custom-select-trigger" id="topicTeamTrigger">
@@ -4003,6 +4114,9 @@
     let topicClaims = [];
     let topicDirectory = [];
     let topicFilter = "all";
+    let selectedTopicSubject = "";
+    let editingTopicId = null;
+    let selectedTopicActivityId = "";
     let selectedTopicMemberIds = new Set();
     let selectedTopicTeamId = "";
     let activityPendingInvites = [];
@@ -4074,7 +4188,15 @@
     }
 
     async function loadTeamInfo() {
-      const [teamsResult, membersResult, directoryResult] = await Promise.all([
+      const [
+        teamsResult,
+        membersResult,
+        topicItemsResult,
+        topicClaimsResult,
+        topicTeamsResult,
+        topicMembersResult,
+        directoryResult
+      ] = await Promise.all([
         supabaseClient
           .from("activity_teams")
           .select("id,activity_id,owner_id"),
@@ -4083,14 +4205,38 @@
           .select("team_id,activity_id,user_id,status")
           .eq("status", "accepted"),
         supabaseClient
+          .from("topic_items")
+          .select("id,activity_id")
+          .not("activity_id", "is", null),
+        supabaseClient
+          .from("topic_claims")
+          .select("topic_id,team_id"),
+        supabaseClient
+          .from("topic_teams")
+          .select("id,name,owner_id"),
+        supabaseClient
+          .from("topic_team_members")
+          .select("team_id,user_id,status")
+          .eq("status", "accepted"),
+        supabaseClient
           .from("user_directory")
           .select("user_id,display_name")
       ]);
 
-      if (teamsResult.error || membersResult.error || directoryResult.error) {
-        if (teamsResult.error) console.error("Falha ao carregar equipes:", teamsResult.error);
-        if (membersResult.error) console.error("Falha ao carregar membros:", membersResult.error);
-        if (directoryResult.error) console.error("Falha ao carregar nomes dos membros:", directoryResult.error);
+      const results = [
+        teamsResult,
+        membersResult,
+        topicItemsResult,
+        topicClaimsResult,
+        topicTeamsResult,
+        topicMembersResult,
+        directoryResult
+      ];
+
+      if (results.some(result => result.error)) {
+        results.forEach(result => {
+          if (result.error) console.error("Falha ao carregar divisão de equipes:", result.error);
+        });
         teamInfoByActivity = new Map();
         return;
       }
@@ -4099,32 +4245,78 @@
         (directoryResult.data || []).map(item => [item.user_id, item.display_name])
       );
 
-      const membersByTeam = new Map();
+      const teamsByActivity = new Map();
+
+      const directMembersByTeam = new Map();
       (membersResult.data || []).forEach(member => {
-        if (!membersByTeam.has(member.team_id)) membersByTeam.set(member.team_id, []);
-        membersByTeam.get(member.team_id).push(member);
+        if (!directMembersByTeam.has(member.team_id)) directMembersByTeam.set(member.team_id, []);
+        directMembersByTeam.get(member.team_id).push(member);
       });
 
-      const teamsByActivity = new Map();
       (teamsResult.data || []).forEach(team => {
         if (!teamsByActivity.has(team.activity_id)) teamsByActivity.set(team.activity_id, []);
 
-        const acceptedMembers = membersByTeam.get(team.id) || [];
+        const acceptedMembers = directMembersByTeam.get(team.id) || [];
         const memberIds = [
           team.owner_id,
           ...acceptedMembers.map(member => member.user_id)
         ].filter(Boolean);
 
         const uniqueMemberIds = [...new Set(memberIds)];
-        const memberNames = uniqueMemberIds
-          .map(userId => directory.get(userId))
-          .filter(Boolean);
 
         teamsByActivity.get(team.activity_id).push({
           id: team.id,
           ownerId: team.owner_id,
           memberIds: uniqueMemberIds,
-          memberNames
+          memberNames: uniqueMemberIds
+            .map(userId => directory.get(userId))
+            .filter(Boolean),
+          source: "activity"
+        });
+      });
+
+      const linkedActivityByTopic = new Map(
+        (topicItemsResult.data || []).map(item => [item.id, item.activity_id])
+      );
+      const topicTeamById = new Map(
+        (topicTeamsResult.data || []).map(team => [team.id, team])
+      );
+      const topicMembersByTeam = new Map();
+
+      (topicMembersResult.data || []).forEach(member => {
+        if (!topicMembersByTeam.has(member.team_id)) topicMembersByTeam.set(member.team_id, []);
+        topicMembersByTeam.get(member.team_id).push(member);
+      });
+
+      const seenLinkedTeams = new Set();
+
+      (topicClaimsResult.data || []).forEach(claim => {
+        const activityId = linkedActivityByTopic.get(claim.topic_id);
+        const team = topicTeamById.get(claim.team_id);
+        if (!activityId || !team) return;
+
+        const uniqueKey = `${activityId}:${team.id}`;
+        if (seenLinkedTeams.has(uniqueKey)) return;
+        seenLinkedTeams.add(uniqueKey);
+
+        if (!teamsByActivity.has(activityId)) teamsByActivity.set(activityId, []);
+
+        const memberIds = [
+          team.owner_id,
+          ...(topicMembersByTeam.get(team.id) || []).map(member => member.user_id)
+        ].filter(Boolean);
+        const uniqueMemberIds = [...new Set(memberIds)];
+
+        teamsByActivity.get(activityId).push({
+          id: `topic:${team.id}`,
+          topicTeamId: team.id,
+          ownerId: team.owner_id,
+          name: team.name,
+          memberIds: uniqueMemberIds,
+          memberNames: uniqueMemberIds
+            .map(userId => directory.get(userId))
+            .filter(Boolean),
+          source: "topic"
         });
       });
 
@@ -4777,7 +4969,7 @@
       const [itemsResult, teamsResult, membersResult, claimsResult, directoryResult] = await Promise.all([
         supabaseClient
           .from("topic_items")
-          .select("id,title,subject,item_type,notes,allow_multiple_teams,created_by,created_at")
+          .select("id,title,subject,item_type,notes,allow_multiple_teams,activity_id,created_by,created_at")
           .order("created_at", { ascending: true }),
         supabaseClient
           .from("topic_teams")
@@ -4815,6 +5007,7 @@
       topicDirectory = directoryResult.data || [];
 
       renderTopics();
+      renderTopicFilterSubjectMenu();
       renderInvitationCenter();
       renderTopicTeamMenu();
       renderTopicMemberPicker();
@@ -4868,6 +5061,188 @@
         member.user_id === currentUser.id &&
         member.status === "accepted"
       );
+    }
+
+    function getLinkedTopicActivity(topic) {
+      if (!topic?.activity_id) return null;
+      return activities.find(activity => activity.id === topic.activity_id) || null;
+    }
+
+    function setTopicFilterSubject(name = "") {
+      selectedTopicSubject = name;
+      $("#topicFilterSubjectLabel").textContent = name || "Todas as disciplinas";
+
+      $("#topicFilterSubjectMenu").querySelectorAll("[data-topic-filter-subject]").forEach(option => {
+        option.classList.toggle("selected", (option.dataset.topicFilterSubject || "") === name);
+      });
+
+      renderTopics();
+    }
+
+    function renderTopicFilterSubjectMenu() {
+      const menu = $("#topicFilterSubjectMenu");
+      if (!menu) return;
+
+      const names = [...new Set(
+        topicItems.map(item => item.subject).filter(Boolean)
+      )].sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }));
+
+      menu.innerHTML = [
+        `
+          <div class="custom-select-option ${selectedTopicSubject === "" ? "selected" : ""}" data-topic-filter-subject="">
+            Todas as disciplinas
+          </div>
+        `,
+        ...names.map(name => `
+          <div class="custom-select-option ${selectedTopicSubject === name ? "selected" : ""}" data-topic-filter-subject="${escapeHtml(name)}">
+            <span class="discipline-name">${escapeHtml(name)}</span>
+          </div>
+        `)
+      ].join("");
+
+      menu.querySelectorAll("[data-topic-filter-subject]").forEach(option => {
+        option.addEventListener("click", () => {
+          setTopicFilterSubject(option.dataset.topicFilterSubject || "");
+          closeAllCustomSelects();
+        });
+      });
+    }
+
+    function setTopicActivity(activityId = "") {
+      selectedTopicActivityId = activityId || "";
+      $("#topicActivityId").value = selectedTopicActivityId;
+
+      const activity = activities.find(item => item.id === selectedTopicActivityId);
+      $("#topicActivityLabel").textContent = activity?.title || "Nenhuma atividade vinculada";
+      $("#topicActivityLabel").classList.toggle("placeholder", !activity);
+
+      $("#topicActivityMenu").querySelectorAll("[data-topic-activity]").forEach(option => {
+        option.classList.toggle(
+          "selected",
+          (option.dataset.topicActivity || "") === selectedTopicActivityId
+        );
+      });
+    }
+
+    function renderTopicActivityMenu() {
+      const menu = $("#topicActivityMenu");
+      if (!menu) return;
+
+      const subject = $("#topicSubject").value.trim();
+      const eligible = activities
+        .filter(activity =>
+          activity.modality !== "Individual" &&
+          (!subject || activity.subject === subject)
+        )
+        .sort((a, b) => {
+          const aDue = new Date(a.due).getTime();
+          const bDue = new Date(b.due).getTime();
+          return aDue - bDue;
+        });
+
+      let html = `
+        <div class="custom-select-option ${selectedTopicActivityId ? "" : "selected"}" data-topic-activity="">
+          <div class="discipline-option-content">
+            <span class="discipline-name">Nenhuma atividade vinculada</span>
+            <span class="discipline-subinfo">A divisão ficará somente em Artigos &amp; Equipes</span>
+          </div>
+        </div>
+      `;
+
+      if (!eligible.length) {
+        html += `
+          <div style="padding:11px;color:var(--muted-dark);font-size:.76rem;">
+            Nenhuma atividade em dupla ou grupo nesta disciplina.
+          </div>
+        `;
+      } else {
+        html += eligible.map(activity => `
+          <div
+            class="custom-select-option ${selectedTopicActivityId === activity.id ? "selected" : ""}"
+            data-topic-activity="${activity.id}"
+          >
+            <div class="discipline-option-content">
+              <span class="discipline-name">${escapeHtml(activity.title)}</span>
+              <span class="discipline-subinfo">
+                <span>${escapeHtml(activity.modality || "Em grupo")}</span>
+                <span>${escapeHtml(formatDate(activity.due))}</span>
+              </span>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      menu.innerHTML = html;
+
+      menu.querySelectorAll("[data-topic-activity]").forEach(option => {
+        option.addEventListener("click", () => {
+          setTopicActivity(option.dataset.topicActivity || "");
+          closeAllCustomSelects();
+        });
+      });
+    }
+
+    function setTopicType(value = "Artigo") {
+      $("#topicType").value = value;
+      $("#topicTypeLabel").textContent = value;
+
+      $("#topicTypeMenu").querySelectorAll("[data-topic-type]").forEach(option => {
+        option.classList.toggle("selected", option.dataset.topicType === value);
+      });
+    }
+
+    function openTopicModal(topicId = "") {
+      if (!requireLogin() || !isStaff()) return;
+
+      editingTopicId = topicId || null;
+      selectedTopicActivityId = "";
+      $("#topicForm").reset();
+
+      const topic = editingTopicId
+        ? topicItems.find(item => item.id === editingTopicId)
+        : null;
+
+      $("#topicModalTitle").textContent = topic
+        ? "Editar Artigo ou Tema"
+        : "Cadastrar Artigo ou Tema";
+      $("#saveTopicBtn").textContent = topic
+        ? "Salvar alterações"
+        : "Cadastrar";
+
+      if (topic) {
+        $("#topicTitle").value = topic.title || "";
+        setTopicSubject(topic.subject || "");
+        setTopicType(topic.item_type || "Artigo");
+        $("#topicNotes").value = topic.notes || "";
+
+        const desiredRule = topic.allow_multiple_teams ? "shared" : "exclusive";
+        document.querySelectorAll('input[name="topicRule"]').forEach(input => {
+          input.checked = input.value === desiredRule;
+        });
+
+        selectedTopicActivityId = topic.activity_id || "";
+      } else {
+        setTopicSubject("");
+        setTopicType("Artigo");
+        document.querySelector('input[name="topicRule"][value="exclusive"]').checked = true;
+      }
+
+      renderTopicSubjectMenu();
+      renderTopicActivityMenu();
+      setTopicActivity(selectedTopicActivityId);
+      topicModal.classList.add("open");
+      setTimeout(() => $("#topicTitle").focus(), 80);
+    }
+
+    function openTopicTeamCreationModal() {
+      if (!requireLogin()) return;
+
+      selectedTopicMemberIds = new Set();
+      $("#topicTeamForm").reset();
+      $("#topicMemberSearch").value = "";
+      renderTopicMemberPicker();
+      topicTeamModal.classList.add("open");
+      setTimeout(() => $("#topicTeamName").focus(), 80);
     }
 
     function getInvitationDisplayName(userId) {
@@ -5129,6 +5504,7 @@
 
         if (topicFilter === "available" && isLocked) return false;
         if (topicFilter === "claimed" && claims.length === 0) return false;
+        if (selectedTopicSubject && topic.subject !== selectedTopicSubject) return false;
 
         if (search) {
           const teamsText = claims.map(claim => {
@@ -5139,8 +5515,9 @@
             ].join(" ");
           }).join(" ");
 
+          const linkedActivity = getLinkedTopicActivity(topic);
           const haystack = normalizeSearch(
-            `${topic.title} ${topic.subject} ${topic.item_type} ${topic.notes || ""} ${teamsText}`
+            `${topic.title} ${topic.subject} ${topic.item_type} ${topic.notes || ""} ${linkedActivity?.title || ""} ${teamsText}`
           );
 
           if (!haystack.includes(search)) return false;
@@ -5162,6 +5539,7 @@
         const claims = getTopicClaims(topic.id);
         const isLocked = !topic.allow_multiple_teams && claims.length > 0;
         const myClaim = claims.find(claim => isCurrentUserInTopicTeam(claim.team_id));
+        const linkedActivity = getLinkedTopicActivity(topic);
 
         const teamsHtml = claims.length
           ? claims.map(claim => {
@@ -5226,7 +5604,7 @@
 
         return `
           <article class="topic-card ${isLocked ? "locked" : ""}">
-            <div>
+            <div class="topic-card-main">
               <div class="topic-card-head">
                 <div>
                   <div class="subject-tag">${escapeHtml(topic.subject)}</div>
@@ -5234,18 +5612,32 @@
                 </div>
 
                 ${isStaff() ? `
-                  <button
-                    type="button"
-                    class="del-btn"
-                    data-topic-delete="${topic.id}"
-                    title="Excluir artigo ou tema"
-                    aria-label="Excluir artigo ou tema"
-                  >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                  </button>
+                  <span class="staff-card-actions">
+                    <button
+                      type="button"
+                      class="del-btn edit-btn"
+                      data-topic-edit="${topic.id}"
+                      title="Editar artigo ou tema"
+                      aria-label="Editar artigo ou tema"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20h9"/>
+                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      class="del-btn"
+                      data-topic-delete="${topic.id}"
+                      title="Excluir artigo ou tema"
+                      aria-label="Excluir artigo ou tema"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </span>
                 ` : ""}
               </div>
 
@@ -5255,6 +5647,17 @@
                   ${topic.allow_multiple_teams ? "Múltiplas equipes" : "1 equipe por opção"}
                 </span>
               </div>
+
+              ${linkedActivity ? `
+                <div class="topic-linked-activity" title="${escapeHtml(linkedActivity.title)}">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                  </svg>
+                  <span>Atividade:</span>
+                  <strong>${escapeHtml(linkedActivity.title)}</strong>
+                </div>
+              ` : ""}
 
               ${notesHtml}
             </div>
@@ -5277,6 +5680,12 @@
       $$("[data-topic-choose]").forEach(button => {
         button.addEventListener("click", () => {
           openTopicClaimModal(button.dataset.topicChoose);
+        });
+      });
+
+      $$("[data-topic-edit]").forEach(button => {
+        button.addEventListener("click", () => {
+          openTopicModal(button.dataset.topicEdit);
         });
       });
 
@@ -5306,7 +5715,10 @@
             return;
           }
 
-          await loadTopicBoardData();
+          await Promise.all([
+            loadTopicBoardData(),
+            loadActivities()
+          ]);
         });
       });
 
@@ -5328,7 +5740,10 @@
             return;
           }
 
-          await loadTopicBoardData();
+          await Promise.all([
+            loadTopicBoardData(),
+            loadActivities()
+          ]);
         });
       });
     }
@@ -5339,12 +5754,17 @@
         topicRealtimeChannel = null;
       }
 
+      const refreshTopicsAndActivityTeams = async () => {
+        await loadTopicBoardData();
+        await loadActivities();
+      };
+
       topicRealtimeChannel = supabaseClient
         .channel("topic-board-live")
-        .on("postgres_changes", { event: "*", schema: "public", table: "topic_items" }, loadTopicBoardData)
-        .on("postgres_changes", { event: "*", schema: "public", table: "topic_teams" }, loadTopicBoardData)
-        .on("postgres_changes", { event: "*", schema: "public", table: "topic_team_members" }, loadTopicBoardData)
-        .on("postgres_changes", { event: "*", schema: "public", table: "topic_claims" }, loadTopicBoardData)
+        .on("postgres_changes", { event: "*", schema: "public", table: "topic_items" }, refreshTopicsAndActivityTeams)
+        .on("postgres_changes", { event: "*", schema: "public", table: "topic_teams" }, refreshTopicsAndActivityTeams)
+        .on("postgres_changes", { event: "*", schema: "public", table: "topic_team_members" }, refreshTopicsAndActivityTeams)
+        .on("postgres_changes", { event: "*", schema: "public", table: "topic_claims" }, refreshTopicsAndActivityTeams)
         .subscribe();
     }
 
@@ -5394,7 +5814,15 @@
 
       menu.querySelectorAll("[data-topic-subject]").forEach(option => {
         option.addEventListener("click", () => {
-          setTopicSubject(option.dataset.topicSubject || "");
+          const nextSubject = option.dataset.topicSubject || "";
+          setTopicSubject(nextSubject);
+
+          const selectedActivity = activities.find(item => item.id === selectedTopicActivityId);
+          if (selectedActivity && selectedActivity.subject !== nextSubject) {
+            setTopicActivity("");
+          }
+
+          renderTopicActivityMenu();
           closeAllCustomSelects();
         });
       });
@@ -5405,27 +5833,44 @@
       if (!menu) return;
 
       const myTeams = getMyAcceptedTopicTeams();
+      let html = `
+        <div class="custom-select-option menu-add-shortcut" data-topic-new-team>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Cadastrar nova equipe...
+        </div>
+      `;
 
       if (!myTeams.length) {
-        menu.innerHTML = '<div style="padding:11px;color:var(--muted-dark);font-size:.76rem;">Você ainda não participa de nenhuma equipe aceita.</div>';
-        return;
+        html += '<div style="padding:11px;color:var(--muted-dark);font-size:.76rem;">Você ainda não participa de nenhuma equipe aceita.</div>';
+      } else {
+        html += myTeams.map(team => {
+          const names = getTopicTeamMemberNames(team.id);
+          const selected = selectedTopicTeamId === team.id;
+
+          return `
+            <div class="custom-select-option ${selected ? "selected" : ""}" data-topic-team="${team.id}">
+              <div class="discipline-option-content">
+                <span class="discipline-name">${escapeHtml(team.name)}</span>
+                <span class="discipline-subinfo">
+                  <span>${escapeHtml(names.join(", "))}</span>
+                </span>
+              </div>
+            </div>
+          `;
+        }).join("");
       }
 
-      menu.innerHTML = myTeams.map(team => {
-        const names = getTopicTeamMemberNames(team.id);
-        const selected = selectedTopicTeamId === team.id;
+      menu.innerHTML = html;
 
-        return `
-          <div class="custom-select-option ${selected ? "selected" : ""}" data-topic-team="${team.id}">
-            <div class="discipline-option-content">
-              <span class="discipline-name">${escapeHtml(team.name)}</span>
-              <span class="discipline-subinfo">
-                <span>${escapeHtml(names.join(", "))}</span>
-              </span>
-            </div>
-          </div>
-        `;
-      }).join("");
+      menu.querySelector("[data-topic-new-team]")?.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        closeAllCustomSelects();
+        openTopicTeamCreationModal();
+      });
 
       menu.querySelectorAll("[data-topic-team]").forEach(option => {
         option.addEventListener("click", () => {
@@ -7054,16 +7499,7 @@
       }
 
       if (activeSection === "topics") {
-        $("#topicForm").reset();
-        setTopicSubject("");
-        $("#topicType").value = "Artigo";
-        $("#topicTypeLabel").textContent = "Artigo";
-        $("#topicTypeMenu").querySelectorAll("[data-topic-type]").forEach(option => {
-          option.classList.toggle("selected", option.dataset.topicType === "Artigo");
-        });
-        renderTopicSubjectMenu();
-        topicModal.classList.add("open");
-        setTimeout(() => $("#topicTitle").focus(), 80);
+        openTopicModal();
         return;
       }
 
@@ -7107,16 +7543,35 @@
 
     $("#topicTypeMenu").querySelectorAll("[data-topic-type]").forEach(option => {
       option.addEventListener("click", () => {
-        const value = option.dataset.topicType || "Artigo";
-        $("#topicType").value = value;
-        $("#topicTypeLabel").textContent = value;
-
-        $("#topicTypeMenu").querySelectorAll("[data-topic-type]").forEach(item => {
-          item.classList.toggle("selected", item === option);
-        });
-
+        setTopicType(option.dataset.topicType || "Artigo");
         closeAllCustomSelects();
       });
+    });
+
+    $("#topicActivityTrigger").addEventListener("click", event => {
+      event.stopPropagation();
+      const menu = $("#topicActivityMenu");
+      const isOpen = menu.classList.contains("open");
+      closeAllCustomSelects();
+
+      if (!isOpen) {
+        renderTopicActivityMenu();
+        menu.classList.add("open");
+        $("#topicActivityTrigger").classList.add("active");
+      }
+    });
+
+    $("#topicFilterSubjectTrigger").addEventListener("click", event => {
+      event.stopPropagation();
+      const menu = $("#topicFilterSubjectMenu");
+      const isOpen = menu.classList.contains("open");
+      closeAllCustomSelects();
+
+      if (!isOpen) {
+        renderTopicFilterSubjectMenu();
+        menu.classList.add("open");
+        $("#topicFilterSubjectTrigger").classList.add("active");
+      }
     });
 
     $("#topicTeamTrigger").addEventListener("click", event => {
@@ -7132,16 +7587,6 @@
       }
     });
 
-    $("#openTopicTeamModal").addEventListener("click", () => {
-      if (!requireLogin()) return;
-
-      selectedTopicMemberIds = new Set();
-      $("#topicTeamForm").reset();
-      $("#topicMemberSearch").value = "";
-      renderTopicMemberPicker();
-      topicTeamModal.classList.add("open");
-      setTimeout(() => $("#topicTeamName").focus(), 80);
-    });
 
     $("#topicMemberSearch").addEventListener("input", renderTopicMemberPicker);
 
@@ -7153,38 +7598,63 @@
       const subject = $("#topicSubject").value.trim();
       const itemType = $("#topicType").value || "Artigo";
       const notes = $("#topicNotes").value.trim();
+      const activityId = $("#topicActivityId").value || null;
       const rule = document.querySelector('input[name="topicRule"]:checked')?.value || "exclusive";
       const saveBtn = $("#saveTopicBtn");
+      const isEditing = Boolean(editingTopicId);
 
       if (!title || !subject) {
         if (!subject) $("#topicSubjectTrigger").focus();
         return;
       }
 
+      if (activityId) {
+        const linkedActivity = activities.find(item => item.id === activityId);
+        if (!linkedActivity || linkedActivity.subject !== subject || linkedActivity.modality === "Individual") {
+          alert("Selecione uma atividade em dupla ou grupo da mesma disciplina.");
+          $("#topicActivityTrigger").focus();
+          return;
+        }
+      }
+
       saveBtn.disabled = true;
 
       try {
-        const { error } = await supabaseClient
-          .from("topic_items")
-          .insert({
-            title,
-            subject,
-            item_type: itemType,
-            notes: notes || null,
-            allow_multiple_teams: rule === "shared",
-            created_by: currentUser.id
-          });
+        const payload = {
+          title,
+          subject,
+          item_type: itemType,
+          notes: notes || null,
+          allow_multiple_teams: rule === "shared",
+          activity_id: activityId
+        };
 
-        if (error) {
-          console.error(error);
-          alert("Não foi possível cadastrar este artigo ou tema.");
+        const query = supabaseClient.from("topic_items");
+        const result = isEditing
+          ? await query.update(payload).eq("id", editingTopicId)
+          : await query.insert({
+              ...payload,
+              created_by: currentUser.id
+            });
+
+        if (result.error) {
+          console.error(result.error);
+          alert(isEditing
+            ? "Não foi possível salvar as alterações deste artigo ou tema."
+            : "Não foi possível cadastrar este artigo ou tema.");
           return;
         }
 
         topicModal.classList.remove("open");
         $("#topicForm").reset();
+        editingTopicId = null;
+        selectedTopicActivityId = "";
         setTopicSubject("");
-        await loadTopicBoardData();
+        setTopicActivity("");
+        await Promise.all([
+          loadTopicBoardData(),
+          loadActivities()
+        ]);
       } finally {
         saveBtn.disabled = false;
       }
@@ -7251,9 +7721,13 @@
         if (error) {
           console.error(error);
 
-          if (String(error.message || "").includes("already chosen")) {
+          const message = String(error.message || "");
+
+          if (message.includes("team already chose another topic for this activity")) {
+            alert("Essa equipe já escolheu outro artigo ou tema vinculado a esta atividade.");
+          } else if (message.includes("already chosen")) {
             alert("Esse artigo ou tema acabou de ser escolhido por outra equipe.");
-          } else if (String(error.message || "").includes("accepted member")) {
+          } else if (message.includes("accepted member")) {
             alert("Você precisa ser integrante aceito dessa equipe.");
           } else {
             alert("Não foi possível confirmar a escolha.");
@@ -7264,7 +7738,10 @@
         }
 
         topicClaimModal.classList.remove("open");
-        await loadTopicBoardData();
+        await Promise.all([
+          loadTopicBoardData(),
+          loadActivities()
+        ]);
       } finally {
         confirmBtn.disabled = false;
       }
@@ -7423,6 +7900,8 @@
         if (!isEditing) {
           if (topicModal.classList.contains("open")) {
             setTopicSubject(result.data.name);
+            setTopicActivity("");
+            renderTopicActivityMenu();
           } else {
             setFormDiscipline(result.data.name);
           }
@@ -8037,11 +8516,17 @@
       if (result.error) {
         console.error(result.error);
 
+        const message = String(result.error.message || "");
+
         if (
           result.error.code === "22007" ||
-          String(result.error.message || "").includes("deadline must be in the future")
+          message.includes("deadline must be in the future")
         ) {
           alert("Não é possível usar um prazo que já passou.");
+        } else if (message.includes("must remain a team activity")) {
+          alert("Esta atividade está vinculada a Artigos & Equipes. Desvincule os artigos/temas antes de mudar para Individual.");
+        } else if (message.includes("before changing the activity subject")) {
+          alert("Esta atividade está vinculada a Artigos & Equipes. Desvincule os artigos/temas antes de trocar a disciplina.");
         } else {
           alert(
             isEditing
@@ -8117,10 +8602,7 @@
 
         if (requireLogin() && isStaff()) {
           if (activeSection === "topics") {
-            $("#topicForm").reset();
-            setTopicSubject("");
-            renderTopicSubjectMenu();
-            topicModal.classList.add("open");
+            openTopicModal();
           } else if (activeSection === "activities") {
             openCreateActivityModal();
           }
