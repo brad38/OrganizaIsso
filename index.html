@@ -265,6 +265,13 @@
       line-height: 1.55;
     }
 
+    .my-works-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
     .my-works-layout {
       display: grid;
       grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
@@ -410,9 +417,10 @@
         align-items: stretch;
       }
 
-      .my-works-page-header > .btn {
-        align-self: flex-start;
+      .my-works-header-actions {
         order: -1;
+        align-self: flex-start;
+        flex-wrap: wrap;
       }
 
       .my-works-layout {
@@ -4164,9 +4172,14 @@
           </p>
         </div>
 
-        <button type="button" class="btn btn-secondary" id="backFromMyWorks">
-          Voltar ao mural
-        </button>
+        <div class="my-works-header-actions">
+          <button type="button" class="btn btn-secondary" id="backFromMyWorks">
+            Voltar ao mural
+          </button>
+          <button type="button" class="btn btn-secondary" id="shareMyWorksBtn">
+            Compartilhar
+          </button>
+        </div>
       </div>
 
       <div class="my-works-layout">
@@ -4856,8 +4869,8 @@
     <div class="modal" style="max-width: 620px;">
       <div class="modal-head">
         <div>
-          <h3>Compartilhar Atividades</h3>
-          <p style="font-size:.78rem;color:var(--muted);margin-top:3px;">Monte o resumo antes de copiar, baixar ou enviar.</p>
+          <h3 id="shareModalTitle">Compartilhar Atividades</h3>
+          <p id="shareModalSubtitle" style="font-size:.78rem;color:var(--muted);margin-top:3px;">Monte o resumo antes de copiar, baixar ou enviar.</p>
         </div>
         <button class="icon-close" id="closeShareModal" type="button" aria-label="Fechar">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -4875,49 +4888,51 @@
         <button type="button" class="share-filter-btn" data-share-range="60">Últimos 2 meses</button>
       </div>
 
-      <div class="share-filter-group">
-        <div class="share-filter-label">Estado</div>
-        <button type="button" class="share-filter-btn active" data-share-status="pending">Só pendentes</button>
-        <button type="button" class="share-filter-btn" data-share-status="all">Pendente + Feitas</button>
-      </div>
+      <div class="share-private-controls" id="sharePrivateControls">
+        <div class="share-filter-group" id="shareStatusGroup">
+          <div class="share-filter-label">Estado</div>
+          <button type="button" class="share-filter-btn active" data-share-status="pending">Só pendentes</button>
+          <button type="button" class="share-filter-btn" data-share-status="all">Pendente + Feitas</button>
+        </div>
 
-      <label class="share-team-toggle" for="shareTeamOnly">
-        <input type="checkbox" id="shareTeamOnly" />
-        <span class="share-team-check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M5 12.5 9.2 16.7 19 7.5"/>
-          </svg>
-        </span>
-        <span class="share-team-toggle-copy">
-          <strong>Somente atividades em equipe</strong>
-          <span>Inclui atividades em dupla e em grupo.</span>
-        </span>
-      </label>
-
-      <div class="share-options-row">
-        <label class="share-team-toggle share-option-toggle" for="shareShowMembers">
-          <input type="checkbox" id="shareShowMembers" />
+        <label class="share-team-toggle" for="shareTeamOnly">
+          <input type="checkbox" id="shareTeamOnly" />
           <span class="share-team-check" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M5 12.5 9.2 16.7 19 7.5"/>
             </svg>
           </span>
           <span class="share-team-toggle-copy">
-            <strong>Exibir membros</strong>
+            <strong>Somente atividades em equipe</strong>
+            <span>Inclui atividades em dupla e em grupo.</span>
           </span>
         </label>
 
-        <label class="share-team-toggle share-option-toggle" for="shareShowState">
-          <input type="checkbox" id="shareShowState" />
-          <span class="share-team-check" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M5 12.5 9.2 16.7 19 7.5"/>
-            </svg>
-          </span>
-          <span class="share-team-toggle-copy">
-            <strong>Exibir estado</strong>
-          </span>
-        </label>
+        <div class="share-options-row">
+          <label class="share-team-toggle share-option-toggle" for="shareShowMembers">
+            <input type="checkbox" id="shareShowMembers" />
+            <span class="share-team-check" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M5 12.5 9.2 16.7 19 7.5"/>
+              </svg>
+            </span>
+            <span class="share-team-toggle-copy">
+              <strong>Exibir membros</strong>
+            </span>
+          </label>
+
+          <label class="share-team-toggle share-option-toggle" for="shareShowState">
+            <input type="checkbox" id="shareShowState" />
+            <span class="share-team-check" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M5 12.5 9.2 16.7 19 7.5"/>
+              </svg>
+            </span>
+            <span class="share-team-toggle-copy">
+              <strong>Exibir estado</strong>
+            </span>
+          </label>
+        </div>
       </div>
 
       <div class="share-stats-badge" id="shareCountLabel">0 atividades</div>
@@ -5080,6 +5095,7 @@
     let shareTeamOnly = false;
     let shareShowMembers = false;
     let shareShowState = false;
+    let shareSource = "activities";
     let currentSummaryRawText = "";
     let privateActivityWorks = [];
     let siteNoticeResolver = null;
@@ -9363,6 +9379,10 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
+    $("#shareMyWorksBtn").addEventListener("click", () => {
+      openShareModal("myworks");
+    });
+
     $("#cancelMyWorkBtn").addEventListener("click", () => {
       resetMyWorkForm();
     });
@@ -9963,13 +9983,54 @@
       return true;
     }
 
-    function getShareActivities() {
+    function getPrivateWorkShareTeamInfo(work, activityId) {
+      if (!work) return getRelevantTeamInfo(activityId);
+
+      if (work.scope_type === "pair") {
+        const memberIds = [work.member_a, work.member_b].filter(Boolean);
+        const memberNames = memberIds.map(userId =>
+          topicDirectory.find(person => person.user_id === userId)?.display_name || "Integrante"
+        );
+        return { memberIds, memberNames };
+      }
+
+      if (work.scope_type === "group") {
+        const team = topicTeams.find(item => item.id === work.team_id);
+        if (!team) return { memberIds: [], memberNames: [] };
+
+        const memberIds = [
+          team.owner_id,
+          ...topicTeamMembers
+            .filter(member => member.team_id === team.id && member.status === "accepted")
+            .map(member => member.user_id)
+        ].filter((value, index, array) => value && array.indexOf(value) === index);
+
+        const memberNames = memberIds.map(userId =>
+          topicDirectory.find(person => person.user_id === userId)?.display_name || "Integrante"
+        );
+
+        return { memberIds, memberNames };
+      }
+
+      return null;
+    }
+
+    function getShareEntries() {
       const completedCutoff = new Date();
       completedCutoff.setDate(completedCutoff.getDate() - 14);
       completedCutoff.setHours(0, 0, 0, 0);
 
-      return activities
-        .filter(activity => {
+      const sourceEntries = shareSource === "myworks"
+        ? privateActivityWorks
+            .map(work => ({
+              work,
+              activity: activities.find(activity => activity.id === work.activity_id)
+            }))
+            .filter(entry => entry.activity)
+        : activities.map(activity => ({ activity, work: null }));
+
+      return sourceEntries
+        .filter(({ activity, work }) => {
           const dates = getActivityDates(activity).map(value => new Date(value));
           const validDates = dates.filter(value => !Number.isNaN(value.getTime()));
           if (!validDates.length) return false;
@@ -9978,10 +10039,11 @@
           const due = validDates[0];
           const isDone = doneIds.has(activity.id);
           const modality = activity.modality || "Individual";
+          const isTeamWork = work
+            ? work.scope_type === "group" || work.scope_type === "pair"
+            : modality !== "Individual";
 
-          if (shareTeamOnly && modality === "Individual") {
-            return false;
-          }
+          if (shareTeamOnly && !isTeamWork) return false;
 
           if (shareStatusFilter === "pending") {
             return !isDone;
@@ -9999,55 +10061,54 @@
 
           return true;
         })
-        .sort((a, b) => new Date(getActivityReferenceDue(a)) - new Date(getActivityReferenceDue(b)));
+        .sort((a, b) =>
+          new Date(getActivityReferenceDue(a.activity)) -
+          new Date(getActivityReferenceDue(b.activity))
+        );
+    }
+
+    function renderSharePreview(text) {
+      const preview = $("#shareSummaryText");
+      if (!preview) return;
+
+      const safe = escapeHtml(text);
+      preview.innerHTML = safe.replace(/\*([^*\n]+)\*/g, "<strong>$1</strong>");
     }
 
     function generateAndDisplaySummary() {
-      const list = getShareActivities();
-      const rangeLabel = getShareRangeConfig().label;
-      const statusLabel = shareStatusFilter === "pending"
-        ? "Só pendentes"
-        : "Pendente + Feitas";
-      const teamLabel = shareTeamOnly
-        ? "somente atividades em equipe"
-        : "todas as modalidades";
+      const list = getShareEntries();
 
       $("#shareCountLabel").textContent =
         `${list.length} atividade${list.length === 1 ? "" : "s"} no resumo`;
 
-      const header =
-        `ATIVIDADES - MURAL ACADÊMICO\n` +
-        `Filtro: ${rangeLabel} | ${statusLabel} | ${teamLabel}\n` +
-        `Atualizado em: ${new Date().toLocaleString("pt-BR")}\n` +
-        `Total: ${list.length}\n`;
-
       if (!list.length) {
-        currentSummaryRawText = header + "\nNenhuma atividade encontrada com esses filtros.";
-        $("#shareSummaryText").textContent = currentSummaryRawText;
+        currentSummaryRawText = "Nenhuma atividade encontrada com esses filtros.";
+        renderSharePreview(currentSummaryRawText);
         return;
       }
 
-      const blocks = list.map((activity, index) => {
-        const subject = findSubjectByName(activity.subject);
-        const professor = getSubjectProfessor(subject);
+      const blocks = list.map(({ activity, work }) => {
         const state = doneIds.has(activity.id) ? "Eu já fiz" : "Pendente";
         const dueInfo = getDueInfo(getActivityReferenceDue(activity));
         const modality = activity.modality || "Individual";
-        const team = modality !== "Individual" ? getRelevantTeamInfo(activity.id) : null;
+        const team = modality !== "Individual"
+          ? getPrivateWorkShareTeamInfo(work, activity.id)
+          : null;
 
         const dates = getActivityDates(activity);
         const dateLabel = dates.length > 1
-          ? `Datas: ${dates.map(formatDate).join(" | ")}`
-          : `Prazo: ${formatDate(dates[0] || activity.due)}`;
+          ? `Datas: *${dates.map(formatDate).join(" | ")}*`
+          : `Prazo: *${formatDate(dates[0] || activity.due)}*`;
 
         const lines = [
-          `${index + 1}. ${activity.title}`,
+          `*${activity.title}*`,
           `Disciplina: ${activity.subject}`,
-          professor?.name ? `Professor: ${professor.name}` : null,
           `Modalidade: ${modality}`,
           dateLabel,
           shareShowState ? `Estado: ${state}` : null,
-          shareShowState && dueInfo.status === "expired" && state === "Pendente" ? "Prazo: expirado" : null
+          shareShowState && dueInfo.status === "expired" && state === "Pendente"
+            ? "Prazo expirado"
+            : null
         ].filter(Boolean);
 
         if (shareShowMembers && modality !== "Individual") {
@@ -10063,8 +10124,8 @@
         return lines.join("\n");
       });
 
-      currentSummaryRawText = header + "\n" + blocks.join("\n\n");
-      $("#shareSummaryText").textContent = currentSummaryRawText;
+      currentSummaryRawText = blocks.join("\n\n");
+      renderSharePreview(currentSummaryRawText);
     }
 
     function copyTextToClipboard(text) {
@@ -10083,11 +10144,30 @@
       return Promise.resolve();
     }
 
-    function openShareModal() {
+    function openShareModal(source = "activities") {
+      shareSource = source === "myworks" ? "myworks" : "activities";
+      shareStatusFilter = "pending";
+      shareTeamOnly = false;
       shareShowMembers = false;
       shareShowState = false;
+
+      const isPrivateShare = shareSource === "myworks";
+      $("#sharePrivateControls").hidden = !isPrivateShare;
+      $("#shareModalTitle").textContent = isPrivateShare
+        ? "Compartilhar Meus trabalhos"
+        : "Compartilhar Atividades";
+      $("#shareModalSubtitle").textContent = isPrivateShare
+        ? "Monte o resumo dos seus trabalhos privados antes de compartilhar."
+        : "Escolha o período e compartilhe as atividades pendentes do mural.";
+
+      $("#shareTeamOnly").checked = false;
       $("#shareShowMembers").checked = false;
       $("#shareShowState").checked = false;
+
+      $$("[data-share-status]").forEach(button => {
+        button.classList.toggle("active", button.dataset.shareStatus === "pending");
+      });
+
       generateAndDisplaySummary();
       shareModal.classList.add("open");
     }
