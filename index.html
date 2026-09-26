@@ -2699,6 +2699,7 @@
       }
 
       .topbar {
+        position: relative;
         flex-direction: column;
         align-items: stretch;
         gap: 12px;
@@ -2708,6 +2709,7 @@
       .brand {
         min-width: 0;
         gap: 10px;
+        padding-right: 58px;
       }
 
       .brand-icon {
@@ -2748,6 +2750,10 @@
       }
 
       .actions .invite-icon-btn {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 4;
         flex: 0 0 46px;
         width: 46px;
         min-width: 46px;
