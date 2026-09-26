@@ -3071,7 +3071,7 @@
       .modal {
         width: 100%;
         max-width: none !important;
-        max-height: 92dvh;
+        max-height: calc(var(--visual-viewport-height, 100dvh) - 8px);
         overflow-y: auto;
         overscroll-behavior: contain;
         border-radius: 18px 18px 0 0;
@@ -7604,35 +7604,65 @@
       const modal = target.closest(".modal");
       if (!modal) return;
 
-      setTimeout(() => {
+      const ensureVisible = (behavior = "auto") => {
+        if (!target.isConnected || document.activeElement !== target) return;
+
         updateVisualViewportVars();
 
-        const fieldRect = target.getBoundingClientRect();
-        const modalRect = modal.getBoundingClientRect();
-        const viewport = window.visualViewport;
+        const firstKeyboardField = modal.querySelector(
+          'input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled])'
+        );
 
+        if (target === firstKeyboardField) {
+          modal.scrollTo({
+            top: 0,
+            behavior
+          });
+          return;
+        }
+
+        const viewport = window.visualViewport;
+        const viewportTop = viewport?.offsetTop || 0;
         const viewportBottom = viewport
           ? viewport.offsetTop + viewport.height
           : window.innerHeight;
 
-        const safeTop = modalRect.top + 58;
-        const safeBottom = Math.min(modalRect.bottom, viewportBottom) - 24;
+        const modalRect = modal.getBoundingClientRect();
+        const fieldBlock = target.closest(".field") || target;
+        const fieldRect = fieldBlock.getBoundingClientRect();
+
+        const safeTop = Math.max(
+          viewportTop + 14,
+          modalRect.top + 52
+        );
+        const safeBottom = Math.min(
+          viewportBottom - 18,
+          modalRect.bottom - 18
+        );
 
         let delta = 0;
 
-        if (fieldRect.bottom > safeBottom) {
-          delta = fieldRect.bottom - safeBottom + 18;
-        } else if (fieldRect.top < safeTop) {
-          delta = fieldRect.top - safeTop - 12;
+        if (fieldRect.top < safeTop) {
+          delta = fieldRect.top - safeTop - 8;
+        } else if (fieldRect.bottom > safeBottom) {
+          delta = fieldRect.bottom - safeBottom + 12;
         }
 
         if (Math.abs(delta) > 2) {
           modal.scrollBy({
             top: delta,
-            behavior: "smooth"
+            behavior
           });
         }
-      }, 260);
+      };
+
+      // O teclado móvel muda o visualViewport em etapas. Revalidar durante
+      // essa animação evita que os primeiros campos fiquem acima da tela.
+      [0, 90, 180, 320, 480, 700].forEach(delay => {
+        setTimeout(() => {
+          ensureVisible("auto");
+        }, delay);
+      });
     }
 
     function hasMobileInternalLayerOpen() {
@@ -7745,7 +7775,10 @@
         keepFocusedFieldVisible();
       });
 
-      window.visualViewport.addEventListener("scroll", updateVisualViewportVars);
+      window.visualViewport.addEventListener("scroll", () => {
+        updateVisualViewportVars();
+        keepFocusedFieldVisible();
+      });
     }
 
     const internalLayerObserver = new MutationObserver(() => {
