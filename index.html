@@ -4888,6 +4888,18 @@
         <button type="button" class="share-filter-btn" data-share-range="60">Últimos 2 meses</button>
       </div>
 
+      <label class="share-team-toggle" for="shareShowProfessors">
+        <input type="checkbox" id="shareShowProfessors" />
+        <span class="share-team-check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M5 12.5 9.2 16.7 19 7.5"/>
+          </svg>
+        </span>
+        <span class="share-team-toggle-copy">
+          <strong>Exibir professores</strong>
+        </span>
+      </label>
+
       <div class="share-private-controls" id="sharePrivateControls">
         <div class="share-filter-group" id="shareStatusGroup">
           <div class="share-filter-label">Estado</div>
@@ -5095,6 +5107,7 @@
     let shareTeamOnly = false;
     let shareShowMembers = false;
     let shareShowState = false;
+    let shareShowProfessors = false;
     let shareSource = "activities";
     let currentSummaryRawText = "";
     let privateActivityWorks = [];
@@ -10088,6 +10101,8 @@
       }
 
       const blocks = list.map(({ activity, work }) => {
+        const subject = findSubjectByName(activity.subject);
+        const professor = getSubjectProfessor(subject);
         const state = doneIds.has(activity.id) ? "Eu já fiz" : "Pendente";
         const dueInfo = getDueInfo(getActivityReferenceDue(activity));
         const modality = activity.modality || "Individual";
@@ -10103,6 +10118,7 @@
         const lines = [
           `*${activity.title}*`,
           `Disciplina: ${activity.subject}`,
+          shareShowProfessors && professor?.name ? `Professor: ${professor.name}` : null,
           `Modalidade: ${modality}`,
           dateLabel,
           shareShowState ? `Estado: ${state}` : null,
@@ -10150,6 +10166,7 @@
       shareTeamOnly = false;
       shareShowMembers = false;
       shareShowState = false;
+      shareShowProfessors = false;
 
       const isPrivateShare = shareSource === "myworks";
       $("#sharePrivateControls").hidden = !isPrivateShare;
@@ -10163,6 +10180,7 @@
       $("#shareTeamOnly").checked = false;
       $("#shareShowMembers").checked = false;
       $("#shareShowState").checked = false;
+      $("#shareShowProfessors").checked = false;
 
       $$("[data-share-status]").forEach(button => {
         button.classList.toggle("active", button.dataset.shareStatus === "pending");
@@ -10249,6 +10267,11 @@
 
     $("#shareShowState").addEventListener("change", event => {
       shareShowState = event.target.checked;
+      generateAndDisplaySummary();
+    });
+
+    $("#shareShowProfessors").addEventListener("change", event => {
+      shareShowProfessors = event.target.checked;
       generateAndDisplaySummary();
     });
 
