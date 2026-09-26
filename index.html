@@ -1709,8 +1709,8 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 18px;
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-rows: 145px minmax(100px, 1fr) auto;
       gap: 12px;
       min-width: 0;
       height: 360px;
@@ -1784,7 +1784,9 @@
       font-size: .82rem;
       line-height: 1.5;
       overflow-wrap: anywhere;
-      max-height: 72px;
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: none;
       overflow-y: auto;
       overscroll-behavior: contain;
       padding-right: 5px;
@@ -1838,13 +1840,13 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      min-height: 74px;
-      max-height: 112px;
+      min-height: 0;
+      height: 100%;
+      max-height: none;
       overflow-y: auto;
       overscroll-behavior: contain;
       scrollbar-width: thin;
       scrollbar-color: #555 #252525;
-      flex-shrink: 0;
     }
 
     .topic-teams-head {
@@ -1891,7 +1893,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      margin-top: auto;
+      margin-top: 0;
       padding-top: 2px;
     }
 
@@ -3143,6 +3145,7 @@
         padding: 14px;
         height: 390px;
         min-height: 390px;
+        grid-template-rows: 145px minmax(120px, 1fr) auto;
       }
 
       .topic-card-actions .btn {
