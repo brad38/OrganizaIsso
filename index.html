@@ -1702,6 +1702,53 @@
       line-height: 1.55;
     }
 
+    .share-team-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 11px;
+      margin-bottom: 11px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+      transition: background .12s ease, border-color .12s ease, color .12s ease;
+    }
+
+    .share-team-toggle:hover {
+      background: var(--panel-raised);
+      color: var(--parchment);
+    }
+
+    .share-team-toggle input {
+      width: 17px;
+      height: 17px;
+      flex-shrink: 0;
+      accent-color: #F3F3F3;
+      cursor: pointer;
+    }
+
+    .share-team-toggle-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 0;
+    }
+
+    .share-team-toggle-copy strong {
+      color: var(--parchment);
+      font-size: .78rem;
+      font-weight: 650;
+    }
+
+    .share-team-toggle-copy span {
+      color: var(--muted-dark);
+      font-size: .7rem;
+    }
+
     .share-range-note {
       margin: -2px 0 12px;
       color: var(--muted-dark);
@@ -2843,8 +2890,16 @@
       <div class="share-filter-group">
         <div class="share-filter-label">Estado</div>
         <button type="button" class="share-filter-btn active" data-share-status="pending">Só pendentes</button>
-        <button type="button" class="share-filter-btn" data-share-status="all">Todas, inclusive feitas</button>
+        <button type="button" class="share-filter-btn" data-share-status="all">Pendentes + feitas (2 sem.)</button>
       </div>
+
+      <label class="share-team-toggle" for="shareTeamOnly">
+        <input type="checkbox" id="shareTeamOnly" />
+        <span class="share-team-toggle-copy">
+          <strong>Somente atividades em equipe</strong>
+          <span>Inclui atividades em dupla e em grupo.</span>
+        </span>
+      </label>
 
       <p class="share-range-note" id="shareRangeNote"></p>
       <div class="share-stats-badge" id="shareCountLabel">0 atividades</div>
@@ -2973,8 +3028,11 @@
     let professors = [];
     let subjects = [];
     let completionRealtimeChannel = null;
+    let completionDates = new Map();
+    let teamInfoByActivity = new Map();
     let shareRangeDays = 14;
     let shareStatusFilter = "pending";
+    let shareTeamOnly = false;
     let currentSummaryRawText = "";
     let activeSection = "activities";
     let contentsState = {
@@ -3008,21 +3066,98 @@
       }
 
       doneIds = new Set();
+      completionDates = new Map();
 
       if (currentUser) {
         const { data: completionData, error: completionError } = await supabaseClient
           .from("activity_completions")
-          .select("activity_id")
+          .select("activity_id,completed_at")
           .eq("user_id", currentUser.id);
 
         if (completionError) {
           console.error("Falha ao carregar conclusões:", completionError);
         } else {
           doneIds = new Set((completionData || []).map(item => item.activity_id));
+          completionDates = new Map(
+            (completionData || []).map(item => [item.activity_id, item.completed_at])
+          );
         }
       }
 
+      await loadTeamInfo();
       renderList();
+    }
+
+    async function loadTeamInfo() {
+      const [teamsResult, membersResult, directoryResult] = await Promise.all([
+        supabaseClient
+          .from("activity_teams")
+          .select("id,activity_id,owner_id"),
+        supabaseClient
+          .from("activity_team_members")
+          .select("team_id,activity_id,user_id,status")
+          .eq("status", "accepted"),
+        supabaseClient
+          .from("user_directory")
+          .select("user_id,display_name")
+      ]);
+
+      if (teamsResult.error || membersResult.error || directoryResult.error) {
+        if (teamsResult.error) console.error("Falha ao carregar equipes:", teamsResult.error);
+        if (membersResult.error) console.error("Falha ao carregar membros:", membersResult.error);
+        if (directoryResult.error) console.error("Falha ao carregar nomes dos membros:", directoryResult.error);
+        teamInfoByActivity = new Map();
+        return;
+      }
+
+      const directory = new Map(
+        (directoryResult.data || []).map(item => [item.user_id, item.display_name])
+      );
+
+      const membersByTeam = new Map();
+      (membersResult.data || []).forEach(member => {
+        if (!membersByTeam.has(member.team_id)) membersByTeam.set(member.team_id, []);
+        membersByTeam.get(member.team_id).push(member);
+      });
+
+      const teamsByActivity = new Map();
+      (teamsResult.data || []).forEach(team => {
+        if (!teamsByActivity.has(team.activity_id)) teamsByActivity.set(team.activity_id, []);
+
+        const acceptedMembers = membersByTeam.get(team.id) || [];
+        const memberIds = [
+          team.owner_id,
+          ...acceptedMembers.map(member => member.user_id)
+        ].filter(Boolean);
+
+        const uniqueMemberIds = [...new Set(memberIds)];
+        const memberNames = uniqueMemberIds
+          .map(userId => directory.get(userId))
+          .filter(Boolean);
+
+        teamsByActivity.get(team.activity_id).push({
+          id: team.id,
+          ownerId: team.owner_id,
+          memberIds: uniqueMemberIds,
+          memberNames
+        });
+      });
+
+      teamInfoByActivity = teamsByActivity;
+    }
+
+    function getRelevantTeamInfo(activityId) {
+      const teams = teamInfoByActivity.get(activityId) || [];
+      if (!teams.length) return null;
+
+      if (currentUser) {
+        const ownTeam = teams.find(team =>
+          team.ownerId === currentUser.id || team.memberIds.includes(currentUser.id)
+        );
+        if (ownTeam) return ownTeam;
+      }
+
+      return teams.length === 1 ? teams[0] : null;
     }
 
     async function subscribeToCompletionRealtime() {
@@ -4613,20 +4748,37 @@
     });
 
     function getShareActivities() {
-      const cutoff = new Date();
-      cutoff.setDate(cutoff.getDate() - shareRangeDays);
-      cutoff.setHours(0, 0, 0, 0);
+      const pendingCutoff = new Date();
+      pendingCutoff.setDate(pendingCutoff.getDate() - shareRangeDays);
+      pendingCutoff.setHours(0, 0, 0, 0);
+
+      const completedCutoff = new Date();
+      completedCutoff.setDate(completedCutoff.getDate() - 14);
+      completedCutoff.setHours(0, 0, 0, 0);
 
       return activities
         .filter(activity => {
           const due = new Date(activity.due);
-          if (Number.isNaN(due.getTime()) || due < cutoff) return false;
+          if (Number.isNaN(due.getTime())) return false;
 
-          if (shareStatusFilter === "pending" && doneIds.has(activity.id)) {
+          const isDone = doneIds.has(activity.id);
+          const modality = activity.modality || "Individual";
+
+          if (shareTeamOnly && modality === "Individual") {
             return false;
           }
 
-          return true;
+          if (shareStatusFilter === "pending") {
+            return !isDone && due >= pendingCutoff;
+          }
+
+          if (isDone) {
+            const completedAtRaw = completionDates.get(activity.id);
+            const completedAt = completedAtRaw ? new Date(completedAtRaw) : due;
+            return !Number.isNaN(completedAt.getTime()) && completedAt >= completedCutoff;
+          }
+
+          return due >= pendingCutoff;
         })
         .sort((a, b) => new Date(a.due) - new Date(b.due));
     }
@@ -4638,17 +4790,20 @@
       cutoff.setHours(0, 0, 0, 0);
 
       const rangeLabel = shareRangeDays === 14 ? "Últimas 2 semanas" : "Últimos 2 meses";
-      const statusLabel = shareStatusFilter === "pending" ? "só pendentes" : "todas, inclusive feitas";
+      const statusLabel = shareStatusFilter === "pending" ? "só pendentes" : "pendentes + feitas recentes";
+      const teamLabel = shareTeamOnly ? "somente atividades em equipe" : "todas as modalidades";
 
       $("#shareRangeNote").textContent =
-        `${rangeLabel}: inclui atividades com prazo desde ${cutoff.toLocaleDateString("pt-BR")} e os próximos prazos. Modalidades individual, dupla e grupo entram normalmente.`;
+        shareStatusFilter === "pending"
+          ? `${rangeLabel}: considera as pendentes com prazo desde ${cutoff.toLocaleDateString("pt-BR")} e os próximos prazos. ${shareTeamOnly ? "Somente dupla e grupo." : "Individual, dupla e grupo."}`
+          : `${rangeLabel}: pendentes seguem o período escolhido; atividades já feitas aparecem somente se foram concluídas nas últimas 2 semanas. ${shareTeamOnly ? "Somente dupla e grupo." : "Individual, dupla e grupo."}`;
 
       $("#shareCountLabel").textContent =
         `${list.length} atividade${list.length === 1 ? "" : "s"} no resumo`;
 
       const header =
         `ATIVIDADES - MURAL ACADÊMICO\n` +
-        `Filtro: ${rangeLabel} | ${statusLabel}\n` +
+        `Filtro: ${rangeLabel} | ${statusLabel} | ${teamLabel}\n` +
         `Atualizado em: ${new Date().toLocaleString("pt-BR")}\n` +
         `Total: ${list.length}\n`;
 
@@ -4663,16 +4818,28 @@
         const professor = getSubjectProfessor(subject);
         const state = doneIds.has(activity.id) ? "Eu já fiz" : "Pendente";
         const dueInfo = getDueInfo(activity.due);
+        const modality = activity.modality || "Individual";
+        const team = modality !== "Individual" ? getRelevantTeamInfo(activity.id) : null;
 
         const lines = [
           `${index + 1}. ${activity.title}`,
           `Disciplina: ${activity.subject}`,
           professor?.name ? `Professor: ${professor.name}` : null,
-          `Modalidade: ${activity.modality || "Individual"}`,
+          `Modalidade: ${modality}`,
           `Prazo: ${formatDate(activity.due)}`,
           `Estado: ${state}`,
           dueInfo.status === "expired" && state === "Pendente" ? "Prazo: expirado" : null
         ].filter(Boolean);
+
+        if (modality !== "Individual") {
+          lines.push("Membros:");
+
+          if (team?.memberNames?.length) {
+            team.memberNames.forEach(name => lines.push(`- ${name}`));
+          } else {
+            lines.push("- Equipe ainda não definida");
+          }
+        }
 
         return lines.join("\n");
       });
@@ -4721,6 +4888,11 @@
         button.classList.add("active");
         generateAndDisplaySummary();
       });
+    });
+
+    $("#shareTeamOnly").addEventListener("change", event => {
+      shareTeamOnly = event.target.checked;
+      generateAndDisplaySummary();
     });
 
     $("#copySummaryBtn").addEventListener("click", async () => {
