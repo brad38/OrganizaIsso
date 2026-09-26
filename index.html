@@ -2058,7 +2058,7 @@
 
     .fab-share {
       position: fixed;
-      right: 28px;
+      right: var(--fab-share-right, 28px);
       bottom: 28px;
       width: 54px;
       height: 54px;
@@ -2458,7 +2458,7 @@
       }
 
       .fab-share {
-        right: 18px;
+        right: var(--fab-share-right-mobile, 18px);
         bottom: calc(18px + env(safe-area-inset-bottom));
         width: 52px;
         height: 52px;
@@ -6177,6 +6177,27 @@
     let mobileBackGuardActive = false;
     let ignoreNextMobilePopState = false;
 
+    function syncShareButtonAlignment() {
+      const app = document.querySelector(".app");
+      if (!app) return;
+
+      if (window.innerWidth <= 640) {
+        document.documentElement.style.setProperty("--fab-share-right-mobile", "18px");
+        return;
+      }
+
+      const appRect = app.getBoundingClientRect();
+      const rightGap = Math.max(
+        16,
+        Math.round(window.innerWidth - appRect.right)
+      );
+
+      document.documentElement.style.setProperty(
+        "--fab-share-right",
+        `${rightGap}px`
+      );
+    }
+
     function updateVisualViewportVars() {
       const viewport = window.visualViewport;
       const height = viewport?.height || window.innerHeight;
@@ -6190,6 +6211,8 @@
         "--visual-viewport-top",
         `${Math.max(0, Math.round(top))}px`
       );
+
+      syncShareButtonAlignment();
     }
 
     function keepFocusedFieldVisible(target = document.activeElement) {
