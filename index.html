@@ -5827,9 +5827,60 @@
       $("#kpiDone").textContent = done.length;
     }
 
+    function resetTopicTeamMenuPosition() {
+      const menu = $("#topicTeamMenu");
+      const host = $("#topicTeamDropdown");
+      const hiddenInput = $("#topicTeamId");
+      if (!menu || !host) return;
+
+      ["position", "top", "left", "right", "bottom", "width", "max-height", "z-index"]
+        .forEach(prop => menu.style.removeProperty(prop));
+
+      if (menu.parentElement !== host) {
+        if (hiddenInput) host.insertBefore(menu, hiddenInput);
+        else host.appendChild(menu);
+      }
+    }
+
+    function positionTopicTeamMenuMobile() {
+      const menu = $("#topicTeamMenu");
+      const trigger = $("#topicTeamTrigger");
+      if (!menu || !trigger || window.innerWidth > 820 || !menu.classList.contains("open")) return;
+
+      if (menu.parentElement !== document.body) document.body.appendChild(menu);
+
+      const rect = trigger.getBoundingClientRect();
+      const viewport = window.visualViewport;
+      const viewportTop = viewport?.offsetTop || 0;
+      const viewportHeight = viewport?.height || window.innerHeight;
+      const viewportBottom = viewportTop + viewportHeight;
+      const sideGap = 10;
+      const triggerGap = 6;
+      const width = Math.min(rect.width, window.innerWidth - (sideGap * 2));
+      const left = Math.min(
+        Math.max(sideGap, rect.left),
+        Math.max(sideGap, window.innerWidth - sideGap - width)
+      );
+      const availableAbove = Math.max(96, rect.top - viewportTop - triggerGap - sideGap);
+      const maxHeight = Math.min(210, viewportHeight * 0.42, availableAbove);
+
+      menu.style.position = "fixed";
+      menu.style.left = `${left}px`;
+      menu.style.right = "auto";
+      menu.style.width = `${width}px`;
+      menu.style.maxHeight = `${maxHeight}px`;
+      menu.style.zIndex = "1900";
+
+      const menuHeight = Math.min(menu.scrollHeight, maxHeight);
+      const top = Math.max(viewportTop + sideGap, rect.top - triggerGap - menuHeight);
+      menu.style.top = `${Math.min(top, viewportBottom - sideGap - menuHeight)}px`;
+      menu.style.bottom = "auto";
+    }
+
     function closeAllCustomSelects() {
-      $$(".custom-select-menu").forEach(m => m.classList.remove("open"));       $$
-(".custom-select-trigger").forEach(t => t.classList.remove("active"));
+      $$(".custom-select-menu").forEach(m => m.classList.remove("open"));
+      $$(".custom-select-trigger").forEach(t => t.classList.remove("active"));
+      resetTopicTeamMenuPosition();
       const calendar = $("#calendarPopup");
       const calendarWasOpen = calendar.classList.contains("open");
       calendar.classList.remove("open", "open-up");
@@ -8706,6 +8757,10 @@
         renderTopicTeamMenu();
         menu.classList.add("open");
         $("#topicTeamTrigger").classList.add("active");
+
+        if (window.innerWidth <= 820) {
+          positionTopicTeamMenuMobile();
+        }
       }
     });
 
