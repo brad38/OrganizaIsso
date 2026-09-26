@@ -267,30 +267,16 @@
       color: var(--parchment);
     }
 
-    .invite-icon-glyph {
-      position: relative;
+    .invite-message-svg {
       display: block;
       width: 24px;
-      height: 18px;
-      border: 2px solid var(--parchment);
-      border-radius: 5px;
-      background:
-        linear-gradient(var(--parchment) 0 0) 5px 4px / 10px 2px no-repeat,
-        linear-gradient(var(--parchment) 0 0) 5px 9px / 7px 2px no-repeat;
+      height: 24px;
+      fill: none;
+      stroke: var(--parchment);
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
       pointer-events: none;
-    }
-
-    .invite-icon-glyph::after {
-      content: "";
-      position: absolute;
-      left: 4px;
-      bottom: -5px;
-      width: 7px;
-      height: 7px;
-      background: var(--card-bg);
-      border-left: 2px solid var(--parchment);
-      border-bottom: 2px solid var(--parchment);
-      transform: skewY(-35deg);
     }
 
     .invite-badge {
@@ -2769,17 +2755,9 @@
         padding: 0;
       }
 
-      .actions .invite-icon-glyph {
-        width: 26px;
-        height: 20px;
-      }
-
-      .actions .invite-icon-glyph::before {
-        width: 11px;
-      }
-
-      .actions .invite-icon-glyph::after {
-        width: 8px;
+      .actions .invite-message-svg {
+        width: 27px;
+        height: 27px;
       }
 
       .actions .btn svg {
@@ -3393,7 +3371,10 @@
           aria-label="Abrir convites"
           hidden
         >
-          <span class="invite-icon-glyph" aria-hidden="true"></span>
+          <svg class="invite-message-svg" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="14" rx="3"></rect>
+            <path d="M5.5 8 12 13l6.5-5"></path>
+          </svg>
           <span class="invite-badge" id="invitesBadge" hidden>0</span>
         </button>
 
