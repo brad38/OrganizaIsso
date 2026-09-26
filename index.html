@@ -1466,6 +1466,18 @@
       background: #252525;
     }
 
+    .staff-card-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .edit-btn:hover {
+      color: var(--parchment);
+      background: #303030;
+    }
+
     .empty-state {
       text-align: center;
       padding: 48px 16px;
@@ -3259,7 +3271,7 @@
   <div class="modal-backdrop" id="addModal">
     <div class="modal">
       <div class="modal-head">
-        <h3>Registrar Atividade</h3>
+        <h3 id="activityModalTitle">Registrar Atividade</h3>
         <button class="icon-close" id="closeAddModal">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"/>
@@ -3403,7 +3415,7 @@
 
         <div class="modal-foot">
           <button type="button" class="btn btn-secondary" id="cancelAddModal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Registrar</button>
+          <button type="submit" class="btn btn-primary" id="activitySubmitBtn">Registrar</button>
         </div>
       </form>
     </div>
@@ -3883,6 +3895,8 @@
 
     let activities = [];
     let doneIds = new Set();
+    let editingActivityId = null;
+    let editingActivityOriginalDue = null;
     let activeFilter = "all";
     let selectedSubject = "";
     let currentUser = null;
@@ -6040,6 +6054,96 @@
       closeAllCustomSelects();
     });
 
+    function setActivityDropdownValue(menuSelector, inputSelector, labelSelector, value) {
+      const menu = $(menuSelector);
+      const input = $(inputSelector);
+      const label = $(labelSelector);
+
+      input.value = value;
+      label.textContent = value;
+
+      menu.querySelectorAll(".custom-select-option[data-value]").forEach(option => {
+        option.classList.toggle("selected", option.dataset.value === value);
+      });
+    }
+
+    function resetActivityForm() {
+      $("#activityForm").reset();
+      editingActivityId = null;
+      editingActivityOriginalDue = null;
+
+      setFormDiscipline("");
+      setActivityDropdownValue("#typeMenu", "#actType", "#typeLabel", "Exercício");
+      setActivityDropdownValue("#modalityMenu", "#actModality", "#modalityLabel", "Individual");
+
+      selectedDate = null;
+      hiddenActDue.value = "";
+      datePickerLabel.textContent = "dd/mm/aaaa --:--";
+      datePickerLabel.classList.add("placeholder");
+
+      const now = new Date();
+      viewYear = now.getFullYear();
+      viewMonth = now.getMonth();
+
+      $("#activityModalTitle").textContent = "Registrar Atividade";
+      $("#activitySubmitBtn").textContent = "Registrar";
+    }
+
+    function openCreateActivityModal() {
+      resetActivityForm();
+      renderActivitySubjectMenu();
+      renderCalendar();
+      addModal.classList.add("open");
+      setTimeout(() => $("#actTitle").focus(), 80);
+    }
+
+    function openEditActivityModal(activityId) {
+      if (!requireLogin() || !isStaff()) return;
+
+      const activity = activities.find(item => item.id === activityId);
+      if (!activity) {
+        alert("Atividade não encontrada.");
+        return;
+      }
+
+      $("#activityForm").reset();
+      editingActivityId = activity.id;
+      editingActivityOriginalDue = activity.due;
+
+      $("#actTitle").value = activity.title || "";
+      setFormDiscipline(activity.subject || "");
+      renderActivitySubjectMenu();
+      setActivityDropdownValue("#typeMenu", "#actType", "#typeLabel", activity.type || "Exercício");
+      setActivityDropdownValue("#modalityMenu", "#actModality", "#modalityLabel", activity.modality || "Individual");
+      $("#actPoints").value = activity.points === null || activity.points === undefined ? "" : activity.points;
+      $("#actDesc").value = activity.description || "";
+
+      const due = new Date(activity.due);
+      if (!Number.isNaN(due.getTime())) {
+        selectedDate = new Date(due);
+        viewYear = due.getFullYear();
+        viewMonth = due.getMonth();
+        calHours.value = String(due.getHours()).padStart(2, "0");
+
+        const roundedMinute = Math.min(55, Math.round(due.getMinutes() / 5) * 5);
+        calMinutes.value = String(roundedMinute).padStart(2, "0");
+
+        hiddenActDue.value = activity.due;
+        datePickerLabel.textContent = formatDate(activity.due);
+        datePickerLabel.classList.remove("placeholder");
+      } else {
+        selectedDate = null;
+        hiddenActDue.value = "";
+        datePickerLabel.textContent = "dd/mm/aaaa --:--";
+        datePickerLabel.classList.add("placeholder");
+      }
+
+      renderCalendar();
+      $("#activityModalTitle").textContent = "Editar Atividade";
+      $("#activitySubmitBtn").textContent = "Salvar alterações";
+      addModal.classList.add("open");
+      setTimeout(() => $("#actTitle").focus(), 80);
+    }
     function renderList() {
       renderSubjectOptions();
       updateKpis();
@@ -6154,12 +6258,20 @@
                 </button>
 
                 ${isStaff() ? `
-                  <button class="del-btn" data-delete="${a.id}" title="Excluir">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                  </button>
+                  <span class="staff-card-actions">
+                    <button class="del-btn edit-btn" data-edit="${a.id}" title="Editar" aria-label="Editar atividade">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20h9"/>
+                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
+                      </svg>
+                    </button>
+                    <button class="del-btn" data-delete="${a.id}" title="Excluir" aria-label="Excluir atividade">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </span>
                 ` : ""}
               </div>
             </div>
@@ -6186,6 +6298,12 @@
           }
 
           await loadActivities();
+        });
+      });
+
+      $$("[data-edit]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          openEditActivityModal(btn.dataset.edit);
         });
       });
 
@@ -6650,9 +6768,7 @@
         return;
       }
 
-      setFormDiscipline("");
-      renderActivitySubjectMenu();
-      addModal.classList.add("open");
+      openCreateActivityModal();
     });
 
     $("#closeAddModal").addEventListener("click", () => addModal.classList.remove("open"));
@@ -7492,11 +7608,13 @@
       if (!requireLogin()) return;
 
       if (!isStaff()) {
-        alert("Sua conta não tem permissão para registrar atividades.");
+        alert("Sua conta não tem permissão para alterar atividades.");
         return;
       }
 
+      const isEditing = Boolean(editingActivityId);
       const rawSubject = $("#actSubject").value.trim();
+
       if (!rawSubject) {
         actSubjectTrigger.focus();
         return;
@@ -7504,65 +7622,94 @@
 
       const rawDue = hiddenActDue.value;
       if (!rawDue) {
-        alert("Selecione uma data e um horário futuros para a atividade.");
+        alert("Selecione uma data e um horário para a atividade.");
         datePickerTrigger.focus();
         return;
       }
 
       const dueDate = new Date(rawDue);
-      if (Number.isNaN(dueDate.getTime()) || dueDate <= new Date()) {
-        alert("Não é possível cadastrar uma atividade com prazo que já passou.");
-        hiddenActDue.value = "";
-        datePickerLabel.textContent = "Selecione uma data e horário futuros";
-        datePickerLabel.classList.add("placeholder");
+      const originalDueDate = editingActivityOriginalDue
+        ? new Date(editingActivityOriginalDue)
+        : null;
+
+      const keptOriginalPastDeadline = Boolean(
+        isEditing &&
+        originalDueDate &&
+        !Number.isNaN(originalDueDate.getTime()) &&
+        dueDate.getTime() === originalDueDate.getTime()
+      );
+
+      if (
+        Number.isNaN(dueDate.getTime()) ||
+        (dueDate <= new Date() && !keptOriginalPastDeadline)
+      ) {
+        alert(
+          isEditing
+            ? "Ao alterar o prazo, escolha uma data e um horário futuros."
+            : "Não é possível cadastrar uma atividade com prazo que já passou."
+        );
         datePickerTrigger.focus();
         return;
       }
 
-      const { error } = await supabaseClient
-        .from("activities")
-        .insert({
-          title: $("#actTitle").value.trim(),
-          subject: rawSubject,
-          type: $("#actType").value,
-          modality: $("#actModality").value,
-          due_at: rawDue,
-          points: $("#actPoints").value === "" ? null : Number($("#actPoints").value),
-          description: $("#actDesc").value.trim(),
-          created_by: currentUser.id
-        });
+      const payload = {
+        title: $("#actTitle").value.trim(),
+        subject: rawSubject,
+        type: $("#actType").value,
+        modality: $("#actModality").value,
+        due_at: rawDue,
+        points: $("#actPoints").value === "" ? null : Number($("#actPoints").value),
+        description: $("#actDesc").value.trim()
+      };
 
-      if (error) {
-        console.error(error);
+      let result;
 
-        if (error.code === "22007" || String(error.message || "").includes("deadline must be in the future")) {
-          alert("Não é possível cadastrar uma atividade com prazo que já passou.");
+      if (isEditing) {
+        result = await supabaseClient
+          .from("activities")
+          .update(payload)
+          .eq("id", editingActivityId);
+      } else {
+        result = await supabaseClient
+          .from("activities")
+          .insert({
+            ...payload,
+            created_by: currentUser.id
+          });
+      }
+
+      if (result.error) {
+        console.error(result.error);
+
+        if (
+          result.error.code === "22007" ||
+          String(result.error.message || "").includes("deadline must be in the future")
+        ) {
+          alert("Não é possível usar um prazo que já passou.");
         } else {
-          alert("Não foi possível registrar a atividade.");
+          alert(
+            isEditing
+              ? "Não foi possível salvar as alterações da atividade."
+              : "Não foi possível registrar a atividade."
+          );
         }
 
         return;
       }
 
-      e.target.reset();
-      setFormDiscipline("");
+      if (isEditing && payload.modality === "Individual") {
+        const { error: teamCleanupError } = await supabaseClient
+          .from("activity_teams")
+          .delete()
+          .eq("activity_id", editingActivityId);
 
-      selectedDate = null;
-      updateDateDisplay();
-
-      $("#actType").value = "Exercício";
-      $("#typeLabel").textContent = "Exercício";
-      $("#typeMenu").querySelectorAll(".custom-select-option").forEach((opt, idx) => {
-        opt.classList.toggle("selected", idx === 0);
-      });
-
-      $("#actModality").value = "Individual";
-      $("#modalityLabel").textContent = "Individual";
-      $("#modalityMenu").querySelectorAll(".custom-select-option").forEach((opt, idx) => {
-        opt.classList.toggle("selected", idx === 0);
-      });
+        if (teamCleanupError) {
+          console.error("Falha ao limpar equipe da atividade individual:", teamCleanupError);
+        }
+      }
 
       addModal.classList.remove("open");
+      resetActivityForm();
       await loadActivities();
     });
 
@@ -7619,9 +7766,7 @@
             renderTopicSubjectMenu();
             topicModal.classList.add("open");
           } else if (activeSection === "activities") {
-            setFormDiscipline("");
-            renderActivitySubjectMenu();
-            addModal.classList.add("open");
+            openCreateActivityModal();
           }
         }
       }
