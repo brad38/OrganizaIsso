@@ -2668,6 +2668,7 @@
       flex-direction: column;
       align-items: flex-end;
       gap: 10px;
+      pointer-events: none;
     }
 
     .fab-quick-options {
@@ -2680,6 +2681,7 @@
       border-radius: 50%;
       display: grid;
       place-items: center;
+      pointer-events: auto;
       color: var(--parchment);
       background: linear-gradient(135deg, #444 0%, #2D2D2D 55%, #1F1F1F 100%);
       border: 1px solid rgba(255,255,255,.15);
@@ -8882,6 +8884,17 @@
           if (!requireLogin()) return;
 
           const id = btn.dataset.delete;
+          const activity = activities.find(item => item.id === id);
+          const confirmed = await confirmSiteAction(
+            "Excluir atividade",
+            activity?.title
+              ? `Excluir "${activity.title}"? Esta ação não pode ser desfeita.`
+              : "Excluir esta atividade? Esta ação não pode ser desfeita.",
+            "Excluir"
+          );
+
+          if (!confirmed) return;
+
           const { error } = await supabaseClient
             .from("activities")
             .delete()
