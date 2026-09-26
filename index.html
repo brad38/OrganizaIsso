@@ -267,12 +267,14 @@
       color: var(--parchment);
     }
 
-    .invite-icon-btn svg {
+    .invite-icon-glyph {
       display: block;
-      width: 28px;
-      height: 28px;
-      fill: currentColor;
-      stroke: none;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 27px;
+      font-weight: 400;
+      line-height: 1;
+      color: var(--parchment);
+      transform: translateY(-1px);
     }
 
     .invite-badge {
@@ -2447,9 +2449,8 @@
         padding: 0;
       }
 
-      .actions .invite-icon-btn svg {
-        width: 29px;
-        height: 29px;
+      .actions .invite-icon-glyph {
+        font-size: 29px;
       }
 
       .actions .btn svg {
@@ -2990,9 +2991,7 @@
           aria-label="Abrir convites"
           hidden
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5.4 3.6A1 1 0 0 1 2 20.77V5a2 2 0 0 1 2-2Zm3.25 5.25a1 1 0 1 0 0 2h9.5a1 1 0 1 0 0-2h-9.5Zm0 4a1 1 0 1 0 0 2h6.5a1 1 0 1 0 0-2h-6.5Z"/>
-          </svg>
+          <span class="invite-icon-glyph" aria-hidden="true">✉</span>
           <span class="invite-badge" id="invitesBadge" hidden>0</span>
         </button>
 
