@@ -1337,8 +1337,8 @@
       flex-direction: column;
       justify-content: space-between;
       gap: 14px;
-      height: 270px;
-      min-height: 270px;
+      height: 330px;
+      min-height: 330px;
       overflow: hidden;
       transition: border-color 0.15s ease;
     }
@@ -1346,6 +1346,9 @@
     .activity-card > .card-main {
       min-height: 0;
       overflow: hidden;
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
     }
 
     .activity-card > .card-bottom {
@@ -1372,6 +1375,7 @@
       align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
+      flex-shrink: 0;
     }
 
     .subject-tag {
@@ -1404,14 +1408,25 @@
 
     .card-desc {
       font-size: 0.84rem;
-      color: var(--muted);
+      color: var(--parchment);
+      font-weight: 600;
       line-height: 1.5;
-      max-height: 92px;
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: none;
       overflow-y: auto;
       overscroll-behavior: contain;
-      padding-right: 5px;
+      padding-right: 8px;
+      padding-bottom: 3px;
+      margin-bottom: 0;
+      scrollbar-gutter: stable;
       scrollbar-width: thin;
       scrollbar-color: #555 #252525;
+    }
+
+    .tag.date-tag {
+      color: var(--parchment);
+      font-weight: 700;
     }
 
     .card-desc::-webkit-scrollbar {
@@ -1430,6 +1445,61 @@
 
     .card-desc::-webkit-scrollbar-thumb:hover {
       background: #707070;
+    }
+
+    .activity-dates-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 8px;
+      min-height: 0;
+    }
+
+    .activity-date-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 30px;
+      padding: 5px 7px 5px 9px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: #242424;
+      color: var(--parchment);
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      font-weight: 700;
+    }
+
+    .activity-date-remove {
+      display: grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .activity-date-remove:hover {
+      background: #333;
+      color: var(--parchment);
+    }
+
+    .activity-dates-empty {
+      color: var(--muted-dark);
+      font-size: .72rem;
+    }
+
+    .field .search-input {
+      padding-left: 42px;
+    }
+
+    #topicTeamModal .search-icon {
+      left: 15px;
+      z-index: 1;
     }
 
     .semester-input-wrap {
@@ -2305,7 +2375,9 @@
 
     .share-preview-box {
       width: 100%;
-      max-height: 310px;
+      height: 190px;
+      min-height: 190px;
+      max-height: 190px;
       overflow-y: auto;
       white-space: pre-wrap;
       user-select: text;
@@ -2409,6 +2481,22 @@
     .share-team-toggle-copy span {
       color: var(--muted-dark);
       font-size: .7rem;
+    }
+
+    .share-options-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 11px;
+    }
+
+    .share-option-toggle {
+      margin-bottom: 0;
+      padding: 9px 10px;
+    }
+
+    .share-option-toggle .share-team-toggle-copy strong {
+      font-size: .74rem;
     }
 
     .share-actions {
@@ -2771,8 +2859,8 @@
         min-width: 0;
         padding: 14px;
         gap: 12px;
-        height: 280px;
-        min-height: 280px;
+        height: 340px;
+        min-height: 340px;
       }
 
       .card-top {
@@ -3045,8 +3133,74 @@
       }
 
       .topic-card-actions .btn {
-        width: 100%;
+        width: min(100%, 222px);
         min-height: 44px;
+      }
+
+      #shareModal {
+        inset: 0;
+        top: 0;
+        height: 100dvh;
+      }
+
+      #shareModal .modal {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        max-height: calc(100dvh - 4px);
+      }
+
+      #shareModal.open .modal {
+        transform: translateY(0) !important;
+      }
+
+      #shareModal .modal-head,
+      #shareModal .share-filter-group,
+      #shareModal .share-team-toggle,
+      #shareModal .share-options-row,
+      #shareModal .share-stats-badge,
+      #shareModal .share-actions {
+        flex-shrink: 0;
+      }
+
+      #shareModal .modal-head {
+        margin-bottom: 10px;
+      }
+
+      #shareModal .share-filter-group {
+        gap: 5px;
+        margin-bottom: 7px;
+      }
+
+      #shareModal .share-filter-btn {
+        min-height: 32px;
+        padding: 5px 8px;
+      }
+
+      #shareModal .share-team-toggle {
+        padding: 8px 10px;
+        margin-bottom: 7px;
+      }
+
+      #shareModal .share-options-row {
+        grid-template-columns: 1fr 1fr;
+        margin-bottom: 7px;
+      }
+
+      #shareModal .share-stats-badge {
+        margin-bottom: 7px;
+      }
+
+      #shareModal .share-preview-box {
+        flex: 0 0 96px;
+        height: 96px;
+        min-height: 96px;
+        max-height: 96px;
+        padding: 10px;
+      }
+
+      #shareModal .share-actions {
+        margin-top: 8px;
       }
 
       .topic-invite-row {
@@ -3145,8 +3299,8 @@
 
       .activity-card {
         padding: 12px;
-        height: 278px;
-        min-height: 278px;
+        height: 330px;
+        min-height: 330px;
       }
 
       .card-footer {
@@ -3318,7 +3472,7 @@
           <circle cx="11" cy="11" r="8"/>
           <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        <input type="text" id="searchInput" class="search-input" placeholder="Pesquisar por matéria, professor, título ou palavra-chave..." />
+        <input type="text" id="searchInput" class="search-input" placeholder="Pesquisar por matéria, professor, título ou palavra-chave" />
       </div>
 
       <!-- Submenu Filtro de Disciplinas -->
@@ -3379,7 +3533,7 @@
             type="text"
             id="contentsSearchInput"
             class="search-input"
-            placeholder="Buscar nesta pasta..."
+            placeholder="Buscar nesta pasta"
             autocomplete="off"
           />
         </div>
@@ -3409,7 +3563,7 @@
             type="text"
             id="topicSearchInput"
             class="search-input"
-            placeholder="Buscar por artigo, tema, disciplina, equipe ou integrante..."
+            placeholder="Buscar por artigo, tema, disciplina, equipe ou integrante"
             autocomplete="off"
           />
         </div>
@@ -3467,7 +3621,7 @@
             <label>Disciplina</label>
             <div class="custom-select-container" id="actSubjectDropdown">
               <button type="button" class="custom-select-trigger" id="actSubjectTrigger">
-                <span class="trigger-text placeholder" id="actSubjectLabel">Selecione uma disciplina...</span>
+                <span class="trigger-text placeholder" id="actSubjectLabel">Selecione uma disciplina</span>
                 <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
@@ -3517,7 +3671,7 @@
 
           <!-- Calendário Dark Academia Customizado -->
           <div class="field">
-            <label>Prazo Limite</label>
+            <label>Datas / Prazo</label>
             <div class="custom-datepicker-container" id="customDatePicker">
               <button type="button" class="custom-datepicker-trigger" id="datePickerTrigger">
                 <span class="date-text placeholder" id="datePickerLabel">dd/mm/aaaa --:--</span>
@@ -3531,6 +3685,8 @@
                 </span>
               </button>
               <input type="hidden" id="actDue" required />
+
+              <div class="activity-dates-list" id="activityDatesList"></div>
 
               <div class="custom-calendar-popup" id="calendarPopup">
                 <div class="cal-header">
@@ -3585,7 +3741,7 @@
 
           <div class="field full">
             <label for="actDesc">Instruções / Notas</label>
-            <textarea id="actDesc" placeholder="Observações de entrega, parceiros de grupo, bibliografia recomendada..."></textarea>
+            <textarea id="actDesc" placeholder="Observações de entrega, parceiros de grupo, bibliografia recomendada"></textarea>
           </div>
         </div>
 
@@ -3655,7 +3811,7 @@
             <label>Disciplina</label>
             <div class="custom-select-container" id="topicSubjectDropdown">
               <button type="button" class="custom-select-trigger" id="topicSubjectTrigger">
-                <span class="trigger-text placeholder" id="topicSubjectLabel">Selecione uma disciplina...</span>
+                <span class="trigger-text placeholder" id="topicSubjectLabel">Selecione uma disciplina</span>
                 <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
@@ -3730,7 +3886,7 @@
             <textarea
               id="topicNotes"
               maxlength="1800"
-              placeholder="Link do artigo, orientações da professora, páginas relevantes..."
+              placeholder="Link do artigo, orientações da professora, páginas relevantes"
             ></textarea>
           </div>
         </div>
@@ -3770,7 +3926,7 @@
 
           <div class="custom-select-container" id="topicTeamDropdown">
             <button type="button" class="custom-select-trigger" id="topicTeamTrigger">
-              <span class="trigger-text placeholder" id="topicTeamLabel">Selecione uma equipe...</span>
+              <span class="trigger-text placeholder" id="topicTeamLabel">Selecione uma equipe</span>
               <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
@@ -3790,7 +3946,7 @@
 
   <!-- Modal: cadastrar equipe para artigos/temas -->
   <div class="modal-backdrop modal-backdrop-top" id="topicTeamModal">
-    <div class="modal">
+    <div class="modal modal-sm">
       <div class="modal-head">
         <div>
           <h3>Cadastrar Equipe</h3>
@@ -3815,7 +3971,7 @@
               type="text"
               required
               maxlength="100"
-              placeholder="Ex.: Equipe Alpha / Grupo 3"
+              placeholder="Equipe Alpha / Grupo 3"
               autocomplete="off"
             />
           </div>
@@ -3832,7 +3988,7 @@
                   id="topicMemberSearch"
                   type="text"
                   class="search-input"
-                  placeholder="Buscar pessoa..."
+                  placeholder="Buscar pessoa"
                   autocomplete="off"
                 />
               </div>
@@ -3892,7 +4048,7 @@
             <label>Professor Responsável</label>
             <div class="custom-select-container" id="subProfDropdown">
               <button type="button" class="custom-select-trigger" id="subProfTrigger">
-                <span class="trigger-text placeholder" id="subProfLabel">Selecione um professor...</span>
+                <span class="trigger-text placeholder" id="subProfLabel">Selecione um professor</span>
                 <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
@@ -3981,6 +4137,32 @@
         </span>
       </label>
 
+      <div class="share-options-row">
+        <label class="share-team-toggle share-option-toggle" for="shareShowMembers">
+          <input type="checkbox" id="shareShowMembers" />
+          <span class="share-team-check" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 12.5 9.2 16.7 19 7.5"/>
+            </svg>
+          </span>
+          <span class="share-team-toggle-copy">
+            <strong>Exibir membros</strong>
+          </span>
+        </label>
+
+        <label class="share-team-toggle share-option-toggle" for="shareShowState">
+          <input type="checkbox" id="shareShowState" />
+          <span class="share-team-check" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 12.5 9.2 16.7 19 7.5"/>
+            </svg>
+          </span>
+          <span class="share-team-toggle-copy">
+            <strong>Exibir estado</strong>
+          </span>
+        </label>
+      </div>
+
       <div class="share-stats-badge" id="shareCountLabel">0 atividades</div>
       <div class="share-preview-box" id="shareSummaryText"></div>
 
@@ -4010,7 +4192,7 @@
       </p>
 
       <div class="owner-users-list" id="ownerUsersList">
-        <div class="empty-state">Carregando usuários...</div>
+        <div class="empty-state">Carregando usuários</div>
       </div>
     </div>
   </div>
@@ -4099,6 +4281,8 @@
     let doneIds = new Set();
     let editingActivityId = null;
     let editingActivityOriginalDue = null;
+    let editingActivityOriginalDates = [];
+    let activityDatesDraft = [];
     let activeFilter = "all";
     let selectedSubject = "";
     let currentUser = null;
@@ -4132,6 +4316,8 @@
     let shareRangeFilter = "14";
     let shareStatusFilter = "pending";
     let shareTeamOnly = false;
+    let shareShowMembers = false;
+    let shareShowState = false;
     let currentSummaryRawText = "";
     let activeSection = "activities";
     let contentsState = {
@@ -4147,6 +4333,25 @@
 
     const $ = s => document.querySelector(s);
     const $$ = s => [...document.querySelectorAll(s)];
+
+    function getActivityDates(activity) {
+      const values = [
+        activity?.due_at || activity?.due,
+        ...(Array.isArray(activity?.additional_due_dates) ? activity.additional_due_dates : [])
+      ].filter(Boolean);
+
+      return [...new Set(values)]
+        .filter(value => !Number.isNaN(new Date(value).getTime()))
+        .sort((a, b) => new Date(a) - new Date(b));
+    }
+
+    function getActivityReferenceDue(activity) {
+      const dates = getActivityDates(activity);
+      if (!dates.length) return activity?.due_at || activity?.due || null;
+
+      const now = new Date();
+      return dates.find(value => new Date(value) > now) || dates[dates.length - 1];
+    }
 
     async function loadActivities() {
       const { data, error } = await supabaseClient
@@ -4450,7 +4655,7 @@
       if (!isOwner()) return;
 
       const list = $("#ownerUsersList");
-      list.innerHTML = '<div class="empty-state">Carregando usuários...</div>';
+      list.innerHTML = '<div class="empty-state">Carregando usuários</div>';
 
       const { data, error } = await supabaseClient
         .from("profiles")
@@ -4612,7 +4817,7 @@
           <div class="contents-status">
             <span class="contents-loading">
               <span class="contents-spinner" aria-hidden="true"></span>
-              Carregando conteúdos do Drive...
+              Carregando conteúdos do Drive
             </span>
           </div>
         `;
@@ -4826,8 +5031,8 @@
     }
 
     function updateKpis() {
-      const pending = activities.filter(a => !doneIds.has(a.id) && getDueInfo(a.due).status !== "expired");
-      const soon = pending.filter(a => getDueInfo(a.due).status === "soon");
+      const pending = activities.filter(a => !doneIds.has(a.id) && getDueInfo(getActivityReferenceDue(a)).status !== "expired");
+      const soon = pending.filter(a => getDueInfo(getActivityReferenceDue(a)).status === "soon");
       const done = activities.filter(a => doneIds.has(a.id));
       const totalPoints = pending.reduce((acc, a) => acc + (Number(a.points) || 0), 0);
       $("#kpiPending").textContent = pending.length;
@@ -4840,6 +5045,7 @@
       $$(".custom-select-menu").forEach(m => m.classList.remove("open"));       $$
 (".custom-select-trigger").forEach(t => t.classList.remove("active"));
       const calendar = $("#calendarPopup");
+      const calendarWasOpen = calendar.classList.contains("open");
       calendar.classList.remove("open", "open-up");
       calendar.style.removeProperty("position");
       calendar.style.removeProperty("top");
@@ -4854,6 +5060,12 @@
       const calendarHost = $("#customDatePicker");
       if (calendarHost && calendar.parentElement !== calendarHost) {
         calendarHost.appendChild(calendar);
+      }
+
+      if (calendarWasOpen && selectedDate) {
+        selectedDate = null;
+        renderActivityDatesDraft();
+        renderCalendar();
       }
 
       $("#datePickerTrigger").classList.remove("active");
@@ -5135,8 +5347,8 @@
           (!subject || activity.subject === subject)
         )
         .sort((a, b) => {
-          const aDue = new Date(a.due).getTime();
-          const bDue = new Date(b.due).getTime();
+          const aDue = new Date(getActivityReferenceDue(a)).getTime();
+          const bDue = new Date(getActivityReferenceDue(b)).getTime();
           return aDue - bDue;
         });
 
@@ -5165,7 +5377,7 @@
               <span class="discipline-name">${escapeHtml(activity.title)}</span>
               <span class="discipline-subinfo">
                 <span>${escapeHtml(activity.modality || "Em grupo")}</span>
-                <span>${escapeHtml(formatDate(activity.due))}</span>
+                <span>${escapeHtml(formatDate(getActivityReferenceDue(activity)))}</span>
               </span>
             </div>
           </div>
@@ -5770,7 +5982,7 @@
 
     function setTopicSubject(name = "") {
       $("#topicSubject").value = name;
-      $("#topicSubjectLabel").textContent = name || "Selecione uma disciplina...";
+      $("#topicSubjectLabel").textContent = name || "Selecione uma disciplina";
       $("#topicSubjectLabel").classList.toggle("placeholder", !name);
 
       $("#topicSubjectMenu").querySelectorAll("[data-topic-subject]").forEach(option => {
@@ -5801,7 +6013,7 @@
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          Cadastrar nova disciplina...
+          Cadastrar nova disciplina
         </div>
         ${optionsHtml}
       `;
@@ -5839,7 +6051,7 @@
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          Cadastrar nova equipe...
+          Cadastrar nova equipe
         </div>
       `;
 
@@ -5878,7 +6090,7 @@
           const team = getTopicTeam(selectedTopicTeamId);
 
           $("#topicTeamId").value = selectedTopicTeamId;
-          $("#topicTeamLabel").textContent = team?.name || "Selecione uma equipe...";
+          $("#topicTeamLabel").textContent = team?.name || "Selecione uma equipe";
           $("#topicTeamLabel").classList.toggle("placeholder", !team);
 
           renderTopicTeamMenu();
@@ -5906,7 +6118,7 @@
         ? "Esta opção permite múltiplas equipes."
         : "Esta opção fica bloqueada depois que uma equipe a escolher.";
       $("#topicTeamId").value = "";
-      $("#topicTeamLabel").textContent = "Selecione uma equipe...";
+      $("#topicTeamLabel").textContent = "Selecione uma equipe";
       $("#topicTeamLabel").classList.add("placeholder");
 
       renderTopicTeamMenu();
@@ -6031,7 +6243,7 @@
 
     function setFormDiscipline(name = "") {
       actSubjectInput.value = name;
-      actSubjectLabel.textContent = name || "Selecione uma disciplina...";
+      actSubjectLabel.textContent = name || "Selecione uma disciplina";
       actSubjectLabel.classList.toggle("placeholder", !name);
 
       actSubjectMenu.querySelectorAll("[data-subject-name]").forEach(option => {
@@ -6051,7 +6263,7 @@
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          Cadastrar nova disciplina...
+          Cadastrar nova disciplina
         </div>
       `;
 
@@ -6157,7 +6369,7 @@
       subProfIdInput.value = professorId;
       const professor = professors.find(item => item.id === professorId);
 
-      subProfLabel.textContent = professor?.name || "Selecione um professor...";
+      subProfLabel.textContent = professor?.name || "Selecione um professor";
       subProfLabel.classList.toggle("placeholder", !professor);
 
       subProfMenu.querySelectorAll("[data-professor-id]").forEach(option => {
@@ -6174,7 +6386,7 @@
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          Cadastrar novo professor...
+          Cadastrar novo professor
         </div>
       `;
 
@@ -6469,6 +6681,56 @@
     let viewMonth = new Date().getMonth();
     let selectedDate = null;
 
+    function renderActivityDatesDraft() {
+      const list = $("#activityDatesList");
+      const sorted = [...new Set(activityDatesDraft)]
+        .filter(Boolean)
+        .sort((a, b) => new Date(a) - new Date(b));
+
+      activityDatesDraft = sorted;
+      hiddenActDue.value = sorted[0] || "";
+      datePickerLabel.textContent = sorted.length ? "Adicionar outra data" : "Adicionar data";
+      datePickerLabel.classList.add("placeholder");
+
+      if (!list) return;
+
+      if (!sorted.length) {
+        list.innerHTML = '<span class="activity-dates-empty">Nenhuma data adicionada</span>';
+        return;
+      }
+
+      list.innerHTML = sorted.map((iso, index) => `
+        <span class="activity-date-chip">
+          <span>${index === 0 ? "Principal: " : ""}${escapeHtml(formatDate(iso))}</span>
+          <button
+            type="button"
+            class="activity-date-remove"
+            data-remove-activity-date="${escapeHtml(iso)}"
+            aria-label="Remover ${escapeHtml(formatDate(iso))}"
+            title="Remover data"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </span>
+      `).join("");
+
+      list.querySelectorAll("[data-remove-activity-date]").forEach(button => {
+        button.addEventListener("click", () => {
+          activityDatesDraft = activityDatesDraft.filter(iso => iso !== button.dataset.removeActivityDate);
+          renderActivityDatesDraft();
+        });
+      });
+    }
+
+    function addDraftActivityDate(iso) {
+      if (!iso) return;
+      if (!activityDatesDraft.includes(iso)) activityDatesDraft.push(iso);
+      renderActivityDatesDraft();
+    }
+
     const monthNames = [
       "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
       "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
@@ -6672,7 +6934,7 @@
       e.stopPropagation();
       selectedDate = null;
       renderCalendar();
-      updateDateDisplay();
+      renderActivityDatesDraft();
       closeAllCustomSelects();
     });
 
@@ -6708,6 +6970,9 @@
         return;
       }
 
+      addDraftActivityDate(hiddenActDue.value);
+      selectedDate = null;
+      renderCalendar();
       closeAllCustomSelects();
     });
 
@@ -6815,6 +7080,8 @@
       $("#activityForm").reset();
       editingActivityId = null;
       editingActivityOriginalDue = null;
+      editingActivityOriginalDates = [];
+      activityDatesDraft = [];
 
       setFormDiscipline("");
       setActivityDropdownValue("#typeMenu", "#actType", "#typeLabel", "Exercício");
@@ -6822,8 +7089,7 @@
 
       selectedDate = null;
       hiddenActDue.value = "";
-      datePickerLabel.textContent = "dd/mm/aaaa --:--";
-      datePickerLabel.classList.add("placeholder");
+      renderActivityDatesDraft();
 
       const now = new Date();
       viewYear = now.getFullYear();
@@ -6853,6 +7119,8 @@
       $("#activityForm").reset();
       editingActivityId = activity.id;
       editingActivityOriginalDue = activity.due;
+      editingActivityOriginalDates = getActivityDates(activity);
+      activityDatesDraft = [...editingActivityOriginalDates];
 
       $("#actTitle").value = activity.title || "";
       setFormDiscipline(activity.subject || "");
@@ -6862,26 +7130,18 @@
       $("#actPoints").value = activity.points === null || activity.points === undefined ? "" : activity.points;
       $("#actDesc").value = activity.description || "";
 
-      const due = new Date(activity.due);
-      if (!Number.isNaN(due.getTime())) {
-        selectedDate = new Date(due);
-        viewYear = due.getFullYear();
-        viewMonth = due.getMonth();
-        calHours.value = String(due.getHours()).padStart(2, "0");
+      selectedDate = null;
+      const firstFutureDate = activityDatesDraft
+        .map(value => new Date(value))
+        .find(value => !Number.isNaN(value.getTime()) && value > new Date());
+      const calendarBase = firstFutureDate || getEarliestSelectableDate();
 
-        const roundedMinute = Math.min(55, Math.round(due.getMinutes() / 5) * 5);
-        calMinutes.value = String(roundedMinute).padStart(2, "0");
+      viewYear = calendarBase.getFullYear();
+      viewMonth = calendarBase.getMonth();
+      calHours.value = String(calendarBase.getHours()).padStart(2, "0");
+      calMinutes.value = String(Math.floor(calendarBase.getMinutes() / 5) * 5).padStart(2, "0");
 
-        hiddenActDue.value = activity.due;
-        datePickerLabel.textContent = formatDate(activity.due);
-        datePickerLabel.classList.remove("placeholder");
-      } else {
-        selectedDate = null;
-        hiddenActDue.value = "";
-        datePickerLabel.textContent = "dd/mm/aaaa --:--";
-        datePickerLabel.classList.add("placeholder");
-      }
-
+      renderActivityDatesDraft();
       renderCalendar();
       $("#activityModalTitle").textContent = "Editar Atividade";
       $("#activitySubmitBtn").textContent = "Salvar alterações";
@@ -6897,7 +7157,7 @@
 
       // Atividades em aberto primeiro (da mais urgente à mais distante); vencidas jogadas para o final (direita/baixo)
       const filtered = activities.filter(a => {
-        const info = getDueInfo(a.due);
+        const info = getDueInfo(getActivityReferenceDue(a));
         const isDone = doneIds.has(a.id);
 
         if (activeFilter === "pending" && (isDone || info.status === "expired")) return false;
@@ -6913,16 +7173,16 @@
         }
         return true;
       }).sort((a, b) => {
-        const isExpiredA = getDueInfo(a.due).status === "expired";
-        const isExpiredB = getDueInfo(b.due).status === "expired";
+        const isExpiredA = getDueInfo(getActivityReferenceDue(a)).status === "expired";
+        const isExpiredB = getDueInfo(getActivityReferenceDue(b)).status === "expired";
 
         if (!isExpiredA && isExpiredB) return -1;
         if (isExpiredA && !isExpiredB) return 1;
 
         if (!isExpiredA && !isExpiredB) {
-          return new Date(a.due) - new Date(b.due);
+          return new Date(getActivityReferenceDue(a)) - new Date(getActivityReferenceDue(b));
         } else {
-          return new Date(b.due) - new Date(a.due);
+          return new Date(getActivityReferenceDue(b)) - new Date(getActivityReferenceDue(a));
         }
       });
 
@@ -6932,10 +7192,11 @@
       }
 
       container.innerHTML = filtered.map(a => {
-        const info = getDueInfo(a.due);
+        const info = getDueInfo(getActivityReferenceDue(a));
         const isDone = doneIds.has(a.id);
         const isExpired = info.status === "expired";
         const modality = a.modality || "Individual";
+        const activityDates = getActivityDates(a);
         const cardClass = [
           "activity-card",
           isDone ? "done" : "",
@@ -6969,15 +7230,17 @@
 
             <div class="card-bottom">
               <div class="meta-tags">
-                <span class="tag">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                    <line x1="16" y1="2" x2="16" y2="6"/>
-                    <line x1="8" y1="2" x2="8" y2="6"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
-                  </svg>
-                  ${formatDate(a.due)}
-                </span>
+                ${activityDates.map((date, index) => `
+                  <span class="tag date-tag" title="${index === 0 ? "Data principal" : "Data adicional"}">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                      <line x1="16" y1="2" x2="16" y2="6"/>
+                      <line x1="8" y1="2" x2="8" y2="6"/>
+                      <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    ${escapeHtml(formatDate(date))}
+                  </span>
+                `).join("")}
                 <span class="tag">${escapeHtml(a.type)}</span>
                 <span class="tag modality" title="Modalidade da atividade">
                   ${getModalityIcon(modality)}
@@ -7975,10 +8238,12 @@
 
       return activities
         .filter(activity => {
-          const due = new Date(activity.due);
-          if (Number.isNaN(due.getTime())) return false;
-          if (!isDueInSelectedShareRange(due)) return false;
+          const dates = getActivityDates(activity).map(value => new Date(value));
+          const validDates = dates.filter(value => !Number.isNaN(value.getTime()));
+          if (!validDates.length) return false;
+          if (!validDates.some(isDueInSelectedShareRange)) return false;
 
+          const due = validDates[0];
           const isDone = doneIds.has(activity.id);
           const modality = activity.modality || "Individual";
 
@@ -8002,7 +8267,7 @@
 
           return true;
         })
-        .sort((a, b) => new Date(a.due) - new Date(b.due));
+        .sort((a, b) => new Date(getActivityReferenceDue(a)) - new Date(getActivityReferenceDue(b)));
     }
 
     function generateAndDisplaySummary() {
@@ -8034,21 +8299,26 @@
         const subject = findSubjectByName(activity.subject);
         const professor = getSubjectProfessor(subject);
         const state = doneIds.has(activity.id) ? "Eu já fiz" : "Pendente";
-        const dueInfo = getDueInfo(activity.due);
+        const dueInfo = getDueInfo(getActivityReferenceDue(activity));
         const modality = activity.modality || "Individual";
         const team = modality !== "Individual" ? getRelevantTeamInfo(activity.id) : null;
+
+        const dates = getActivityDates(activity);
+        const dateLabel = dates.length > 1
+          ? `Datas: ${dates.map(formatDate).join(" | ")}`
+          : `Prazo: ${formatDate(dates[0] || activity.due)}`;
 
         const lines = [
           `${index + 1}. ${activity.title}`,
           `Disciplina: ${activity.subject}`,
           professor?.name ? `Professor: ${professor.name}` : null,
           `Modalidade: ${modality}`,
-          `Prazo: ${formatDate(activity.due)}`,
-          `Estado: ${state}`,
-          dueInfo.status === "expired" && state === "Pendente" ? "Prazo: expirado" : null
+          dateLabel,
+          shareShowState ? `Estado: ${state}` : null,
+          shareShowState && dueInfo.status === "expired" && state === "Pendente" ? "Prazo: expirado" : null
         ].filter(Boolean);
 
-        if (modality !== "Individual") {
+        if (shareShowMembers && modality !== "Individual") {
           lines.push("Membros:");
 
           if (team?.memberNames?.length) {
@@ -8082,6 +8352,10 @@
     }
 
     function openShareModal() {
+      shareShowMembers = false;
+      shareShowState = false;
+      $("#shareShowMembers").checked = false;
+      $("#shareShowState").checked = false;
       generateAndDisplaySummary();
       shareModal.classList.add("open");
     }
@@ -8109,6 +8383,16 @@
 
     $("#shareTeamOnly").addEventListener("change", event => {
       shareTeamOnly = event.target.checked;
+      generateAndDisplaySummary();
+    });
+
+    $("#shareShowMembers").addEventListener("change", event => {
+      shareShowMembers = event.target.checked;
+      generateAndDisplaySummary();
+    });
+
+    $("#shareShowState").addEventListener("change", event => {
+      shareShowState = event.target.checked;
       generateAndDisplaySummary();
     });
 
@@ -8300,7 +8584,7 @@
 
       if (authRequestInFlight) return;
 
-      $("#authMessage").textContent = "Entrando...";
+      $("#authMessage").textContent = "Entrando";
       setAuthBusy(true);
 
       try {
@@ -8340,7 +8624,7 @@
         return;
       }
 
-      $("#authMessage").textContent = "Enviando link para definir a senha...";
+      $("#authMessage").textContent = "Enviando link para definir a senha";
       setAuthBusy(true);
 
       try {
@@ -8383,7 +8667,7 @@
 
       const saveBtn = $("#saveNewPasswordBtn");
       saveBtn.disabled = true;
-      $("#resetPasswordMessage").textContent = "Salvando senha...";
+      $("#resetPasswordMessage").textContent = "Salvando senha";
 
       try {
         const { error } = await supabaseClient.auth.updateUser({ password });
@@ -8455,37 +8739,36 @@
         return;
       }
 
-      const rawDue = hiddenActDue.value;
-      if (!rawDue) {
-        alert("Selecione uma data e um horário para a atividade.");
+      const sortedDates = [...new Set(activityDatesDraft)]
+        .filter(Boolean)
+        .sort((a, b) => new Date(a) - new Date(b));
+
+      if (!sortedDates.length) {
+        alert("Adicione pelo menos uma data para a atividade.");
         datePickerTrigger.focus();
         return;
       }
 
-      const dueDate = new Date(rawDue);
-      const originalDueDate = editingActivityOriginalDue
-        ? new Date(editingActivityOriginalDue)
-        : null;
+      const originalDateSet = new Set(editingActivityOriginalDates);
+      const invalidDate = sortedDates.find(value => {
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) return true;
+        if (parsed > new Date()) return false;
+        return !(isEditing && originalDateSet.has(value));
+      });
 
-      const keptOriginalPastDeadline = Boolean(
-        isEditing &&
-        originalDueDate &&
-        !Number.isNaN(originalDueDate.getTime()) &&
-        dueDate.getTime() === originalDueDate.getTime()
-      );
-
-      if (
-        Number.isNaN(dueDate.getTime()) ||
-        (dueDate <= new Date() && !keptOriginalPastDeadline)
-      ) {
+      if (invalidDate) {
         alert(
           isEditing
-            ? "Ao alterar o prazo, escolha uma data e um horário futuros."
-            : "Não é possível cadastrar uma atividade com prazo que já passou."
+            ? "Datas novas precisam estar no futuro."
+            : "Não é possível cadastrar uma atividade com data que já passou."
         );
         datePickerTrigger.focus();
         return;
       }
+
+      const rawDue = sortedDates[0];
+      const additionalDueDates = sortedDates.slice(1);
 
       const payload = {
         title: $("#actTitle").value.trim(),
@@ -8493,6 +8776,7 @@
         type: $("#actType").value,
         modality: $("#actModality").value,
         due_at: rawDue,
+        additional_due_dates: additionalDueDates,
         points: $("#actPoints").value === "" ? null : Number($("#actPoints").value),
         description: $("#actDesc").value.trim()
       };

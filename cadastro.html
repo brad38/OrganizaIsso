@@ -151,7 +151,7 @@
 
       inFlight = true;
       submitBtn.disabled = true;
-      message.textContent = "Criando conta...";
+      message.textContent = "Criando conta";
 
       const now = new Date().toISOString();
 
@@ -182,7 +182,7 @@
         }
 
         if (data.session) {
-          message.textContent = "Conta criada. Redirecionando...";
+          message.textContent = "Conta criada. Redirecionando";
           setTimeout(() => window.location.href = "/", 700);
         } else {
           message.textContent = "Conta criada. Se a confirmação de e-mail estiver ativa, confirme o endereço antes de entrar.";
