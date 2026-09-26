@@ -269,10 +269,10 @@
 
     .invite-icon-btn svg {
       display: block;
-      width: 22px;
-      height: 22px;
-      stroke: currentColor;
-      stroke-width: 2.1;
+      width: 28px;
+      height: 28px;
+      fill: currentColor;
+      stroke: none;
     }
 
     .invite-badge {
@@ -2440,10 +2440,16 @@
       }
 
       .actions .invite-icon-btn {
-        flex: 0 0 44px;
-        width: 44px;
-        min-width: 44px;
+        flex: 0 0 46px;
+        width: 46px;
+        min-width: 46px;
+        height: 46px;
         padding: 0;
+      }
+
+      .actions .invite-icon-btn svg {
+        width: 29px;
+        height: 29px;
       }
 
       .actions .btn svg {
@@ -2984,9 +2990,8 @@
           aria-label="Abrir convites"
           hidden
         >
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M5 4.5h14a2.5 2.5 0 0 1 2.5 2.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-5.5 3.5v-3.9A2.5 2.5 0 0 1 2.5 15V7A2.5 2.5 0 0 1 5 4.5Z"/>
-            <path d="M7.5 9h9M7.5 13h6"/>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5.4 3.6A1 1 0 0 1 2 20.77V5a2 2 0 0 1 2-2Zm3.25 5.25a1 1 0 1 0 0 2h9.5a1 1 0 1 0 0-2h-9.5Zm0 4a1 1 0 1 0 0 2h6.5a1 1 0 1 0 0-2h-6.5Z"/>
           </svg>
           <span class="invite-badge" id="invitesBadge" hidden>0</span>
         </button>
