@@ -257,6 +257,65 @@
       gap: 10px;
     }
 
+    .invite-icon-btn {
+      position: relative;
+      width: 42px;
+      min-width: 42px;
+      height: 42px;
+      padding: 0;
+      flex: 0 0 42px;
+    }
+
+    .invite-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: #F3F3F3;
+      color: #111;
+      border: 2px solid var(--bg);
+      font-size: .63rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .invite-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: min(56vh, 460px);
+      overflow-y: auto;
+    }
+
+    .invite-empty {
+      padding: 30px 14px;
+      border: 1px dashed var(--border);
+      border-radius: 9px;
+      background: #1C1C1C;
+      color: var(--muted);
+      text-align: center;
+      font-size: .82rem;
+    }
+
+    .invite-kind {
+      display: inline-flex;
+      margin-bottom: 4px;
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      color: var(--muted-dark);
+      font-family: var(--font-mono);
+      font-size: .62rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
     .btn {
       display: inline-flex;
       align-items: center;
@@ -2351,18 +2410,27 @@
 
       .actions {
         width: 100%;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
         gap: 8px;
       }
 
       .actions .btn {
-        width: 100%;
+        flex: 1 1 auto;
+        width: auto;
         min-width: 0;
         min-height: 44px;
         padding: 9px 10px;
         font-size: .8rem;
         white-space: nowrap;
+      }
+
+      .actions .invite-icon-btn {
+        flex: 0 0 44px;
+        width: 44px;
+        min-width: 44px;
+        padding: 0;
       }
 
       .actions .btn svg {
@@ -2894,6 +2962,22 @@
         <button class="btn btn-secondary" id="authBtn" title="Entrar no mural">
           <span id="authBtnLabel">Entrar</span>
         </button>
+
+        <button
+          class="btn btn-secondary invite-icon-btn"
+          id="invitesBtn"
+          type="button"
+          title="Convites"
+          aria-label="Abrir convites"
+          hidden
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+            <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
+            <path d="M8 9h8M8 13h5"/>
+          </svg>
+          <span class="invite-badge" id="invitesBadge" hidden>0</span>
+        </button>
+
         <button class="btn btn-primary" id="openAddModal" hidden>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 5v14M5 12h14"/>
@@ -3070,11 +3154,6 @@
             Veja quais artigos ou temas já foram escolhidos, por qual equipe e quem faz parte dela.
           </p>
         </div>
-      </div>
-
-      <div class="topic-invites" id="topicInvites" hidden>
-        <div class="topic-invites-title">Convites para equipes</div>
-        <div id="topicInvitesList"></div>
       </div>
 
       <div class="topics-toolbar">
@@ -3262,6 +3341,28 @@
           <button type="submit" class="btn btn-primary">Registrar</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal: central de convites -->
+  <div class="modal-backdrop modal-backdrop-share" id="invitesModal">
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <div>
+          <h3>Convites</h3>
+          <p style="font-size:.76rem;color:var(--muted);margin-top:3px;">
+            Aceite para entrar oficialmente na equipe.
+          </p>
+        </div>
+        <button class="icon-close" id="closeInvitesModal" type="button" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="invite-list" id="invitesList"></div>
     </div>
   </div>
 
@@ -3727,6 +3828,12 @@
     let topicFilter = "all";
     let selectedTopicMemberIds = new Set();
     let selectedTopicTeamId = "";
+    let activityPendingInvites = [];
+    let topicPendingInvites = [];
+    let invitationActivityTeams = [];
+    let invitationTopicTeams = [];
+    let invitationDirectory = [];
+    let invitationRealtimeChannel = null;
     let topicRealtimeChannel = null;
     let completionRealtimeChannel = null;
     let completionDates = new Map();
@@ -3938,6 +4045,7 @@
       const logoutBtn = $("#logoutBtn");
       const addBtn = $("#openAddModal");
       const manageUsersBtn = $("#manageUsersBtn");
+      const invitesBtn = $("#invitesBtn");
       const userMenu = $("#userMenu");
       const roleLabel =
         currentUserRole === "owner" ? "Proprietário" :
@@ -3946,6 +4054,7 @@
 
       authBtn.hidden = Boolean(currentUser);
       logoutBtn.hidden = !currentUser;
+      invitesBtn.hidden = !currentUser;
       manageUsersBtn.hidden = !currentUser || !isOwner();
       $("#authBtnLabel").textContent = "Entrar";
       syncPrimaryAddButton();
@@ -4513,7 +4622,7 @@
       topicDirectory = directoryResult.data || [];
 
       renderTopics();
-      renderTopicInvites();
+      renderInvitationCenter();
       renderTopicTeamMenu();
       renderTopicMemberPicker();
     }
@@ -4568,91 +4677,251 @@
       );
     }
 
-    function renderTopicInvites() {
-      const box = $("#topicInvites");
-      const list = $("#topicInvitesList");
-      if (!box || !list) return;
+    function getInvitationDisplayName(userId) {
+      return invitationDirectory.find(person => person.user_id === userId)?.display_name
+        || topicDirectory.find(person => person.user_id === userId)?.display_name
+        || "Usuário";
+    }
+
+    async function loadInvitationCenter() {
+      const badge = $("#invitesBadge");
+      const list = $("#invitesList");
 
       if (!currentUser) {
-        box.hidden = true;
-        list.innerHTML = "";
+        activityPendingInvites = [];
+        topicPendingInvites = [];
+        invitationActivityTeams = [];
+        invitationTopicTeams = [];
+        invitationDirectory = [];
+
+        if (badge) {
+          badge.hidden = true;
+          badge.textContent = "0";
+        }
+
+        if (list) {
+          list.innerHTML = '<div class="invite-empty">Entre na sua conta para ver convites.</div>';
+        }
+
         return;
       }
 
-      const pending = topicTeamMembers.filter(member =>
-        member.user_id === currentUser.id &&
-        member.status === "pending"
-      );
+      const [
+        activityInvitesResult,
+        topicInvitesResult,
+        activityTeamsResult,
+        topicTeamsResult,
+        directoryResult
+      ] = await Promise.all([
+        supabaseClient
+          .from("activity_team_members")
+          .select("team_id,activity_id,user_id,invited_by,status,created_at")
+          .eq("user_id", currentUser.id)
+          .eq("status", "pending"),
+        supabaseClient
+          .from("topic_team_members")
+          .select("team_id,user_id,invited_by,status,created_at")
+          .eq("user_id", currentUser.id)
+          .eq("status", "pending"),
+        supabaseClient
+          .from("activity_teams")
+          .select("id,activity_id,owner_id"),
+        supabaseClient
+          .from("topic_teams")
+          .select("id,name,owner_id"),
+        supabaseClient
+          .from("user_directory")
+          .select("user_id,display_name")
+      ]);
 
-      if (!pending.length) {
-        box.hidden = true;
-        list.innerHTML = "";
+      const firstError = [
+        activityInvitesResult.error,
+        topicInvitesResult.error,
+        activityTeamsResult.error,
+        topicTeamsResult.error,
+        directoryResult.error
+      ].find(Boolean);
+
+      if (firstError) {
+        console.error("Falha ao carregar convites:", firstError);
+      }
+
+      activityPendingInvites = activityInvitesResult.data || [];
+      topicPendingInvites = topicInvitesResult.data || [];
+      invitationActivityTeams = activityTeamsResult.data || [];
+      invitationTopicTeams = topicTeamsResult.data || [];
+      invitationDirectory = directoryResult.data || [];
+
+      renderInvitationCenter();
+    }
+
+    function renderInvitationCenter() {
+      const badge = $("#invitesBadge");
+      const list = $("#invitesList");
+      const total = activityPendingInvites.length + topicPendingInvites.length;
+
+      if (badge) {
+        badge.hidden = total === 0;
+        badge.textContent = total > 9 ? "9+" : String(total);
+      }
+
+      $("#invitesBtn").title = total
+        ? `${total} convite${total === 1 ? "" : "s"} pendente${total === 1 ? "" : "s"}`
+        : "Convites";
+
+      if (!list) return;
+
+      if (!currentUser) {
+        list.innerHTML = '<div class="invite-empty">Entre na sua conta para ver convites.</div>';
         return;
       }
 
-      box.hidden = false;
-      list.innerHTML = pending.map(member => {
-        const team = getTopicTeam(member.team_id);
-        const inviterName = getTopicDisplayName(member.invited_by);
+      if (!total) {
+        list.innerHTML = '<div class="invite-empty">Nenhum convite pendente.</div>';
+        return;
+      }
+
+      const activityRows = activityPendingInvites.map(invite => {
+        const activity = activities.find(item => item.id === invite.activity_id);
+        const inviter = getInvitationDisplayName(invite.invited_by);
 
         return `
           <div class="topic-invite-row">
             <div class="topic-invite-copy">
-              <div class="topic-invite-name">${escapeHtml(team?.name || "Equipe")}</div>
-              <div class="topic-invite-sub">Convite enviado por ${escapeHtml(inviterName)}</div>
+              <span class="invite-kind">Atividade</span>
+              <div class="topic-invite-name">${escapeHtml(activity?.title || "Atividade em equipe")}</div>
+              <div class="topic-invite-sub">
+                ${activity?.subject ? `${escapeHtml(activity.subject)}<br>` : ""}
+                Convite enviado por ${escapeHtml(inviter)}
+              </div>
             </div>
 
             <div class="topic-invite-actions">
-              <button type="button" class="btn btn-secondary" data-topic-invite-decline="${member.team_id}">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-invite-kind="activity"
+                data-invite-team="${invite.team_id}"
+                data-invite-action="decline"
+              >
                 Recusar
               </button>
-              <button type="button" class="btn btn-primary" data-topic-invite-accept="${member.team_id}">
+              <button
+                type="button"
+                class="btn btn-primary"
+                data-invite-kind="activity"
+                data-invite-team="${invite.team_id}"
+                data-invite-action="accept"
+              >
                 Aceitar
               </button>
             </div>
           </div>
         `;
-      }).join("");
+      });
 
-      $$("[data-topic-invite-accept]").forEach(button => {
+      const topicRows = topicPendingInvites.map(invite => {
+        const team = invitationTopicTeams.find(item => item.id === invite.team_id)
+          || getTopicTeam(invite.team_id);
+        const inviter = getInvitationDisplayName(invite.invited_by);
+
+        return `
+          <div class="topic-invite-row">
+            <div class="topic-invite-copy">
+              <span class="invite-kind">Artigos &amp; Equipes</span>
+              <div class="topic-invite-name">${escapeHtml(team?.name || "Equipe")}</div>
+              <div class="topic-invite-sub">
+                Convite enviado por ${escapeHtml(inviter)}
+              </div>
+            </div>
+
+            <div class="topic-invite-actions">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-invite-kind="topic"
+                data-invite-team="${invite.team_id}"
+                data-invite-action="decline"
+              >
+                Recusar
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                data-invite-kind="topic"
+                data-invite-team="${invite.team_id}"
+                data-invite-action="accept"
+              >
+                Aceitar
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      list.innerHTML = [...activityRows, ...topicRows].join("");
+
+      $$("[data-invite-action]").forEach(button => {
         button.addEventListener("click", async () => {
+          const kind = button.dataset.inviteKind;
+          const teamId = button.dataset.inviteTeam;
+          const accept = button.dataset.inviteAction === "accept";
+          const rpcName = kind === "activity"
+            ? "respond_activity_team_invite"
+            : "respond_topic_team_invite";
+
           button.disabled = true;
 
-          const { error } = await supabaseClient.rpc("respond_topic_team_invite", {
-            p_team_id: button.dataset.topicInviteAccept,
-            p_accept: true
+          const { error } = await supabaseClient.rpc(rpcName, {
+            p_team_id: teamId,
+            p_accept: accept
           });
 
           if (error) {
             console.error(error);
-            alert("Não foi possível aceitar o convite.");
+            alert(accept
+              ? "Não foi possível aceitar o convite."
+              : "Não foi possível recusar o convite.");
             button.disabled = false;
             return;
           }
 
-          await loadTopicBoardData();
+          await Promise.all([
+            loadInvitationCenter(),
+            loadActivities(),
+            loadTopicBoardData()
+          ]);
         });
       });
+    }
 
-      $$("[data-topic-invite-decline]").forEach(button => {
-        button.addEventListener("click", async () => {
-          button.disabled = true;
+    async function subscribeToInvitationRealtime() {
+      if (invitationRealtimeChannel) {
+        await supabaseClient.removeChannel(invitationRealtimeChannel);
+        invitationRealtimeChannel = null;
+      }
 
-          const { error } = await supabaseClient.rpc("respond_topic_team_invite", {
-            p_team_id: button.dataset.topicInviteDecline,
-            p_accept: false
-          });
+      if (!currentUser) return;
 
-          if (error) {
-            console.error(error);
-            alert("Não foi possível recusar o convite.");
-            button.disabled = false;
-            return;
+      invitationRealtimeChannel = supabaseClient
+        .channel(`team-invites-${currentUser.id}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "activity_team_members" },
+          async () => {
+            await loadInvitationCenter();
+            await loadActivities();
           }
-
-          await loadTopicBoardData();
-        });
-      });
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "topic_team_members" },
+          async () => {
+            await loadInvitationCenter();
+            await loadTopicBoardData();
+          }
+        )
+        .subscribe();
     }
 
     function renderTopics() {
@@ -5872,6 +6141,7 @@
     }
 
     const addModal = $("#addModal");
+    const invitesModal = $("#invitesModal");
     const topicModal = $("#topicModal");
     const topicClaimModal = $("#topicClaimModal");
     const topicTeamModal = $("#topicTeamModal");
@@ -6253,6 +6523,16 @@
 
     $("#closeOwnerUsersModal").addEventListener("click", () => {
       ownerUsersModal.classList.remove("open");
+    });
+
+    $("#invitesBtn").addEventListener("click", async () => {
+      if (!currentUser) return;
+      await loadInvitationCenter();
+      invitesModal.classList.add("open");
+    });
+
+    $("#closeInvitesModal").addEventListener("click", () => {
+      invitesModal.classList.remove("open");
     });
 
     $("#openAddModal").addEventListener("click", () => {
@@ -7095,10 +7375,12 @@
       updateAuthUI();
       await subscribeToCompletionRealtime();
       await subscribeToTopicRealtime();
+      await subscribeToInvitationRealtime();
       await loadProfessors();
       await loadSubjects();
       await loadActivities();
       await loadTopicBoardData();
+      await loadInvitationCenter();
 
       if (event === "PASSWORD_RECOVERY") {
         authModal.classList.remove("open");
@@ -7222,6 +7504,7 @@
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") {
         addModal.classList.remove("open");
+        invitesModal.classList.remove("open");
         topicModal.classList.remove("open");
         topicClaimModal.classList.remove("open");
         topicTeamModal.classList.remove("open");
@@ -7259,10 +7542,12 @@
       renderCalendar();
       await subscribeToCompletionRealtime();
       await subscribeToTopicRealtime();
+      await subscribeToInvitationRealtime();
       await loadProfessors();
       await loadSubjects();
       await loadActivities();
       await loadTopicBoardData();
+      await loadInvitationCenter();
     }
 
     initializeApp();
