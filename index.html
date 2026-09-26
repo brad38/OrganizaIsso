@@ -2927,7 +2927,7 @@
           <span class="kpi-caption">em curso</span>
         </div>
         <div class="kpi-footer">
-          <span class="bullet"></span> Caderno ativo
+          Caderno ativo
         </div>
       </div>
 
@@ -2946,7 +2946,7 @@
           <span class="kpi-caption">&le; 48 horas</span>
         </div>
         <div class="kpi-footer">
-          <span class="bullet"></span> Requer atenção imediata
+          Requer atenção imediata
         </div>
       </div>
 
@@ -2964,7 +2964,7 @@
           <span class="kpi-caption">na média</span>
         </div>
         <div class="kpi-footer">
-          <span class="bullet"></span> Atividades abertas
+          Atividades abertas
         </div>
       </div>
 
@@ -2980,10 +2980,6 @@
         </div>
         <div class="kpi-value-row">
           <span class="kpi-value" id="kpiDone">0</span>
-          <span class="kpi-caption" id="kpiRate">0% concluído</span>
-        </div>
-        <div class="progress-bar-wrap">
-          <div class="progress-fill" id="kpiProgress"></div>
         </div>
       </div>
     </section>
@@ -4356,14 +4352,10 @@
       const soon = pending.filter(a => getDueInfo(a.due).status === "soon");
       const done = activities.filter(a => doneIds.has(a.id));
       const totalPoints = pending.reduce((acc, a) => acc + (Number(a.points) || 0), 0);
-      const rate = activities.length ? Math.round((done.length / activities.length) * 100) : 0;
-
       $("#kpiPending").textContent = pending.length;
       $("#kpiSoon").textContent = soon.length;
       $("#kpiScore").textContent = totalPoints.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
       $("#kpiDone").textContent = done.length;
-      $("#kpiRate").textContent = `${rate}% concluído`;
-      $("#kpiProgress").style.width = `${rate}%`;
     }
 
     function closeAllCustomSelects() {
