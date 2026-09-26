@@ -10112,7 +10112,7 @@
 
         const dates = getActivityDates(activity);
         const dateLabel = dates.length > 1
-          ? `Datas: *${dates.map(formatDate).join(" | ")}*`
+          ? `Datas: ${dates.map(date => `*${formatDate(date)}*`).join("\n")}`
           : `Prazo: *${formatDate(dates[0] || activity.due)}*`;
 
         const lines = [
