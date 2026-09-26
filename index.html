@@ -1914,6 +1914,84 @@
       overflow-wrap: anywhere;
     }
 
+    .completion-team-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding-right: 3px;
+      scrollbar-width: thin;
+      scrollbar-color: #555 #252525;
+    }
+
+    .completion-team-option {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 11px 12px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: #1C1C1C;
+      color: var(--parchment);
+      text-align: left;
+      cursor: pointer;
+      transition: background .15s ease, border-color .15s ease;
+    }
+
+    .completion-team-option:hover {
+      background: var(--panel-raised);
+      border-color: #505050;
+    }
+
+    .completion-team-option.selected {
+      border-color: var(--parchment);
+      background: #343434;
+    }
+
+    .completion-team-radio {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+      border-radius: 50%;
+      border: 1px solid #666;
+      display: grid;
+      place-items: center;
+    }
+
+    .completion-team-option.selected .completion-team-radio {
+      border-color: var(--parchment);
+    }
+
+    .completion-team-option.selected .completion-team-radio::after {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--parchment);
+    }
+
+    .completion-team-copy {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .completion-team-name {
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--parchment);
+    }
+
+    .completion-team-members {
+      font-size: .72rem;
+      line-height: 1.4;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
     .topic-card-actions {
       display: flex;
       align-items: center;
@@ -4093,6 +4171,38 @@
     </div>
   </div>
 
+  <!-- Modal: escolher grupo ao concluir atividade -->
+  <div class="modal-backdrop modal-backdrop-mid" id="groupCompletionModal">
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <div>
+          <h3>Selecionar Grupo</h3>
+          <p style="font-size:.76rem;color:var(--muted);margin-top:3px;">
+            Escolha qual dos seus grupos concluiu esta atividade.
+          </p>
+        </div>
+        <button class="icon-close" id="closeGroupCompletionModal" type="button" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="topic-choice-summary">
+        <span class="topic-choice-summary-label">Atividade</span>
+        <div class="topic-choice-summary-title" id="groupCompletionTitle"></div>
+      </div>
+
+      <div class="completion-team-list" id="groupCompletionTeamList"></div>
+
+      <div class="modal-foot">
+        <button type="button" class="btn btn-secondary" id="cancelGroupCompletionModal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="confirmGroupCompletionBtn" disabled>Marcar como feita</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: escolher artigo/tema para uma equipe -->
   <div class="modal-backdrop modal-backdrop-mid" id="topicClaimModal">
     <div class="modal modal-sm">
@@ -4507,6 +4617,8 @@
     let completionRealtimeChannel = null;
     let completionDates = new Map();
     let teamInfoByActivity = new Map();
+    let pendingGroupCompletionActivityId = null;
+    let selectedGroupCompletionKey = "";
     let shareRangeFilter = "14";
     let shareStatusFilter = "pending";
     let shareTeamOnly = false;
@@ -4734,6 +4846,118 @@
       }
 
       return teams.length === 1 ? teams[0] : null;
+    }
+
+    function getCurrentUserTeamsForActivity(activityId) {
+      if (!currentUser) return [];
+
+      return (teamInfoByActivity.get(activityId) || [])
+        .filter(team =>
+          team.ownerId === currentUser.id ||
+          team.memberIds.includes(currentUser.id)
+        )
+        .map(team => ({
+          ...team,
+          rpcTeamId: team.source === "topic" ? team.topicTeamId : team.id,
+          key: `${team.source}:${team.source === "topic" ? team.topicTeamId : team.id}`
+        }));
+    }
+
+    function closeGroupCompletionModal() {
+      pendingGroupCompletionActivityId = null;
+      selectedGroupCompletionKey = "";
+      $("#groupCompletionModal").classList.remove("open");
+      $("#groupCompletionTeamList").innerHTML = "";
+      $("#confirmGroupCompletionBtn").disabled = true;
+    }
+
+    function openGroupCompletionModal(activity) {
+      const teams = getCurrentUserTeamsForActivity(activity.id);
+
+      if (!teams.length) {
+        alert("Você ainda não possui nenhum grupo vinculado a esta atividade.");
+        return;
+      }
+
+      pendingGroupCompletionActivityId = activity.id;
+      selectedGroupCompletionKey = "";
+      $("#groupCompletionTitle").textContent = activity.title || "Atividade";
+      $("#confirmGroupCompletionBtn").disabled = true;
+
+      $("#groupCompletionTeamList").innerHTML = teams.map(team => {
+        const fallbackName = team.memberNames.length
+          ? `Grupo com ${team.memberNames.join(", ")}`
+          : "Grupo vinculado";
+        const name = team.name || fallbackName;
+        const members = team.memberNames.length
+          ? team.memberNames.join(", ")
+          : "Sem integrantes identificados";
+
+        return `
+          <button
+            type="button"
+            class="completion-team-option"
+            data-completion-team-key="${escapeHtml(team.key)}"
+          >
+            <span class="completion-team-radio" aria-hidden="true"></span>
+            <span class="completion-team-copy">
+              <span class="completion-team-name">${escapeHtml(name)}</span>
+              <span class="completion-team-members">${escapeHtml(members)}</span>
+            </span>
+          </button>
+        `;
+      }).join("");
+
+      $$("[data-completion-team-key]").forEach(button => {
+        button.addEventListener("click", () => {
+          selectedGroupCompletionKey = button.dataset.completionTeamKey || "";
+
+          $$("[data-completion-team-key]").forEach(option => {
+            option.classList.toggle(
+              "selected",
+              option.dataset.completionTeamKey === selectedGroupCompletionKey
+            );
+          });
+
+          $("#confirmGroupCompletionBtn").disabled = !selectedGroupCompletionKey;
+        });
+      });
+
+      $("#groupCompletionModal").classList.add("open");
+    }
+
+    async function confirmGroupActivityCompletion() {
+      if (!pendingGroupCompletionActivityId || !selectedGroupCompletionKey) return;
+
+      const teams = getCurrentUserTeamsForActivity(pendingGroupCompletionActivityId);
+      const team = teams.find(item => item.key === selectedGroupCompletionKey);
+
+      if (!team) {
+        alert("Esse grupo não está mais disponível.");
+        closeGroupCompletionModal();
+        await loadTeamInfo();
+        return;
+      }
+
+      const button = $("#confirmGroupCompletionBtn");
+      button.disabled = true;
+
+      const result = await supabaseClient.rpc("set_activity_completion_for_team", {
+        p_activity_id: pendingGroupCompletionActivityId,
+        p_completed: true,
+        p_team_id: team.rpcTeamId,
+        p_team_source: team.source
+      });
+
+      if (result.error) {
+        console.error(result.error);
+        alert("Não foi possível marcar esta atividade como feita para o grupo selecionado.");
+        button.disabled = false;
+        return;
+      }
+
+      closeGroupCompletionModal();
+      await loadActivities();
     }
 
     async function subscribeToCompletionRealtime() {
@@ -7523,6 +7747,13 @@
 
           const id = btn.dataset.check;
           const isDone = doneIds.has(id);
+          const activity = activities.find(item => item.id === id);
+
+          if (!isDone && activity?.modality === "Em grupo") {
+            await loadTeamInfo();
+            openGroupCompletionModal(activity);
+            return;
+          }
 
           const result = await supabaseClient.rpc("set_activity_completion", {
             p_activity_id: id,
@@ -7569,6 +7800,7 @@
     const addModal = $("#addModal");
     const invitesModal = $("#invitesModal");
     const topicModal = $("#topicModal");
+    const groupCompletionModal = $("#groupCompletionModal");
     const topicClaimModal = $("#topicClaimModal");
     const topicTeamModal = $("#topicTeamModal");
     const subjectModal = $("#subjectModal");
@@ -8045,6 +8277,9 @@
 
     $("#closeTopicModal").addEventListener("click", () => topicModal.classList.remove("open"));
     $("#cancelTopicModal").addEventListener("click", () => topicModal.classList.remove("open"));
+    $("#closeGroupCompletionModal").addEventListener("click", closeGroupCompletionModal);
+    $("#cancelGroupCompletionModal").addEventListener("click", closeGroupCompletionModal);
+    $("#confirmGroupCompletionBtn").addEventListener("click", confirmGroupActivityCompletion);
     $("#closeTopicClaimModal").addEventListener("click", () => topicClaimModal.classList.remove("open"));
     $("#cancelTopicClaimModal").addEventListener("click", () => topicClaimModal.classList.remove("open"));
     $("#closeTopicTeamModal").addEventListener("click", () => topicTeamModal.classList.remove("open"));
