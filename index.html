@@ -1402,6 +1402,359 @@
       grid-column: 1 / -1;
     }
 
+    /* Artigos, Temas e Equipes */
+    .topics-view {
+      gap: 16px;
+    }
+
+    .topics-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 4px 2px 2px;
+    }
+
+    .topics-title {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      color: var(--parchment);
+      margin-top: 2px;
+    }
+
+    .topics-subtitle {
+      color: var(--muted);
+      font-size: .82rem;
+      margin-top: 5px;
+      max-width: 720px;
+    }
+
+    .topics-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .topics-filter-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topics-filter-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 14px;
+      width: 100%;
+    }
+
+    .topic-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-width: 0;
+      transition: border-color .15s ease, background .15s ease;
+    }
+
+    .topic-card:hover {
+      border-color: var(--border-accent);
+    }
+
+    .topic-card.locked {
+      background: #252525;
+    }
+
+    .topic-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .topic-title {
+      font-family: var(--font-display);
+      font-size: 1.06rem;
+      font-weight: 600;
+      line-height: 1.38;
+      color: var(--parchment);
+      margin-top: 5px;
+      overflow-wrap: anywhere;
+    }
+
+    .topic-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .topic-rule-badge,
+    .topic-type-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 25px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: .66rem;
+      line-height: 1.2;
+    }
+
+    .topic-rule-badge.exclusive {
+      color: var(--parchment);
+    }
+
+    .topic-notes {
+      color: var(--muted);
+      font-size: .82rem;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .topic-teams-box {
+      background: #1C1C1C;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .topic-teams-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted-dark);
+      font-family: var(--font-mono);
+      font-size: .66rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .topic-team-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 9px 10px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .topic-team-name {
+      display: block;
+      color: var(--parchment);
+      font-size: .82rem;
+      font-weight: 700;
+    }
+
+    .topic-team-members {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: .72rem;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .topic-card-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 2px;
+    }
+
+    .topic-empty {
+      grid-column: 1 / -1;
+      padding: 44px 16px;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      color: var(--muted);
+      background: #1C1C1C;
+      text-align: center;
+    }
+
+    .topic-invites {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #1C1C1C;
+    }
+
+    .topic-invites[hidden] {
+      display: none !important;
+    }
+
+    .topic-invites-title {
+      color: var(--parchment);
+      font-size: .8rem;
+      font-weight: 700;
+    }
+
+    .topic-invite-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card-bg);
+    }
+
+    .topic-invite-copy {
+      min-width: 0;
+    }
+
+    .topic-invite-name {
+      color: var(--parchment);
+      font-size: .8rem;
+      font-weight: 650;
+    }
+
+    .topic-invite-sub {
+      color: var(--muted-dark);
+      font-size: .7rem;
+      margin-top: 2px;
+    }
+
+    .topic-invite-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .rule-card-option {
+      background: #1C1C1C;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 12px 13px;
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      cursor: pointer;
+      transition: border-color .15s ease, background .15s ease;
+    }
+
+    .rule-card-option:hover {
+      background: var(--panel-raised);
+      border-color: #505050;
+    }
+
+    .rule-radio {
+      margin-top: 3px;
+      width: 16px;
+      height: 16px;
+      accent-color: #F3F3F3;
+      flex-shrink: 0;
+    }
+
+    .team-member-picker {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .team-member-list {
+      max-height: 230px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 6px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+    }
+
+    .team-member-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 40px;
+      padding: 7px 9px;
+      border-radius: 7px;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .team-member-row:hover {
+      background: var(--panel-raised);
+      color: var(--parchment);
+    }
+
+    .team-member-row.selected {
+      background: #3A3A3A;
+      color: var(--parchment);
+    }
+
+    .team-member-checkbox {
+      width: 17px;
+      height: 17px;
+      flex: 0 0 17px;
+      display: grid;
+      place-items: center;
+      border-radius: 4px;
+      border: 1px solid #555;
+      background: #181818;
+    }
+
+    .team-member-row.selected .team-member-checkbox {
+      background: var(--parchment);
+      color: #111;
+      border-color: var(--parchment);
+    }
+
+    .topic-choice-summary {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #1C1C1C;
+      margin-bottom: 14px;
+    }
+
+    .topic-choice-summary-label {
+      color: var(--muted-dark);
+      font-family: var(--font-mono);
+      font-size: .66rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .topic-choice-summary-title {
+      color: var(--parchment);
+      font-family: var(--font-display);
+      font-size: 1rem;
+      margin-top: 4px;
+      line-height: 1.35;
+    }
+
     /* Modais */
     .modal-backdrop {
       display: none;
@@ -2354,6 +2707,50 @@
       .section-nav-btn {
         width: 100%;
         min-height: 42px;
+        padding-inline: 6px;
+        font-size: .71rem;
+      }
+
+      .topics-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .topics-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .topics-filter-tabs {
+        width: 100%;
+      }
+
+      .topic-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .topic-card {
+        padding: 14px;
+      }
+
+      .topic-card-actions .btn {
+        width: 100%;
+        min-height: 44px;
+      }
+
+      .topic-invite-row {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .topic-invite-actions {
+        width: 100%;
+      }
+
+      .topic-invite-actions .btn {
+        flex: 1;
       }
 
       .contents-header {
@@ -2501,7 +2898,7 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 5v14M5 12h14"/>
           </svg>
-          Novo Registro
+          <span id="openAddModalLabel">Novo Registro</span>
         </button>
       </div>
     </header>
@@ -2509,6 +2906,7 @@
     <nav class="section-nav" aria-label="Seções principais">
       <button type="button" class="section-nav-btn active" data-section="activities">Atividades</button>
       <button type="button" class="section-nav-btn" data-section="contents">Conteúdos</button>
+      <button type="button" class="section-nav-btn" data-section="topics">Artigos &amp; Equipes</button>
     </nav>
 
     <div class="section-view" id="activitiesView">
@@ -2665,6 +3063,47 @@
       </div>
 
       <section class="contents-grid" id="contentsGrid" aria-live="polite"></section>
+    </section>
+
+    <section class="section-view topics-view" id="topicsView" hidden>
+      <div class="topics-header">
+        <div>
+          <div class="subject-tag">Distribuição de trabalhos</div>
+          <h2 class="topics-title">Artigos &amp; Equipes</h2>
+          <p class="topics-subtitle">
+            Veja quais artigos ou temas já foram escolhidos, por qual equipe e quem faz parte dela.
+          </p>
+        </div>
+      </div>
+
+      <div class="topic-invites" id="topicInvites" hidden>
+        <div class="topic-invites-title">Convites para equipes</div>
+        <div id="topicInvitesList"></div>
+      </div>
+
+      <div class="topics-toolbar">
+        <div class="search-box">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            id="topicSearchInput"
+            class="search-input"
+            placeholder="Buscar por artigo, tema, disciplina, equipe ou integrante..."
+            autocomplete="off"
+          />
+        </div>
+      </div>
+
+      <div class="topics-filter-tabs">
+        <button type="button" class="tab-btn active" data-topic-filter="all">Todos</button>
+        <button type="button" class="tab-btn" data-topic-filter="available">Disponíveis</button>
+        <button type="button" class="tab-btn" data-topic-filter="claimed">Com equipe</button>
+      </div>
+
+      <section class="topic-grid" id="topicsList" aria-live="polite"></section>
     </section>
   </div>
 
@@ -2825,6 +3264,224 @@
         <div class="modal-foot">
           <button type="button" class="btn btn-secondary" id="cancelAddModal">Cancelar</button>
           <button type="submit" class="btn btn-primary">Registrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: cadastrar artigo ou tema -->
+  <div class="modal-backdrop modal-backdrop-mid" id="topicModal">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h3>Cadastrar Artigo ou Tema</h3>
+          <p style="font-size:.76rem;color:var(--muted);margin-top:3px;">
+            Cadastre uma opção e defina se ela pode ser escolhida por uma ou várias equipes.
+          </p>
+        </div>
+        <button class="icon-close" id="closeTopicModal" type="button" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <form id="topicForm">
+        <div class="field-grid">
+          <div class="field full">
+            <label for="topicTitle">Título do Artigo ou Tema</label>
+            <input
+              id="topicTitle"
+              type="text"
+              required
+              maxlength="220"
+              placeholder="Ex.: Artigo 1: Attention Is All You Need"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="field full">
+            <label>Disciplina</label>
+            <div class="custom-select-container" id="topicSubjectDropdown">
+              <button type="button" class="custom-select-trigger" id="topicSubjectTrigger">
+                <span class="trigger-text placeholder" id="topicSubjectLabel">Selecione uma disciplina...</span>
+                <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div class="custom-select-menu" id="topicSubjectMenu"></div>
+              <input type="hidden" id="topicSubject" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Tipo</label>
+            <div class="custom-select-container" id="topicTypeDropdown">
+              <button type="button" class="custom-select-trigger" id="topicTypeTrigger">
+                <span id="topicTypeLabel">Artigo</span>
+                <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div class="custom-select-menu" id="topicTypeMenu">
+                <div class="custom-select-option selected" data-topic-type="Artigo">Artigo</div>
+                <div class="custom-select-option" data-topic-type="Tema">Tema</div>
+                <div class="custom-select-option" data-topic-type="Outro">Outro</div>
+              </div>
+              <input type="hidden" id="topicType" value="Artigo" />
+            </div>
+          </div>
+
+          <div class="field full">
+            <label>Regra de Distribuição entre Equipes</label>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <label class="rule-card-option">
+                <input type="radio" name="topicRule" value="exclusive" class="rule-radio" checked />
+                <span>
+                  <strong style="font-size:.84rem;display:block;color:var(--parchment);">Exclusivo</strong>
+                  <span style="font-size:.75rem;color:var(--muted);display:block;margin-top:2px;">
+                    Apenas uma equipe pode escolher este artigo ou tema.
+                  </span>
+                </span>
+              </label>
+
+              <label class="rule-card-option">
+                <input type="radio" name="topicRule" value="shared" class="rule-radio" />
+                <span>
+                  <strong style="font-size:.84rem;display:block;color:var(--parchment);">Compartilhado</strong>
+                  <span style="font-size:.75rem;color:var(--muted);display:block;margin-top:2px;">
+                    Várias equipes podem escolher e trabalhar na mesma opção.
+                  </span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="field full">
+            <label for="topicNotes">Observações / Link</label>
+            <textarea
+              id="topicNotes"
+              maxlength="1800"
+              placeholder="Link do artigo, orientações da professora, páginas relevantes..."
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" id="cancelTopicModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="saveTopicBtn">Cadastrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: escolher artigo/tema para uma equipe -->
+  <div class="modal-backdrop modal-backdrop-mid" id="topicClaimModal">
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <h3>Escolher para a Equipe</h3>
+        <button class="icon-close" id="closeTopicClaimModal" type="button" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="topic-choice-summary">
+        <span class="topic-choice-summary-label">Opção selecionada</span>
+        <div class="topic-choice-summary-title" id="topicClaimTitle"></div>
+        <div style="font-size:.74rem;color:var(--muted);margin-top:5px;" id="topicClaimRule"></div>
+      </div>
+
+      <form id="topicClaimForm">
+        <input type="hidden" id="topicClaimId" />
+
+        <div class="field">
+          <label>
+            <span>Minha equipe</span>
+            <button type="button" class="btn-text-action" id="openTopicTeamModal">+ Nova equipe</button>
+          </label>
+
+          <div class="custom-select-container" id="topicTeamDropdown">
+            <button type="button" class="custom-select-trigger" id="topicTeamTrigger">
+              <span class="trigger-text placeholder" id="topicTeamLabel">Selecione uma equipe...</span>
+              <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            <div class="custom-select-menu" id="topicTeamMenu"></div>
+            <input type="hidden" id="topicTeamId" />
+          </div>
+        </div>
+
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" id="cancelTopicClaimModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="confirmTopicClaimBtn">Confirmar Escolha</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: cadastrar equipe para artigos/temas -->
+  <div class="modal-backdrop modal-backdrop-top" id="topicTeamModal">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h3>Cadastrar Equipe</h3>
+          <p style="font-size:.76rem;color:var(--muted);margin-top:3px;">
+            Você entra automaticamente. Os demais integrantes precisam aceitar o convite.
+          </p>
+        </div>
+        <button class="icon-close" id="closeTopicTeamModal" type="button" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <form id="topicTeamForm">
+        <div class="field-grid">
+          <div class="field full">
+            <label for="topicTeamName">Nome da Equipe</label>
+            <input
+              id="topicTeamName"
+              type="text"
+              required
+              maxlength="100"
+              placeholder="Ex.: Equipe Alpha / Grupo 3"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="field full">
+            <label for="topicMemberSearch">Integrantes</label>
+            <div class="team-member-picker">
+              <div class="search-box">
+                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input
+                  id="topicMemberSearch"
+                  type="text"
+                  class="search-input"
+                  placeholder="Buscar pessoa..."
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="team-member-list" id="topicMemberList"></div>
+              <span style="font-size:.7rem;color:var(--muted-dark);" id="topicMemberCount">0 integrantes selecionados</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" id="cancelTopicTeamModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="saveTopicTeamBtn">Salvar Equipe</button>
         </div>
       </form>
     </div>
@@ -3066,6 +3723,15 @@
     let currentUserRole = null;
     let professors = [];
     let subjects = [];
+    let topicItems = [];
+    let topicTeams = [];
+    let topicTeamMembers = [];
+    let topicClaims = [];
+    let topicDirectory = [];
+    let topicFilter = "all";
+    let selectedTopicMemberIds = new Set();
+    let selectedTopicTeamId = "";
+    let topicRealtimeChannel = null;
     let completionRealtimeChannel = null;
     let completionDates = new Map();
     let teamInfoByActivity = new Map();
@@ -3256,6 +3922,21 @@
       return currentUserRole === "owner";
     }
 
+    function syncPrimaryAddButton() {
+      const addBtn = $("#openAddModal");
+      const label = $("#openAddModalLabel");
+      const canCreate = Boolean(
+        currentUser &&
+        isStaff() &&
+        activeSection !== "contents"
+      );
+
+      addBtn.hidden = !canCreate;
+      label.textContent = activeSection === "topics"
+        ? "Novo Artigo / Tema"
+        : "Novo Registro";
+    }
+
     function updateAuthUI() {
       const authBtn = $("#authBtn");
       const logoutBtn = $("#logoutBtn");
@@ -3269,9 +3950,9 @@
 
       authBtn.hidden = Boolean(currentUser);
       logoutBtn.hidden = !currentUser;
-      addBtn.hidden = !currentUser || !isStaff();
       manageUsersBtn.hidden = !currentUser || !isOwner();
       $("#authBtnLabel").textContent = "Entrar";
+      syncPrimaryAddButton();
 
       $("#userMenuName").textContent = currentUser
         ? (currentProfile?.display_name || "Usuário")
@@ -3613,18 +4294,27 @@
     }
 
     function setActiveSection(section) {
-      activeSection = section === "contents" ? "contents" : "activities";
+      activeSection = ["activities", "contents", "topics"].includes(section)
+        ? section
+        : "activities";
 
       $("#activitiesView").hidden = activeSection !== "activities";
       $("#contentsView").hidden = activeSection !== "contents";
+      $("#topicsView").hidden = activeSection !== "topics";
       $("#fabShareBtn").hidden = activeSection !== "activities";
 
       $$("[data-section]").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.section === activeSection);
       });
 
+      syncPrimaryAddButton();
+
       if (activeSection === "contents" && !contentsState.loaded && !contentsState.loading) {
         loadContents("");
+      }
+
+      if (activeSection === "topics") {
+        loadTopicBoardData();
       }
 
       syncMobileBackGuard();
@@ -3786,6 +4476,592 @@
 
       renderSubjectOptions();
       renderActivitySubjectMenu();
+      renderTopicSubjectMenu();
+    }
+
+    async function loadTopicBoardData() {
+      const [itemsResult, teamsResult, membersResult, claimsResult, directoryResult] = await Promise.all([
+        supabaseClient
+          .from("topic_items")
+          .select("id,title,subject,item_type,notes,allow_multiple_teams,created_by,created_at")
+          .order("created_at", { ascending: true }),
+        supabaseClient
+          .from("topic_teams")
+          .select("id,name,owner_id,created_at")
+          .order("created_at", { ascending: true }),
+        supabaseClient
+          .from("topic_team_members")
+          .select("team_id,user_id,invited_by,status,created_at,responded_at"),
+        supabaseClient
+          .from("topic_claims")
+          .select("topic_id,team_id,chosen_by,chosen_at")
+          .order("chosen_at", { ascending: true }),
+        supabaseClient
+          .from("user_directory")
+          .select("user_id,display_name")
+          .order("display_name", { ascending: true })
+      ]);
+
+      const firstError = [
+        itemsResult.error,
+        teamsResult.error,
+        membersResult.error,
+        claimsResult.error,
+        directoryResult.error
+      ].find(Boolean);
+
+      if (firstError) {
+        console.error("Falha ao carregar Artigos & Equipes:", firstError);
+      }
+
+      topicItems = itemsResult.data || [];
+      topicTeams = teamsResult.data || [];
+      topicTeamMembers = membersResult.data || [];
+      topicClaims = claimsResult.data || [];
+      topicDirectory = directoryResult.data || [];
+
+      renderTopics();
+      renderTopicInvites();
+      renderTopicTeamMenu();
+      renderTopicMemberPicker();
+    }
+
+    function getTopicDisplayName(userId) {
+      return topicDirectory.find(person => person.user_id === userId)?.display_name || "Usuário";
+    }
+
+    function getTopicTeam(teamId) {
+      return topicTeams.find(team => team.id === teamId) || null;
+    }
+
+    function getAcceptedTopicTeamMembers(teamId) {
+      return topicTeamMembers.filter(member =>
+        member.team_id === teamId &&
+        member.status === "accepted"
+      );
+    }
+
+    function getTopicTeamMemberNames(teamId) {
+      return getAcceptedTopicTeamMembers(teamId)
+        .map(member => getTopicDisplayName(member.user_id))
+        .filter(Boolean);
+    }
+
+    function getTopicClaims(topicId) {
+      return topicClaims.filter(claim => claim.topic_id === topicId);
+    }
+
+    function getMyAcceptedTopicTeams() {
+      if (!currentUser) return [];
+
+      const acceptedTeamIds = new Set(
+        topicTeamMembers
+          .filter(member =>
+            member.user_id === currentUser.id &&
+            member.status === "accepted"
+          )
+          .map(member => member.team_id)
+      );
+
+      return topicTeams.filter(team => acceptedTeamIds.has(team.id));
+    }
+
+    function isCurrentUserInTopicTeam(teamId) {
+      if (!currentUser) return false;
+
+      return topicTeamMembers.some(member =>
+        member.team_id === teamId &&
+        member.user_id === currentUser.id &&
+        member.status === "accepted"
+      );
+    }
+
+    function renderTopicInvites() {
+      const box = $("#topicInvites");
+      const list = $("#topicInvitesList");
+      if (!box || !list) return;
+
+      if (!currentUser) {
+        box.hidden = true;
+        list.innerHTML = "";
+        return;
+      }
+
+      const pending = topicTeamMembers.filter(member =>
+        member.user_id === currentUser.id &&
+        member.status === "pending"
+      );
+
+      if (!pending.length) {
+        box.hidden = true;
+        list.innerHTML = "";
+        return;
+      }
+
+      box.hidden = false;
+      list.innerHTML = pending.map(member => {
+        const team = getTopicTeam(member.team_id);
+        const inviterName = getTopicDisplayName(member.invited_by);
+
+        return `
+          <div class="topic-invite-row">
+            <div class="topic-invite-copy">
+              <div class="topic-invite-name">${escapeHtml(team?.name || "Equipe")}</div>
+              <div class="topic-invite-sub">Convite enviado por ${escapeHtml(inviterName)}</div>
+            </div>
+
+            <div class="topic-invite-actions">
+              <button type="button" class="btn btn-secondary" data-topic-invite-decline="${member.team_id}">
+                Recusar
+              </button>
+              <button type="button" class="btn btn-primary" data-topic-invite-accept="${member.team_id}">
+                Aceitar
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      $$("[data-topic-invite-accept]").forEach(button => {
+        button.addEventListener("click", async () => {
+          button.disabled = true;
+
+          const { error } = await supabaseClient.rpc("respond_topic_team_invite", {
+            p_team_id: button.dataset.topicInviteAccept,
+            p_accept: true
+          });
+
+          if (error) {
+            console.error(error);
+            alert("Não foi possível aceitar o convite.");
+            button.disabled = false;
+            return;
+          }
+
+          await loadTopicBoardData();
+        });
+      });
+
+      $$("[data-topic-invite-decline]").forEach(button => {
+        button.addEventListener("click", async () => {
+          button.disabled = true;
+
+          const { error } = await supabaseClient.rpc("respond_topic_team_invite", {
+            p_team_id: button.dataset.topicInviteDecline,
+            p_accept: false
+          });
+
+          if (error) {
+            console.error(error);
+            alert("Não foi possível recusar o convite.");
+            button.disabled = false;
+            return;
+          }
+
+          await loadTopicBoardData();
+        });
+      });
+    }
+
+    function renderTopics() {
+      const container = $("#topicsList");
+      if (!container) return;
+
+      const search = normalizeSearch($("#topicSearchInput")?.value || "");
+
+      const filtered = topicItems.filter(topic => {
+        const claims = getTopicClaims(topic.id);
+        const isLocked = !topic.allow_multiple_teams && claims.length > 0;
+
+        if (topicFilter === "available" && isLocked) return false;
+        if (topicFilter === "claimed" && claims.length === 0) return false;
+
+        if (search) {
+          const teamsText = claims.map(claim => {
+            const team = getTopicTeam(claim.team_id);
+            return [
+              team?.name || "",
+              ...getTopicTeamMemberNames(claim.team_id)
+            ].join(" ");
+          }).join(" ");
+
+          const haystack = normalizeSearch(
+            `${topic.title} ${topic.subject} ${topic.item_type} ${topic.notes || ""} ${teamsText}`
+          );
+
+          if (!haystack.includes(search)) return false;
+        }
+
+        return true;
+      });
+
+      if (!filtered.length) {
+        container.innerHTML = `
+          <div class="topic-empty">
+            Nenhum artigo ou tema encontrado.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(topic => {
+        const claims = getTopicClaims(topic.id);
+        const isLocked = !topic.allow_multiple_teams && claims.length > 0;
+        const myClaim = claims.find(claim => isCurrentUserInTopicTeam(claim.team_id));
+
+        const teamsHtml = claims.length
+          ? claims.map(claim => {
+              const team = getTopicTeam(claim.team_id);
+              const memberNames = getTopicTeamMemberNames(claim.team_id);
+              const canRemove = isStaff() || isCurrentUserInTopicTeam(claim.team_id);
+
+              return `
+                <div class="topic-team-item">
+                  <div>
+                    <span class="topic-team-name">${escapeHtml(team?.name || "Equipe")}</span>
+                    <span class="topic-team-members">
+                      ${memberNames.length
+                        ? `Integrantes: ${escapeHtml(memberNames.join(", "))}`
+                        : "Nenhum integrante aceito ainda."}
+                    </span>
+                  </div>
+
+                  ${canRemove ? `
+                    <button
+                      type="button"
+                      class="del-btn"
+                      data-topic-unclaim="${topic.id}"
+                      data-topic-unclaim-team="${claim.team_id}"
+                      title="Remover escolha"
+                      aria-label="Remover escolha desta equipe"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  ` : ""}
+                </div>
+              `;
+            }).join("")
+          : '<span style="font-size:.76rem;color:var(--muted-dark);font-style:italic;">Nenhuma equipe escolheu esta opção ainda.</span>';
+
+        const notesHtml = topic.notes
+          ? (/^https?:\/\/\S+$/i.test(topic.notes.trim())
+              ? `<a class="content-action" href="${escapeHtml(topic.notes.trim())}" target="_blank" rel="noopener noreferrer">Abrir material</a>`
+              : `<p class="topic-notes">${escapeHtml(topic.notes)}</p>`)
+          : "";
+
+        let actionHtml = "";
+
+        if (myClaim) {
+          actionHtml = '<span class="content-action">Sua equipe escolheu</span>';
+        } else if (isLocked) {
+          actionHtml = '<span class="content-action" aria-disabled="true">Já escolhido</span>';
+        } else {
+          actionHtml = `
+            <button
+              type="button"
+              class="btn btn-primary"
+              data-topic-choose="${topic.id}"
+            >
+              Escolher para minha equipe
+            </button>
+          `;
+        }
+
+        return `
+          <article class="topic-card ${isLocked ? "locked" : ""}">
+            <div>
+              <div class="topic-card-head">
+                <div>
+                  <div class="subject-tag">${escapeHtml(topic.subject)}</div>
+                  <h3 class="topic-title">${escapeHtml(topic.title)}</h3>
+                </div>
+
+                ${isStaff() ? `
+                  <button
+                    type="button"
+                    class="del-btn"
+                    data-topic-delete="${topic.id}"
+                    title="Excluir artigo ou tema"
+                    aria-label="Excluir artigo ou tema"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                ` : ""}
+              </div>
+
+              <div class="topic-meta-row">
+                <span class="topic-type-badge">${escapeHtml(topic.item_type || "Artigo")}</span>
+                <span class="topic-rule-badge ${topic.allow_multiple_teams ? "shared" : "exclusive"}">
+                  ${topic.allow_multiple_teams ? "Múltiplas equipes" : "1 equipe por opção"}
+                </span>
+              </div>
+
+              ${notesHtml}
+            </div>
+
+            <div class="topic-teams-box">
+              <div class="topic-teams-head">
+                <span>Equipes</span>
+                <span>${claims.length}</span>
+              </div>
+              ${teamsHtml}
+            </div>
+
+            <div class="topic-card-actions">
+              ${actionHtml}
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      $$("[data-topic-choose]").forEach(button => {
+        button.addEventListener("click", () => {
+          openTopicClaimModal(button.dataset.topicChoose);
+        });
+      });
+
+      $$("[data-topic-delete]").forEach(button => {
+        button.addEventListener("click", async () => {
+          if (!isStaff()) return;
+
+          const topic = topicItems.find(item => item.id === button.dataset.topicDelete);
+          if (!topic) return;
+
+          const confirmed = window.confirm(
+            `Excluir "${topic.title}"? As escolhas das equipes nessa opção também serão removidas.`
+          );
+          if (!confirmed) return;
+
+          button.disabled = true;
+
+          const { error } = await supabaseClient
+            .from("topic_items")
+            .delete()
+            .eq("id", topic.id);
+
+          if (error) {
+            console.error(error);
+            alert("Não foi possível excluir este artigo ou tema.");
+            button.disabled = false;
+            return;
+          }
+
+          await loadTopicBoardData();
+        });
+      });
+
+      $$("[data-topic-unclaim]").forEach(button => {
+        button.addEventListener("click", async () => {
+          if (!requireLogin()) return;
+
+          button.disabled = true;
+
+          const { error } = await supabaseClient.rpc("unclaim_topic_item", {
+            p_topic_id: button.dataset.topicUnclaim,
+            p_team_id: button.dataset.topicUnclaimTeam
+          });
+
+          if (error) {
+            console.error(error);
+            alert("Não foi possível remover a escolha desta equipe.");
+            button.disabled = false;
+            return;
+          }
+
+          await loadTopicBoardData();
+        });
+      });
+    }
+
+    async function subscribeToTopicRealtime() {
+      if (topicRealtimeChannel) {
+        await supabaseClient.removeChannel(topicRealtimeChannel);
+        topicRealtimeChannel = null;
+      }
+
+      topicRealtimeChannel = supabaseClient
+        .channel("topic-board-live")
+        .on("postgres_changes", { event: "*", schema: "public", table: "topic_items" }, loadTopicBoardData)
+        .on("postgres_changes", { event: "*", schema: "public", table: "topic_teams" }, loadTopicBoardData)
+        .on("postgres_changes", { event: "*", schema: "public", table: "topic_team_members" }, loadTopicBoardData)
+        .on("postgres_changes", { event: "*", schema: "public", table: "topic_claims" }, loadTopicBoardData)
+        .subscribe();
+    }
+
+    function setTopicSubject(name = "") {
+      $("#topicSubject").value = name;
+      $("#topicSubjectLabel").textContent = name || "Selecione uma disciplina...";
+      $("#topicSubjectLabel").classList.toggle("placeholder", !name);
+
+      $("#topicSubjectMenu").querySelectorAll("[data-topic-subject]").forEach(option => {
+        option.classList.toggle("selected", option.dataset.topicSubject === name);
+      });
+    }
+
+    function renderTopicSubjectMenu() {
+      const menu = $("#topicSubjectMenu");
+      if (!menu) return;
+
+      const names = subjects
+        .map(subject => subject.name)
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }));
+
+      const optionsHtml = names.length
+        ? names.map(name => `
+            <div class="custom-select-option ${$("#topicSubject").value === name ? "selected" : ""}" data-topic-subject="${escapeHtml(name)}">
+              <span class="discipline-name">${escapeHtml(name)}</span>
+            </div>
+          `).join("")
+        : '<div style="padding:11px;color:var(--muted-dark);font-size:.76rem;">Nenhuma disciplina cadastrada.</div>';
+
+      menu.innerHTML = `
+        <div class="custom-select-option menu-add-shortcut" data-topic-new-subject>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Cadastrar nova disciplina...
+        </div>
+        ${optionsHtml}
+      `;
+
+      menu.querySelector("[data-topic-new-subject]")?.addEventListener("click", event => {
+        event.stopPropagation();
+        closeAllCustomSelects();
+        openSubjectModal();
+      });
+
+      menu.querySelectorAll("[data-topic-subject]").forEach(option => {
+        option.addEventListener("click", () => {
+          setTopicSubject(option.dataset.topicSubject || "");
+          closeAllCustomSelects();
+        });
+      });
+    }
+
+    function renderTopicTeamMenu() {
+      const menu = $("#topicTeamMenu");
+      if (!menu) return;
+
+      const myTeams = getMyAcceptedTopicTeams();
+
+      if (!myTeams.length) {
+        menu.innerHTML = '<div style="padding:11px;color:var(--muted-dark);font-size:.76rem;">Você ainda não participa de nenhuma equipe aceita.</div>';
+        return;
+      }
+
+      menu.innerHTML = myTeams.map(team => {
+        const names = getTopicTeamMemberNames(team.id);
+        const selected = selectedTopicTeamId === team.id;
+
+        return `
+          <div class="custom-select-option ${selected ? "selected" : ""}" data-topic-team="${team.id}">
+            <div class="discipline-option-content">
+              <span class="discipline-name">${escapeHtml(team.name)}</span>
+              <span class="discipline-subinfo">
+                <span>${escapeHtml(names.join(", "))}</span>
+              </span>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      menu.querySelectorAll("[data-topic-team]").forEach(option => {
+        option.addEventListener("click", () => {
+          selectedTopicTeamId = option.dataset.topicTeam || "";
+          const team = getTopicTeam(selectedTopicTeamId);
+
+          $("#topicTeamId").value = selectedTopicTeamId;
+          $("#topicTeamLabel").textContent = team?.name || "Selecione uma equipe...";
+          $("#topicTeamLabel").classList.toggle("placeholder", !team);
+
+          renderTopicTeamMenu();
+          closeAllCustomSelects();
+        });
+      });
+    }
+
+    function openTopicClaimModal(topicId) {
+      if (!requireLogin()) return;
+
+      const topic = topicItems.find(item => item.id === topicId);
+      if (!topic) return;
+
+      const claims = getTopicClaims(topic.id);
+      if (!topic.allow_multiple_teams && claims.length) {
+        alert("Este artigo ou tema já foi escolhido por outra equipe.");
+        return;
+      }
+
+      selectedTopicTeamId = "";
+      $("#topicClaimId").value = topic.id;
+      $("#topicClaimTitle").textContent = topic.title;
+      $("#topicClaimRule").textContent = topic.allow_multiple_teams
+        ? "Esta opção permite múltiplas equipes."
+        : "Esta opção fica bloqueada depois que uma equipe a escolher.";
+      $("#topicTeamId").value = "";
+      $("#topicTeamLabel").textContent = "Selecione uma equipe...";
+      $("#topicTeamLabel").classList.add("placeholder");
+
+      renderTopicTeamMenu();
+      $("#topicClaimModal").classList.add("open");
+    }
+
+    function renderTopicMemberPicker() {
+      const list = $("#topicMemberList");
+      if (!list) return;
+
+      const search = normalizeSearch($("#topicMemberSearch")?.value || "");
+
+      const people = topicDirectory.filter(person =>
+        person.user_id !== currentUser?.id &&
+        (!search || normalizeSearch(person.display_name).includes(search))
+      );
+
+      if (!people.length) {
+        list.innerHTML = '<div style="padding:11px;color:var(--muted-dark);font-size:.76rem;">Nenhuma pessoa encontrada.</div>';
+      } else {
+        list.innerHTML = people.map(person => {
+          const selected = selectedTopicMemberIds.has(person.user_id);
+
+          return `
+            <div class="team-member-row ${selected ? "selected" : ""}" data-topic-member="${person.user_id}">
+              <span class="team-member-checkbox">
+                ${selected ? `
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                ` : ""}
+              </span>
+              <span>${escapeHtml(person.display_name)}</span>
+            </div>
+          `;
+        }).join("");
+      }
+
+      const count = selectedTopicMemberIds.size;
+      $("#topicMemberCount").textContent = `${count} integrante${count === 1 ? "" : "s"} selecionado${count === 1 ? "" : "s"}`;
+
+      list.querySelectorAll("[data-topic-member]").forEach(row => {
+        row.addEventListener("click", () => {
+          const userId = row.dataset.topicMember;
+
+          if (selectedTopicMemberIds.has(userId)) {
+            selectedTopicMemberIds.delete(userId);
+          } else {
+            selectedTopicMemberIds.add(userId);
+          }
+
+          renderTopicMemberPicker();
+        });
+      });
     }
 
     function renderSubjectOptions() {
@@ -4604,6 +5880,9 @@
     }
 
     const addModal = $("#addModal");
+    const topicModal = $("#topicModal");
+    const topicClaimModal = $("#topicClaimModal");
+    const topicTeamModal = $("#topicTeamModal");
     const subjectModal = $("#subjectModal");
     const professorModal = $("#professorModal");
     const shareModal = $("#shareModal");
@@ -4682,7 +5961,7 @@
         $(".custom-select-menu.open") ||
         $("#calendarPopup.open") ||
         $("#userMenu.open") ||
-        activeSection === "contents"
+        activeSection !== "activities"
       );
     }
 
@@ -4718,7 +5997,7 @@
         return true;
       }
 
-      if (activeSection === "contents") {
+      if (activeSection !== "activities") {
         setActiveSection("activities");
         return true;
       }
@@ -4988,7 +6267,21 @@
       if (!requireLogin()) return;
 
       if (!isStaff()) {
-        alert("Sua conta não tem permissão para registrar atividades.");
+        alert("Sua conta não tem permissão para cadastrar registros.");
+        return;
+      }
+
+      if (activeSection === "topics") {
+        $("#topicForm").reset();
+        setTopicSubject("");
+        $("#topicType").value = "Artigo";
+        $("#topicTypeLabel").textContent = "Artigo";
+        $("#topicTypeMenu").querySelectorAll("[data-topic-type]").forEach(option => {
+          option.classList.toggle("selected", option.dataset.topicType === "Artigo");
+        });
+        renderTopicSubjectMenu();
+        topicModal.classList.add("open");
+        setTimeout(() => $("#topicTitle").focus(), 80);
         return;
       }
 
@@ -4999,6 +6292,203 @@
 
     $("#closeAddModal").addEventListener("click", () => addModal.classList.remove("open"));
     $("#cancelAddModal").addEventListener("click", () => addModal.classList.remove("open"));
+
+    $("#closeTopicModal").addEventListener("click", () => topicModal.classList.remove("open"));
+    $("#cancelTopicModal").addEventListener("click", () => topicModal.classList.remove("open"));
+    $("#closeTopicClaimModal").addEventListener("click", () => topicClaimModal.classList.remove("open"));
+    $("#cancelTopicClaimModal").addEventListener("click", () => topicClaimModal.classList.remove("open"));
+    $("#closeTopicTeamModal").addEventListener("click", () => topicTeamModal.classList.remove("open"));
+    $("#cancelTopicTeamModal").addEventListener("click", () => topicTeamModal.classList.remove("open"));
+
+    $("#topicSubjectTrigger").addEventListener("click", event => {
+      event.stopPropagation();
+      const menu = $("#topicSubjectMenu");
+      const isOpen = menu.classList.contains("open");
+      closeAllCustomSelects();
+
+      if (!isOpen) {
+        renderTopicSubjectMenu();
+        menu.classList.add("open");
+        $("#topicSubjectTrigger").classList.add("active");
+      }
+    });
+
+    $("#topicTypeTrigger").addEventListener("click", event => {
+      event.stopPropagation();
+      const menu = $("#topicTypeMenu");
+      const isOpen = menu.classList.contains("open");
+      closeAllCustomSelects();
+
+      if (!isOpen) {
+        menu.classList.add("open");
+        $("#topicTypeTrigger").classList.add("active");
+      }
+    });
+
+    $("#topicTypeMenu").querySelectorAll("[data-topic-type]").forEach(option => {
+      option.addEventListener("click", () => {
+        const value = option.dataset.topicType || "Artigo";
+        $("#topicType").value = value;
+        $("#topicTypeLabel").textContent = value;
+
+        $("#topicTypeMenu").querySelectorAll("[data-topic-type]").forEach(item => {
+          item.classList.toggle("selected", item === option);
+        });
+
+        closeAllCustomSelects();
+      });
+    });
+
+    $("#topicTeamTrigger").addEventListener("click", event => {
+      event.stopPropagation();
+      const menu = $("#topicTeamMenu");
+      const isOpen = menu.classList.contains("open");
+      closeAllCustomSelects();
+
+      if (!isOpen) {
+        renderTopicTeamMenu();
+        menu.classList.add("open");
+        $("#topicTeamTrigger").classList.add("active");
+      }
+    });
+
+    $("#openTopicTeamModal").addEventListener("click", () => {
+      if (!requireLogin()) return;
+
+      selectedTopicMemberIds = new Set();
+      $("#topicTeamForm").reset();
+      $("#topicMemberSearch").value = "";
+      renderTopicMemberPicker();
+      topicTeamModal.classList.add("open");
+      setTimeout(() => $("#topicTeamName").focus(), 80);
+    });
+
+    $("#topicMemberSearch").addEventListener("input", renderTopicMemberPicker);
+
+    $("#topicForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!requireLogin() || !isStaff()) return;
+
+      const title = $("#topicTitle").value.trim();
+      const subject = $("#topicSubject").value.trim();
+      const itemType = $("#topicType").value || "Artigo";
+      const notes = $("#topicNotes").value.trim();
+      const rule = document.querySelector('input[name="topicRule"]:checked')?.value || "exclusive";
+      const saveBtn = $("#saveTopicBtn");
+
+      if (!title || !subject) {
+        if (!subject) $("#topicSubjectTrigger").focus();
+        return;
+      }
+
+      saveBtn.disabled = true;
+
+      try {
+        const { error } = await supabaseClient
+          .from("topic_items")
+          .insert({
+            title,
+            subject,
+            item_type: itemType,
+            notes: notes || null,
+            allow_multiple_teams: rule === "shared",
+            created_by: currentUser.id
+          });
+
+        if (error) {
+          console.error(error);
+          alert("Não foi possível cadastrar este artigo ou tema.");
+          return;
+        }
+
+        topicModal.classList.remove("open");
+        $("#topicForm").reset();
+        setTopicSubject("");
+        await loadTopicBoardData();
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+
+    $("#topicTeamForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!requireLogin()) return;
+
+      const name = $("#topicTeamName").value.trim();
+      const saveBtn = $("#saveTopicTeamBtn");
+      if (!name) return;
+
+      saveBtn.disabled = true;
+
+      try {
+        const { data, error } = await supabaseClient.rpc("create_topic_team", {
+          p_name: name,
+          p_member_ids: [...selectedTopicMemberIds]
+        });
+
+        if (error) {
+          console.error(error);
+          alert("Não foi possível cadastrar a equipe.");
+          return;
+        }
+
+        topicTeamModal.classList.remove("open");
+        selectedTopicMemberIds = new Set();
+        await loadTopicBoardData();
+
+        selectedTopicTeamId = data;
+        $("#topicTeamId").value = data;
+        const team = getTopicTeam(data);
+        $("#topicTeamLabel").textContent = team?.name || name;
+        $("#topicTeamLabel").classList.remove("placeholder");
+        renderTopicTeamMenu();
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+
+    $("#topicClaimForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!requireLogin()) return;
+
+      const topicId = $("#topicClaimId").value;
+      const teamId = $("#topicTeamId").value;
+      const confirmBtn = $("#confirmTopicClaimBtn");
+
+      if (!teamId) {
+        $("#topicTeamTrigger").focus();
+        return;
+      }
+
+      confirmBtn.disabled = true;
+
+      try {
+        const { error } = await supabaseClient.rpc("claim_topic_item", {
+          p_topic_id: topicId,
+          p_team_id: teamId
+        });
+
+        if (error) {
+          console.error(error);
+
+          if (String(error.message || "").includes("already chosen")) {
+            alert("Esse artigo ou tema acabou de ser escolhido por outra equipe.");
+          } else if (String(error.message || "").includes("accepted member")) {
+            alert("Você precisa ser integrante aceito dessa equipe.");
+          } else {
+            alert("Não foi possível confirmar a escolha.");
+          }
+
+          await loadTopicBoardData();
+          return;
+        }
+
+        topicClaimModal.classList.remove("open");
+        await loadTopicBoardData();
+      } finally {
+        confirmBtn.disabled = false;
+      }
+    });
 
     $("#closeSubjectModal").addEventListener("click", () => subjectModal.classList.remove("open"));
     $("#cancelSubjectModal").addEventListener("click", () => subjectModal.classList.remove("open"));
@@ -5095,7 +6585,13 @@
 
         renderSubjectOptions();
         renderActivitySubjectMenu();
-        setFormDiscipline(data.name);
+        renderTopicSubjectMenu();
+
+        if (topicModal.classList.contains("open")) {
+          setTopicSubject(data.name);
+        } else {
+          setFormDiscipline(data.name);
+        }
 
         subjectModal.classList.remove("open");
         $("#newSubjectForm").reset();
@@ -5606,9 +7102,11 @@
       await loadCurrentProfile();
       updateAuthUI();
       await subscribeToCompletionRealtime();
+      await subscribeToTopicRealtime();
       await loadProfessors();
       await loadSubjects();
       await loadActivities();
+      await loadTopicBoardData();
 
       if (event === "PASSWORD_RECOVERY") {
         authModal.classList.remove("open");
@@ -5703,13 +7201,23 @@
 
     $("#searchInput").addEventListener("input", renderList);
     $("#contentsSearchInput").addEventListener("input", renderContents);
+    $("#topicSearchInput").addEventListener("input", renderTopics);
 
-    $$(".tab-btn").forEach(tab => {
+    $$(".tab-btn[data-filter]").forEach(tab => {
       tab.addEventListener("click", () => {
-        $$(".tab-btn").forEach(t => t.classList.remove("active"));
+        $$(".tab-btn[data-filter]").forEach(t => t.classList.remove("active"));
         tab.classList.add("active");
         activeFilter = tab.dataset.filter;
         renderList();
+      });
+    });
+
+    $$(".tab-btn[data-topic-filter]").forEach(tab => {
+      tab.addEventListener("click", () => {
+        $$(".tab-btn[data-topic-filter]").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        topicFilter = tab.dataset.topicFilter || "all";
+        renderTopics();
       });
     });
 
@@ -5722,6 +7230,9 @@
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") {
         addModal.classList.remove("open");
+        topicModal.classList.remove("open");
+        topicClaimModal.classList.remove("open");
+        topicTeamModal.classList.remove("open");
         subjectModal.classList.remove("open");
         professorModal.classList.remove("open");
         shareModal.classList.remove("open");
@@ -5732,10 +7243,18 @@
       }
       if ((e.key === "n" || e.key === "N") && !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
         e.preventDefault();
+
         if (requireLogin() && isStaff()) {
-          setFormDiscipline("");
-          renderActivitySubjectMenu();
-          addModal.classList.add("open");
+          if (activeSection === "topics") {
+            $("#topicForm").reset();
+            setTopicSubject("");
+            renderTopicSubjectMenu();
+            topicModal.classList.add("open");
+          } else if (activeSection === "activities") {
+            setFormDiscipline("");
+            renderActivitySubjectMenu();
+            addModal.classList.add("open");
+          }
         }
       }
     });
@@ -5747,9 +7266,11 @@
       updateAuthUI();
       renderCalendar();
       await subscribeToCompletionRealtime();
+      await subscribeToTopicRealtime();
       await loadProfessors();
       await loadSubjects();
       await loadActivities();
+      await loadTopicBoardData();
     }
 
     initializeApp();
