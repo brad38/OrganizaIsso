@@ -268,13 +268,29 @@
     }
 
     .invite-icon-glyph {
+      position: relative;
       display: block;
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: 27px;
-      font-weight: 400;
-      line-height: 1;
-      color: var(--parchment);
-      transform: translateY(-1px);
+      width: 24px;
+      height: 18px;
+      border: 2px solid var(--parchment);
+      border-radius: 5px;
+      background:
+        linear-gradient(var(--parchment) 0 0) 5px 4px / 10px 2px no-repeat,
+        linear-gradient(var(--parchment) 0 0) 5px 9px / 7px 2px no-repeat;
+      pointer-events: none;
+    }
+
+    .invite-icon-glyph::after {
+      content: "";
+      position: absolute;
+      left: 4px;
+      bottom: -5px;
+      width: 7px;
+      height: 7px;
+      background: var(--card-bg);
+      border-left: 2px solid var(--parchment);
+      border-bottom: 2px solid var(--parchment);
+      transform: skewY(-35deg);
     }
 
     .invite-badge {
@@ -2754,7 +2770,16 @@
       }
 
       .actions .invite-icon-glyph {
-        font-size: 29px;
+        width: 26px;
+        height: 20px;
+      }
+
+      .actions .invite-icon-glyph::before {
+        width: 11px;
+      }
+
+      .actions .invite-icon-glyph::after {
+        width: 8px;
       }
 
       .actions .btn svg {
@@ -3154,10 +3179,6 @@
         max-height: calc(100dvh - 4px);
       }
 
-      #shareModal.open .modal {
-        transform: translateY(0) !important;
-      }
-
       #shareModal .modal-head,
       #shareModal .share-filter-group,
       #shareModal .share-team-toggle,
@@ -3372,7 +3393,7 @@
           aria-label="Abrir convites"
           hidden
         >
-          <span class="invite-icon-glyph" aria-hidden="true">✉</span>
+          <span class="invite-icon-glyph" aria-hidden="true"></span>
           <span class="invite-badge" id="invitesBadge" hidden>0</span>
         </button>
 
