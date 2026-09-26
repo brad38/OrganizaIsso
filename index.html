@@ -1528,6 +1528,32 @@
       pointer-events: none;
     }
 
+    .activity-card-dates {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 6px;
+      width: 100%;
+      min-width: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      overscroll-behavior-x: contain;
+      padding: 0 0 6px;
+      margin-bottom: 2px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .activity-card-dates::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+
+    .activity-card-dates .date-tag {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
     .meta-tags {
       display: flex;
       flex-wrap: wrap;
@@ -7431,7 +7457,7 @@
             </div>
 
             <div class="card-bottom">
-              <div class="meta-tags">
+              <div class="activity-card-dates" aria-label="Datas da atividade">
                 ${activityDates.map((date, index) => `
                   <span class="tag date-tag" title="${index === 0 ? "Data principal" : "Data adicional"}">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -7443,6 +7469,9 @@
                     ${escapeHtml(formatDate(date))}
                   </span>
                 `).join("")}
+              </div>
+
+              <div class="meta-tags">
                 <span class="tag">${escapeHtml(a.type)}</span>
                 <span class="tag modality" title="Modalidade da atividade">
                   ${getModalityIcon(modality)}
