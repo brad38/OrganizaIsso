@@ -2324,24 +2324,62 @@
       border: 1px solid var(--border);
       border-radius: 9px;
       background: #1C1C1C;
+      display: grid;
+      gap: 4px;
+      min-height: 0;
+      overflow: visible;
     }
 
-    .completion-record-summary strong,
-    .completion-record-summary span {
-      display: block;
+    .completion-record-head {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 3px 10px;
+      min-width: 0;
     }
 
-    .completion-record-summary strong {
+    .completion-record-team {
       color: var(--parchment);
       font-size: .78rem;
+      font-weight: 700;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
     }
 
-    .completion-record-summary span {
-      margin-top: 3px;
-      color: var(--muted);
+    .completion-record-count {
+      color: var(--muted-dark);
+      font-size: .68rem;
+      line-height: 1.35;
+      white-space: nowrap;
+    }
+
+    .completion-record-members,
+    .completion-record-date {
+      display: block;
       font-size: .71rem;
-      line-height: 1.4;
+      line-height: 1.45;
       overflow-wrap: anywhere;
+      white-space: normal;
+    }
+
+    .completion-record-members {
+      color: var(--muted);
+    }
+
+    .completion-record-date {
+      color: var(--muted-dark);
+    }
+
+    .activity-card.has-completion-record {
+      height: auto;
+      min-height: 330px;
+      overflow: visible;
+    }
+
+    .activity-card.has-completion-record > .card-main {
+      min-height: 0;
+      overflow: visible;
+      flex: 0 1 auto;
     }
 
     .completion-record-actions {
@@ -9363,9 +9401,12 @@
 
               return `
                 <div class="completion-record-summary">
-                  <strong>${escapeHtml(teamName)} · ${memberCount} ${memberCount === 1 ? "integrante" : "integrantes"}</strong>
-                  <span>${escapeHtml(memberNames.join(", ") || "Integrantes não informados")}</span>
-                  ${createdAt ? `<span>Registrado em ${escapeHtml(createdAt)}</span>` : ""}
+                  <div class="completion-record-head">
+                    <strong class="completion-record-team">${escapeHtml(teamName)}</strong>
+                    <span class="completion-record-count">${memberCount} ${memberCount === 1 ? "integrante" : "integrantes"}</span>
+                  </div>
+                  <span class="completion-record-members">${escapeHtml(memberNames.join(", ") || "Integrantes não informados")}</span>
+                  ${createdAt ? `<span class="completion-record-date">Registrado em ${escapeHtml(createdAt)}</span>` : ""}
                   ${canEditRecord ? `
                     <div class="completion-record-actions">
                       <button type="button" class="btn btn-secondary" data-edit-group-completion="${escapeHtml(record.activity_id)}:${escapeHtml(record.team_id)}">Editar registro</button>
@@ -9377,6 +9418,7 @@
           : "";
         const cardClass = [
           "activity-card",
+          visibleCompletionRecords.length ? "has-completion-record" : "",
           isDone ? "done" : "",
           isExpired ? "expired" : ""
         ].filter(Boolean).join(" ");
