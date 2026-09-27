@@ -6026,7 +6026,7 @@
     }
 
     function renderCompletionPickerList() {
-      const query = normalizeText($("#completionPickerSearch").value || "");
+      const query = normalizeSearch($("#completionPickerSearch").value || "");
       const items = getCompletionPickerItems().filter(item => {
         if (!query) return true;
 
@@ -6034,7 +6034,7 @@
           ? [item.name, ...(item.memberNames || [])].join(" ")
           : item.name;
 
-        return normalizeText(haystack).includes(query);
+        return normalizeSearch(haystack).includes(query);
       });
 
       const list = $("#groupCompletionTeamList");
