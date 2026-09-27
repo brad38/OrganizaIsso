@@ -237,6 +237,91 @@
       background: #302323;
     }
 
+    .profile-info-grid {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .profile-info-row {
+      display: grid;
+      gap: 4px;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--input-bg);
+    }
+
+    .profile-info-row span:first-child {
+      color: var(--muted-dark);
+      font-family: var(--font-mono);
+      font-size: .66rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .profile-info-row strong {
+      color: var(--parchment);
+      font-size: .82rem;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+
+    .groups-list {
+      display: grid;
+      gap: 10px;
+      max-height: min(58vh, 520px);
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .group-card {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card-bg);
+    }
+
+    .group-card-main {
+      min-width: 0;
+    }
+
+    .group-card-name {
+      color: var(--parchment);
+      font-family: var(--font-display);
+      font-size: .92rem;
+      font-weight: 650;
+      overflow-wrap: anywhere;
+    }
+
+    .group-card-role {
+      margin-top: 3px;
+      color: var(--muted-dark);
+      font-size: .68rem;
+    }
+
+    .group-card-members {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: .74rem;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .group-card-actions {
+      flex: 0 0 auto;
+    }
+
+    .group-card-actions .btn {
+      min-height: 34px;
+      padding: 7px 10px;
+      font-size: .72rem;
+    }
+
     .my-works-view {
       min-height: 520px;
     }
@@ -3855,6 +3940,24 @@
             </div>
 
             <div class="user-menu-actions">
+              <button class="user-menu-action" id="profileInfoBtn" type="button" hidden>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="8" r="4"/>
+                  <path d="M4 21a8 8 0 0 1 16 0"/>
+                </svg>
+                Meu perfil
+              </button>
+
+              <button class="user-menu-action" id="myGroupsBtn" type="button" hidden>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Grupos
+              </button>
+
               <button class="user-menu-action" id="myWorksBtn" type="button" hidden>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -4719,8 +4822,8 @@
     <div class="modal modal-sm">
       <div class="modal-head">
         <div>
-          <h3>Cadastrar Equipe</h3>
-          <p style="font-size:.76rem;color:var(--muted);margin-top:3px;">
+          <h3 id="topicTeamModalTitle">Cadastrar Equipe</h3>
+          <p id="topicTeamModalSubtitle" style="font-size:.76rem;color:var(--muted);margin-top:3px;">
             Você entra automaticamente. Os demais integrantes precisam aceitar o convite.
           </p>
         </div>
@@ -4958,6 +5061,77 @@
     </div>
   </div>
 
+  <!-- Modal: meu perfil -->
+  <div class="modal-backdrop" id="profileInfoModal">
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <div>
+          <h3>Meu perfil</h3>
+          <p style="font-size:.76rem;color:var(--muted);margin-top:3px;">Veja suas informações e altere seu nome.</p>
+        </div>
+        <button class="icon-close" id="closeProfileInfoModal" type="button" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="profile-info-grid">
+        <div class="profile-info-row">
+          <span>E-mail</span>
+          <strong id="profileInfoEmail">—</strong>
+        </div>
+        <div class="profile-info-row">
+          <span>Tipo de conta</span>
+          <strong id="profileInfoRole">—</strong>
+        </div>
+      </div>
+
+      <form id="profileInfoForm">
+        <div class="field">
+          <label for="profileDisplayName">Nome</label>
+          <input
+            id="profileDisplayName"
+            type="text"
+            required
+            minlength="2"
+            maxlength="100"
+            autocomplete="name"
+            placeholder="Seu nome"
+          />
+        </div>
+
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" id="cancelProfileInfoModal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="saveProfileInfoBtn">Salvar alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: meus grupos -->
+  <div class="modal-backdrop" id="myGroupsModal">
+    <div class="modal" style="max-width:620px;">
+      <div class="modal-head">
+        <div>
+          <h3>Grupos</h3>
+          <p style="font-size:.76rem;color:var(--muted);margin-top:3px;">Grupos que você criou ou dos quais participa.</p>
+        </div>
+        <button class="icon-close" id="closeMyGroupsModal" type="button" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="groups-list" id="myGroupsList">
+        <div class="empty-state">Nenhum grupo encontrado.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Popup exclusivo do proprietário -->
   <div class="modal-backdrop" id="ownerUsersModal">
     <div class="modal" style="max-width: 780px;">
@@ -5084,6 +5258,7 @@
     let topicFilter = "all";
     let selectedTopicSubject = "";
     let editingTopicId = null;
+    let editingTopicTeamId = null;
     let selectedTopicActivityId = "";
     let selectedTopicMemberIds = new Set();
     let selectedTopicTeamId = "";
@@ -6140,6 +6315,8 @@
       const addBtn = $("#openAddModal");
       const manageUsersBtn = $("#manageUsersBtn");
       const myWorksBtn = $("#myWorksBtn");
+      const profileInfoBtn = $("#profileInfoBtn");
+      const myGroupsBtn = $("#myGroupsBtn");
       const invitesBtn = $("#invitesBtn");
       const userMenu = $("#userMenu");
       const roleLabel =
@@ -6151,6 +6328,8 @@
       logoutBtn.hidden = !currentUser;
       invitesBtn.hidden = !currentUser;
       myWorksBtn.hidden = !currentUser;
+      profileInfoBtn.hidden = !currentUser;
+      myGroupsBtn.hidden = !currentUser;
       manageUsersBtn.hidden = !currentUser || !isOwner();
       $("#authBtnLabel").textContent = "Entrar";
       syncPrimaryAddButton();
@@ -6171,6 +6350,75 @@
         userMenu.setAttribute("aria-hidden", "true");
         $("#brandProfileBtn").setAttribute("aria-expanded", "false");
       }
+    }
+
+    function getCurrentRoleLabel() {
+      return currentUserRole === "owner" ? "Proprietário" :
+        currentUserRole === "admin" ? "Admin" :
+        currentUserRole === "editor" ? "Editor" : "Aluno";
+    }
+
+    function openProfileInfoModal() {
+      if (!requireLogin()) return;
+
+      $("#profileInfoEmail").textContent =
+        currentProfile?.email || currentUser?.email || "Não informado";
+      $("#profileInfoRole").textContent = getCurrentRoleLabel();
+      $("#profileDisplayName").value = currentProfile?.display_name || "";
+      $("#profileInfoModal").classList.add("open");
+      setTimeout(() => $("#profileDisplayName").focus(), 80);
+    }
+
+    function renderMyGroupsList() {
+      const list = $("#myGroupsList");
+      if (!list) return;
+
+      const teams = getMyAcceptedTopicTeams()
+        .slice()
+        .sort((a, b) => (a.name || "").localeCompare(b.name || "", "pt-BR"));
+
+      if (!teams.length) {
+        list.innerHTML = '<div class="empty-state">Você ainda não participa de nenhum grupo.</div>';
+        return;
+      }
+
+      list.innerHTML = teams.map(team => {
+        const isOwnerOfTeam = team.owner_id === currentUser?.id;
+        const memberNames = getTopicTeamMemberNames(team.id);
+
+        return `
+          <article class="group-card">
+            <div class="group-card-main">
+              <div class="group-card-name">${escapeHtml(team.name || "Grupo")}</div>
+              <div class="group-card-role">${isOwnerOfTeam ? "Você é o responsável" : "Você é integrante"}</div>
+              <div class="group-card-members">
+                <strong>Integrantes:</strong>
+                ${escapeHtml(memberNames.length ? memberNames.join(", ") : "Nenhum integrante")}
+              </div>
+            </div>
+
+            <div class="group-card-actions">
+              ${isOwnerOfTeam
+                ? `<button type="button" class="btn btn-secondary" data-edit-my-group="${team.id}">Editar</button>`
+                : ""}
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      list.querySelectorAll("[data-edit-my-group]").forEach(button => {
+        button.addEventListener("click", async () => {
+          await openTopicTeamEditModal(button.dataset.editMyGroup || "");
+        });
+      });
+    }
+
+    async function openMyGroupsModal() {
+      if (!requireLogin()) return;
+
+      await loadTopicBoardData();
+      renderMyGroupsList();
+      $("#myGroupsModal").classList.add("open");
     }
 
     async function loadOwnerUsers() {
@@ -7024,9 +7272,56 @@
     function openTopicTeamCreationModal() {
       if (!requireLogin()) return;
 
+      editingTopicTeamId = null;
       selectedTopicMemberIds = new Set();
       $("#topicTeamForm").reset();
       $("#topicMemberSearch").value = "";
+      $("#topicTeamModalTitle").textContent = "Cadastrar Equipe";
+      $("#topicTeamModalSubtitle").textContent =
+        "Você entra automaticamente. Os demais integrantes precisam aceitar o convite.";
+      $("#saveTopicTeamBtn").textContent = "Salvar Equipe";
+      renderTopicMemberPicker();
+      topicTeamModal.classList.add("open");
+      setTimeout(() => $("#topicTeamName").focus(), 80);
+    }
+
+    async function openTopicTeamEditModal(teamId) {
+      if (!requireLogin()) return;
+
+      const team = topicTeams.find(item => item.id === teamId);
+      if (!team || team.owner_id !== currentUser.id) {
+        alert("Somente o responsável pelo grupo pode editá-lo.");
+        return;
+      }
+
+      editingTopicTeamId = team.id;
+      selectedTopicMemberIds = new Set();
+      $("#topicTeamForm").reset();
+      $("#topicTeamName").value = team.name || "";
+      $("#topicMemberSearch").value = "";
+      $("#topicTeamModalTitle").textContent = "Editar Grupo";
+      $("#topicTeamModalSubtitle").textContent =
+        "Altere o nome ou os integrantes do grupo. Novos integrantes receberão um convite.";
+      $("#saveTopicTeamBtn").textContent = "Salvar alterações";
+
+      const { data, error } = await supabaseClient
+        .from("topic_team_members")
+        .select("user_id,status")
+        .eq("team_id", team.id);
+
+      if (error) {
+        console.error(error);
+        alert("Não foi possível carregar os integrantes do grupo.");
+        editingTopicTeamId = null;
+        return;
+      }
+
+      (data || []).forEach(member => {
+        if (member.user_id !== currentUser.id) {
+          selectedTopicMemberIds.add(member.user_id);
+        }
+      });
+
       renderTopicMemberPicker();
       topicTeamModal.classList.add("open");
       setTimeout(() => $("#topicTeamName").focus(), 80);
@@ -9382,6 +9677,64 @@
       if (!event.target.closest(".brand-account")) closeUserMenu();
     });
 
+    $("#profileInfoBtn").addEventListener("click", () => {
+      closeUserMenu();
+      openProfileInfoModal();
+    });
+
+    $("#myGroupsBtn").addEventListener("click", async () => {
+      closeUserMenu();
+      await openMyGroupsModal();
+    });
+
+    $("#closeProfileInfoModal").addEventListener("click", () => {
+      $("#profileInfoModal").classList.remove("open");
+    });
+
+    $("#cancelProfileInfoModal").addEventListener("click", () => {
+      $("#profileInfoModal").classList.remove("open");
+    });
+
+    $("#closeMyGroupsModal").addEventListener("click", () => {
+      $("#myGroupsModal").classList.remove("open");
+    });
+
+    $("#profileInfoForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!requireLogin()) return;
+
+      const name = $("#profileDisplayName").value.trim();
+      const saveBtn = $("#saveProfileInfoBtn");
+      if (name.length < 2) {
+        $("#profileDisplayName").focus();
+        return;
+      }
+
+      saveBtn.disabled = true;
+
+      try {
+        const { error } = await supabaseClient.rpc("update_own_profile_name", {
+          p_display_name: name
+        });
+
+        if (error) {
+          console.error(error);
+          alert("Não foi possível atualizar seu nome.");
+          return;
+        }
+
+        await Promise.all([
+          loadCurrentProfile(),
+          loadTopicBoardData(),
+          loadInvitationCenter()
+        ]);
+        updateAuthUI();
+        $("#profileInfoModal").classList.remove("open");
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+
     $("#myWorksBtn").addEventListener("click", async () => {
       closeUserMenu();
       await openMyWorksScreen();
@@ -9537,8 +9890,14 @@
     $("#confirmSiteNoticeBtn").addEventListener("click", () => closeSiteNotice(true));
     $("#closeTopicClaimModal").addEventListener("click", () => topicClaimModal.classList.remove("open"));
     $("#cancelTopicClaimModal").addEventListener("click", () => topicClaimModal.classList.remove("open"));
-    $("#closeTopicTeamModal").addEventListener("click", () => topicTeamModal.classList.remove("open"));
-    $("#cancelTopicTeamModal").addEventListener("click", () => topicTeamModal.classList.remove("open"));
+    const closeTopicTeamEditor = () => {
+      topicTeamModal.classList.remove("open");
+      editingTopicTeamId = null;
+      selectedTopicMemberIds = new Set();
+    };
+
+    $("#closeTopicTeamModal").addEventListener("click", closeTopicTeamEditor);
+    $("#cancelTopicTeamModal").addEventListener("click", closeTopicTeamEditor);
 
     $("#topicSubjectTrigger").addEventListener("click", event => {
       event.stopPropagation();
@@ -9694,26 +10053,43 @@
 
       const name = $("#topicTeamName").value.trim();
       const saveBtn = $("#saveTopicTeamBtn");
+      const isEditingTeam = Boolean(editingTopicTeamId);
+      const teamIdBeingEdited = editingTopicTeamId;
       if (!name) return;
 
       saveBtn.disabled = true;
 
       try {
-        const { data, error } = await supabaseClient.rpc("create_topic_team", {
-          p_name: name,
-          p_member_ids: [...selectedTopicMemberIds]
-        });
+        const result = isEditingTeam
+          ? await supabaseClient.rpc("update_topic_team", {
+              p_team_id: teamIdBeingEdited,
+              p_name: name,
+              p_member_ids: [...selectedTopicMemberIds]
+            })
+          : await supabaseClient.rpc("create_topic_team", {
+              p_name: name,
+              p_member_ids: [...selectedTopicMemberIds]
+            });
 
-        if (error) {
-          console.error(error);
-          alert("Não foi possível cadastrar a equipe.");
+        if (result.error) {
+          console.error(result.error);
+          alert(isEditingTeam
+            ? "Não foi possível salvar as alterações do grupo."
+            : "Não foi possível cadastrar a equipe.");
           return;
         }
 
         topicTeamModal.classList.remove("open");
         selectedTopicMemberIds = new Set();
+        editingTopicTeamId = null;
         await loadTopicBoardData();
 
+        if (isEditingTeam) {
+          renderMyGroupsList();
+          return;
+        }
+
+        const data = result.data;
         selectedTopicTeamId = data;
         $("#topicTeamId").value = data;
         const team = getTopicTeam(data);
