@@ -5089,8 +5089,8 @@
       <div class="share-private-controls" id="sharePrivateControls">
         <div class="share-filter-group" id="shareStatusGroup">
           <div class="share-filter-label">Estado</div>
-          <button type="button" class="share-filter-btn active" data-share-status="pending">Só pendentes</button>
-          <button type="button" class="share-filter-btn" data-share-status="all">Pendente + Feitas</button>
+          <button type="button" class="share-filter-btn" data-share-status="pending">Só pendentes</button>
+          <button type="button" class="share-filter-btn active" data-share-status="all">Pendente + Feitas</button>
         </div>
 
         <label class="share-team-toggle" for="shareTeamOnly">
@@ -5105,32 +5105,32 @@
             <span>Inclui atividades em dupla e em grupo.</span>
           </span>
         </label>
+      </div>
 
-        <div class="share-options-row">
-          <label class="share-team-toggle share-option-toggle" for="shareShowMembers">
-            <input type="checkbox" id="shareShowMembers" />
-            <span class="share-team-check" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M5 12.5 9.2 16.7 19 7.5"/>
-              </svg>
-            </span>
-            <span class="share-team-toggle-copy">
-              <strong>Exibir membros</strong>
-            </span>
-          </label>
+      <div class="share-options-row">
+        <label class="share-team-toggle share-option-toggle" for="shareShowMembers">
+          <input type="checkbox" id="shareShowMembers" />
+          <span class="share-team-check" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 12.5 9.2 16.7 19 7.5"/>
+            </svg>
+          </span>
+          <span class="share-team-toggle-copy">
+            <strong>Exibir membros</strong>
+          </span>
+        </label>
 
-          <label class="share-team-toggle share-option-toggle" for="shareShowState">
-            <input type="checkbox" id="shareShowState" />
-            <span class="share-team-check" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M5 12.5 9.2 16.7 19 7.5"/>
-              </svg>
-            </span>
-            <span class="share-team-toggle-copy">
-              <strong>Exibir estado</strong>
-            </span>
-          </label>
-        </div>
+        <label class="share-team-toggle share-option-toggle" for="shareShowState">
+          <input type="checkbox" id="shareShowState" />
+          <span class="share-team-check" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 12.5 9.2 16.7 19 7.5"/>
+            </svg>
+          </span>
+          <span class="share-team-toggle-copy">
+            <strong>Exibir estado</strong>
+          </span>
+        </label>
       </div>
 
       <label class="share-team-toggle" for="shareShowProfessors">
@@ -6419,7 +6419,10 @@
       }
 
       closeGroupCompletionModal();
-      await loadActivities();
+      await Promise.all([
+        loadActivities(),
+        loadPrivateActivityWorks()
+      ]);
       showSiteNotice(
         isEditingRecord ? "Registro atualizado" : "Atividade concluída",
         isEditingRecord
@@ -10043,7 +10046,8 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
-    $("#shareMyWorksBtn").addEventListener("click", () => {
+    $("#shareMyWorksBtn").addEventListener("click", async () => {
+      await loadPrivateActivityWorks();
       openShareModal("myworks");
     });
 
@@ -10836,13 +10840,14 @@
 
     function openShareModal(source = "activities") {
       shareSource = source === "myworks" ? "myworks" : "activities";
-      shareStatusFilter = "pending";
+      const isPrivateShare = shareSource === "myworks";
+
+      shareStatusFilter = isPrivateShare ? "all" : "pending";
       shareTeamOnly = false;
       shareShowMembers = false;
       shareShowState = false;
       shareShowProfessors = false;
 
-      const isPrivateShare = shareSource === "myworks";
       $("#sharePrivateControls").hidden = !isPrivateShare;
       $("#shareModalTitle").textContent = isPrivateShare
         ? "Compartilhar Meus trabalhos"
@@ -10857,7 +10862,7 @@
       $("#shareShowProfessors").checked = false;
 
       $$("[data-share-status]").forEach(button => {
-        button.classList.toggle("active", button.dataset.shareStatus === "pending");
+        button.classList.toggle("active", button.dataset.shareStatus === shareStatusFilter);
       });
 
       generateAndDisplaySummary();
