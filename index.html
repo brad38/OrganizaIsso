@@ -1699,6 +1699,9 @@
 
     .activity-card > .card-bottom {
       flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
 
     .activity-card:hover {
@@ -2329,7 +2332,7 @@
       gap: 4px;
       min-height: 0;
       flex-shrink: 0;
-      max-height: 122px;
+      max-height: 108px;
       overflow-y: auto;
       overflow-x: hidden;
       scrollbar-width: thin;
@@ -9470,10 +9473,10 @@
               </div>
 
               ${a.description ? `<p class="card-desc" style="margin-top: 8px;">${escapeHtml(a.description)}</p>` : ""}
-              ${completionRecordsHtml}
             </div>
 
             <div class="card-bottom">
+              ${completionRecordsHtml}
               <div class="activity-card-dates" aria-label="Datas da atividade">
                 ${activityDates.map((date, index) => `
                   <span class="tag date-tag" title="${index === 0 ? "Data principal" : "Data adicional"}">
