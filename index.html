@@ -1744,6 +1744,38 @@
       line-height: 1.35;
     }
 
+    .card-top-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex: 0 0 auto;
+    }
+
+    .completion-record-toggle {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid var(--border-accent);
+      border-radius: 6px;
+      background: #2F2F2F;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color .15s ease, border-color .15s ease, background .15s ease;
+    }
+
+    .completion-record-toggle:hover,
+    .completion-record-toggle[aria-expanded="true"] {
+      color: var(--parchment);
+      border-color: var(--brass);
+      background: #34302A;
+    }
+
+    .completion-record-toggle svg {
+      display: block;
+    }
+
     .score-badge {
       font-family: var(--font-mono);
       font-size: 0.74rem;
@@ -9406,7 +9438,7 @@
           ? getVisibleGroupCompletionRecords(a.id)
           : [];
         const completionRecordsHtml = visibleCompletionRecords.length
-          ? visibleCompletionRecords.map(record => {
+          ? `<div class="completion-records-panel" data-completion-records-for="${escapeHtml(a.id)}" hidden>${visibleCompletionRecords.map(record => {
               const currentTeam = completionAllGroups.find(team => team.id === record.team_id);
               const teamName = record.snapshot_team_name || currentTeam?.name || "Grupo";
               const memberNames = (record.snapshot_member_names || []).length
@@ -9442,7 +9474,7 @@
                   ` : ""}
                 </div>
               `;
-            }).join("")
+            }).join("")}</div>`
           : "";
         const cardClass = [
           "activity-card",
@@ -9467,9 +9499,25 @@
                   </div>
                   <h4 class="card-title">${escapeHtml(a.title)}</h4>
                 </div>
-                ${a.points !== null && a.points !== "" && a.points !== undefined
-                  ? `<div class="score-badge">${Number(a.points).toLocaleString("pt-BR")} pts</div>`
-                  : ""}
+                <div class="card-top-status">
+                  ${visibleCompletionRecords.length ? `
+                    <button
+                      type="button"
+                      class="completion-record-toggle"
+                      data-toggle-completion-records="${escapeHtml(a.id)}"
+                      aria-expanded="false"
+                      title="Ver registro da conclusão"
+                      aria-label="Ver registro da conclusão"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    </button>
+                  ` : ""}
+                  ${a.points !== null && a.points !== "" && a.points !== undefined
+                    ? `<div class="score-badge">${Number(a.points).toLocaleString("pt-BR")} pts</div>`
+                    : ""}
+                </div>
               </div>
 
               ${a.description ? `<p class="card-desc" style="margin-top: 8px;">${escapeHtml(a.description)}</p>` : ""}
@@ -9536,6 +9584,26 @@
           </article>
         `;
       }).join("");
+
+      $$("[data-toggle-completion-records]").forEach(button => {
+        button.addEventListener("click", () => {
+          const activityId = button.dataset.toggleCompletionRecords || "";
+          const panel = container.querySelector(`[data-completion-records-for="${CSS.escape(activityId)}"]`);
+          if (!panel) return;
+
+          const willOpen = panel.hidden;
+          panel.hidden = !willOpen;
+          button.setAttribute("aria-expanded", String(willOpen));
+          button.setAttribute(
+            "aria-label",
+            willOpen ? "Ocultar registro da conclusão" : "Ver registro da conclusão"
+          );
+          button.setAttribute(
+            "title",
+            willOpen ? "Ocultar registro da conclusão" : "Ver registro da conclusão"
+          );
+        });
+      });
 
       $$("[data-check]").forEach(btn => {
         btn.addEventListener("click", async () => {
