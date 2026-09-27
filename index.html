@@ -5107,6 +5107,18 @@
         </label>
       </div>
 
+      <label class="share-team-toggle" id="sharePublicCompletedToggle" for="shareShowCompleted">
+        <input type="checkbox" id="shareShowCompleted" />
+        <span class="share-team-check" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M5 12.5 9.2 16.7 19 7.5"/>
+          </svg>
+        </span>
+        <span class="share-team-toggle-copy">
+          <strong>Exibir feitas</strong>
+        </span>
+      </label>
+
       <div class="share-options-row">
         <label class="share-team-toggle share-option-toggle" for="shareShowMembers">
           <input type="checkbox" id="shareShowMembers" />
@@ -10849,6 +10861,7 @@
       shareShowProfessors = false;
 
       $("#sharePrivateControls").hidden = !isPrivateShare;
+      $("#sharePublicCompletedToggle").hidden = isPrivateShare;
       $("#shareModalTitle").textContent = isPrivateShare
         ? "Compartilhar Meus trabalhos"
         : "Compartilhar Atividades";
@@ -10857,6 +10870,7 @@
         : "Escolha o período e compartilhe as atividades pendentes do mural.";
 
       $("#shareTeamOnly").checked = false;
+      $("#shareShowCompleted").checked = false;
       $("#shareShowMembers").checked = false;
       $("#shareShowState").checked = false;
       $("#shareShowProfessors").checked = false;
@@ -10936,6 +10950,12 @@
 
     $("#shareTeamOnly").addEventListener("change", event => {
       shareTeamOnly = event.target.checked;
+      generateAndDisplaySummary();
+    });
+
+    $("#shareShowCompleted").addEventListener("change", event => {
+      if (shareSource !== "activities") return;
+      shareStatusFilter = event.target.checked ? "all" : "pending";
       generateAndDisplaySummary();
     });
 
