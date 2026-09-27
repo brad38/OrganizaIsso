@@ -2264,9 +2264,96 @@
       gap: 8px;
       max-height: 300px;
       overflow-y: auto;
+      margin-top: 12px;
       padding-right: 3px;
       scrollbar-width: thin;
       scrollbar-color: #555 #252525;
+    }
+
+    .completion-snapshot-editor {
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: #1C1C1C;
+    }
+
+    .completion-snapshot-editor[hidden] {
+      display: none;
+    }
+
+    .completion-snapshot-editor-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .completion-snapshot-editor-head strong {
+      color: var(--parchment);
+      font-size: .78rem;
+    }
+
+    .completion-snapshot-editor-head span {
+      color: var(--muted);
+      font-size: .7rem;
+    }
+
+    .completion-snapshot-member-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .completion-snapshot-member {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 9px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--parchment);
+      font-size: .75rem;
+      cursor: pointer;
+    }
+
+    .completion-record-summary {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: #1C1C1C;
+    }
+
+    .completion-record-summary strong,
+    .completion-record-summary span {
+      display: block;
+    }
+
+    .completion-record-summary strong {
+      color: var(--parchment);
+      font-size: .78rem;
+    }
+
+    .completion-record-summary span {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: .71rem;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .completion-record-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .completion-snapshot-member-list {
+        grid-template-columns: 1fr;
+      }
     }
 
     .completion-team-option {
@@ -4745,6 +4832,14 @@
 
       <div class="completion-team-list" id="groupCompletionTeamList"></div>
 
+      <div class="completion-snapshot-editor" id="completionSnapshotEditor" hidden>
+        <div class="completion-snapshot-editor-head">
+          <strong>Integrantes registrados nesta conclusão</strong>
+          <span id="completionSnapshotCount">0 integrantes</span>
+        </div>
+        <div class="completion-snapshot-member-list" id="completionSnapshotMemberList"></div>
+      </div>
+
       <div class="modal-foot">
         <button type="button" class="btn btn-secondary" id="cancelGroupCompletionModal">Cancelar</button>
         <button type="button" class="btn btn-primary" id="confirmGroupCompletionBtn" disabled>Marcar como feita</button>
@@ -5276,7 +5371,11 @@
     let selectedGroupCompletionKey = "";
     let completionPickerMode = "";
     let completionGroups = [];
+    let completionAllGroups = [];
     let completionPeople = [];
+    let groupCompletionAssignments = [];
+    let editingGroupCompletionRecord = null;
+    let selectedCompletionSnapshotMemberIds = new Set();
     let shareRangeFilter = "14";
     let shareStatusFilter = "pending";
     let shareTeamOnly = false;
@@ -5398,7 +5497,7 @@
           .select("user_id,display_name"),
         supabaseClient
           .from("activity_group_assignments")
-          .select("activity_id,team_id,assigned_by"),
+          .select("activity_id,team_id,assigned_by,created_at,updated_at,snapshot_team_name,snapshot_member_ids,snapshot_member_names,snapshot_member_count"),
         supabaseClient
           .from("activity_pair_assignments")
           .select("activity_id,member_a,member_b,assigned_by")
@@ -5471,7 +5570,7 @@
         topicMembersByTeam.get(member.team_id).push(member);
       });
 
-      completionGroups = (topicTeamsResult.data || [])
+      completionAllGroups = (topicTeamsResult.data || [])
         .map(team => {
           const memberIds = [
             team.owner_id,
@@ -5485,15 +5584,25 @@
             ownerId: team.owner_id,
             memberIds: uniqueMemberIds,
             memberNames: uniqueMemberIds
-              .map(userId => directory.get(userId))
-              .filter(Boolean)
+              .map(userId => directory.get(userId) || "Usuário")
           };
         })
-        .filter(team =>
-          currentUser &&
-          (team.ownerId === currentUser.id || team.memberIds.includes(currentUser.id))
-        )
         .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+
+      completionGroups = completionAllGroups.filter(team =>
+        currentUser &&
+        (team.ownerId === currentUser.id || team.memberIds.includes(currentUser.id))
+      );
+
+      groupCompletionAssignments = (groupAssignmentsResult.data || []).map(assignment => ({
+        ...assignment,
+        snapshot_member_ids: Array.isArray(assignment.snapshot_member_ids)
+          ? assignment.snapshot_member_ids
+          : [],
+        snapshot_member_names: Array.isArray(assignment.snapshot_member_names)
+          ? assignment.snapshot_member_names
+          : []
+      }));
 
       completionPeople = (directoryResult.data || [])
         .filter(person => person.user_id !== currentUser?.id)
@@ -6013,16 +6122,116 @@
       pendingGroupCompletionActivityId = null;
       selectedGroupCompletionKey = "";
       completionPickerMode = "";
+      editingGroupCompletionRecord = null;
+      selectedCompletionSnapshotMemberIds = new Set();
       $("#completionPickerSearch").value = "";
       $("#groupCompletionModal").classList.remove("open");
       $("#groupCompletionTeamList").innerHTML = "";
+      $("#completionSnapshotMemberList").innerHTML = "";
+      $("#completionSnapshotEditor").hidden = true;
       $("#confirmGroupCompletionBtn").disabled = true;
     }
 
+    function canEditGroupCompletionRecord(record) {
+      return Boolean(
+        currentUser &&
+        record &&
+        (record.assigned_by === currentUser.id || isOwner())
+      );
+    }
+
+    function getVisibleGroupCompletionRecords(activityId) {
+      if (!currentUser) return [];
+
+      return groupCompletionAssignments.filter(record => {
+        if (record.activity_id !== activityId) return false;
+        if (isOwner()) return true;
+
+        return record.assigned_by === currentUser.id ||
+          (record.snapshot_member_ids || []).includes(currentUser.id);
+      });
+    }
+
+    function renderCompletionSnapshotEditor() {
+      const editor = $("#completionSnapshotEditor");
+      const list = $("#completionSnapshotMemberList");
+      const count = $("#completionSnapshotCount");
+
+      if (!editingGroupCompletionRecord || !selectedGroupCompletionKey) {
+        editor.hidden = true;
+        list.innerHTML = "";
+        count.textContent = "0 integrantes";
+        return;
+      }
+
+      const selectedTeam = completionAllGroups.find(team => team.id === selectedGroupCompletionKey);
+      const candidates = new Map();
+
+      (selectedTeam?.memberIds || []).forEach((userId, index) => {
+        candidates.set(userId, selectedTeam.memberNames?.[index] || "Usuário");
+      });
+
+      if (selectedGroupCompletionKey === editingGroupCompletionRecord.team_id) {
+        const oldIds = editingGroupCompletionRecord.snapshot_member_ids || [];
+        const oldNames = editingGroupCompletionRecord.snapshot_member_names || [];
+        oldIds.forEach((userId, index) => {
+          if (!candidates.has(userId)) candidates.set(userId, oldNames[index] || "Usuário");
+        });
+      }
+
+      editor.hidden = false;
+      count.textContent = selectedCompletionSnapshotMemberIds.size + " " + (selectedCompletionSnapshotMemberIds.size === 1 ? "integrante" : "integrantes");
+
+      list.innerHTML = [...candidates.entries()].map(([userId, name]) => `
+        <label class="completion-snapshot-member">
+          <input type="checkbox" data-completion-snapshot-member="${escapeHtml(userId)}" ${selectedCompletionSnapshotMemberIds.has(userId) ? "checked" : ""} />
+          <span>${escapeHtml(name)}</span>
+        </label>
+      `).join("");
+
+      list.querySelectorAll("[data-completion-snapshot-member]").forEach(input => {
+        input.addEventListener("change", () => {
+          const userId = input.dataset.completionSnapshotMember;
+          input.checked ? selectedCompletionSnapshotMemberIds.add(userId) : selectedCompletionSnapshotMemberIds.delete(userId);
+          count.textContent = selectedCompletionSnapshotMemberIds.size + " " + (selectedCompletionSnapshotMemberIds.size === 1 ? "integrante" : "integrantes");
+          $("#confirmGroupCompletionBtn").disabled = selectedCompletionSnapshotMemberIds.size === 0;
+        });
+      });
+    }
+
+    function openGroupCompletionRecordEditor(record) {
+      if (!canEditGroupCompletionRecord(record)) {
+        showSiteNotice("Sem permissão", "Somente quem criou este registro ou o proprietário pode editá-lo.");
+        return;
+      }
+
+      const activity = activities.find(item => item.id === record.activity_id);
+      if (!activity) return;
+
+      editingGroupCompletionRecord = record;
+      pendingGroupCompletionActivityId = record.activity_id;
+      completionPickerMode = "group";
+      selectedGroupCompletionKey = record.team_id;
+      selectedCompletionSnapshotMemberIds = new Set(record.snapshot_member_ids || []);
+
+      $("#groupCompletionTitle").textContent = activity.title || "Atividade";
+      $("#completionPickerHeading").textContent = "Editar registro da conclusão";
+      $("#completionPickerSubtitle").textContent = "O histórico mantém os integrantes registrados nesta conclusão, mesmo que o grupo seja alterado depois.";
+      $("#completionPickerSearchLabel").textContent = "Buscar grupo";
+      $("#completionPickerSearch").placeholder = "Buscar grupo";
+      $("#completionPickerSearch").value = "";
+      $("#confirmGroupCompletionBtn").textContent = "Salvar alterações";
+      $("#confirmGroupCompletionBtn").disabled = selectedCompletionSnapshotMemberIds.size === 0;
+
+      renderCompletionPickerList();
+      renderCompletionSnapshotEditor();
+      $("#groupCompletionModal").classList.add("open");
+    }
+
     function getCompletionPickerItems() {
-      return completionPickerMode === "group"
-        ? completionGroups
-        : completionPeople;
+      if (completionPickerMode !== "group") return completionPeople;
+      if (editingGroupCompletionRecord && isOwner()) return completionAllGroups;
+      return completionGroups;
     }
 
     function renderCompletionPickerList() {
@@ -6074,8 +6283,22 @@
       $$("[data-completion-option-id]").forEach(button => {
         button.addEventListener("click", () => {
           selectedGroupCompletionKey = button.dataset.completionOptionId || "";
-          $("#confirmGroupCompletionBtn").disabled = !selectedGroupCompletionKey;
+
+          if (editingGroupCompletionRecord && completionPickerMode === "group") {
+            const selectedTeam = completionAllGroups.find(team => team.id === selectedGroupCompletionKey);
+            const keepHistoricalSelection = selectedGroupCompletionKey === editingGroupCompletionRecord.team_id;
+            selectedCompletionSnapshotMemberIds = new Set(
+              keepHistoricalSelection
+                ? (editingGroupCompletionRecord.snapshot_member_ids || [])
+                : (selectedTeam?.memberIds || [])
+            );
+          }
+
+          $("#confirmGroupCompletionBtn").disabled = editingGroupCompletionRecord
+            ? selectedCompletionSnapshotMemberIds.size === 0
+            : !selectedGroupCompletionKey;
           renderCompletionPickerList();
+          renderCompletionSnapshotEditor();
         });
       });
     }
@@ -6099,6 +6322,10 @@
       pendingGroupCompletionActivityId = activity.id;
       selectedGroupCompletionKey = "";
       completionPickerMode = isGroup ? "group" : "pair";
+      editingGroupCompletionRecord = null;
+      selectedCompletionSnapshotMemberIds = new Set();
+      $("#completionSnapshotEditor").hidden = true;
+      $("#completionSnapshotMemberList").innerHTML = "";
 
       $("#groupCompletionTitle").textContent = activity.title || "Atividade";
       $("#completionPickerHeading").textContent = isGroup
@@ -6114,6 +6341,7 @@
         ? "Buscar grupo"
         : "Buscar pessoa";
       $("#completionPickerSearch").value = "";
+      $("#confirmGroupCompletionBtn").textContent = "Marcar como feita";
       $("#confirmGroupCompletionBtn").disabled = true;
 
       renderCompletionPickerList();
@@ -6127,8 +6355,21 @@
       button.disabled = true;
 
       let result;
+      const isEditingRecord = Boolean(editingGroupCompletionRecord);
 
-      if (completionPickerMode === "group") {
+      if (isEditingRecord) {
+        if (completionPickerMode !== "group" || selectedCompletionSnapshotMemberIds.size === 0) {
+          button.disabled = false;
+          return;
+        }
+
+        result = await supabaseClient.rpc("edit_activity_group_completion_record", {
+          p_activity_id: pendingGroupCompletionActivityId,
+          p_original_team_id: editingGroupCompletionRecord.team_id,
+          p_team_id: selectedGroupCompletionKey,
+          p_member_ids: [...selectedCompletionSnapshotMemberIds]
+        });
+      } else if (completionPickerMode === "group") {
         const group = completionGroups.find(item => item.id === selectedGroupCompletionKey);
 
         if (!group) {
@@ -6163,17 +6404,28 @@
       if (result.error) {
         console.error(result.error);
         button.disabled = false;
+        const permissionDenied = /only record creator or owner|permission/i.test(result.error.message || "");
         showSiteNotice(
-          "Não foi possível concluir",
-          completionPickerMode === "group"
-            ? "Não foi possível atribuir a atividade ao grupo selecionado."
-            : "Não foi possível atribuir a atividade à dupla selecionada."
+          permissionDenied ? "Sem permissão" : (isEditingRecord ? "Não foi possível editar" : "Não foi possível concluir"),
+          permissionDenied
+            ? "Somente quem criou este registro ou o proprietário pode editá-lo."
+            : isEditingRecord
+              ? "Não foi possível salvar as alterações desse registro."
+              : completionPickerMode === "group"
+                ? "Não foi possível atribuir a atividade ao grupo selecionado."
+                : "Não foi possível atribuir a atividade à dupla selecionada."
         );
         return;
       }
 
       closeGroupCompletionModal();
       await loadActivities();
+      showSiteNotice(
+        isEditingRecord ? "Registro atualizado" : "Atividade concluída",
+        isEditingRecord
+          ? "O histórico da conclusão foi atualizado."
+          : "Os integrantes do grupo foram registrados como estavam neste momento."
+      );
     }
 
     async function subscribeToCompletionRealtime() {
@@ -6200,6 +6452,13 @@
             if (shareModal?.classList.contains("open")) {
               generateAndDisplaySummary();
             }
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "activity_group_assignments" },
+          async () => {
+            await loadActivities();
           }
         )
         .subscribe();
@@ -9073,6 +9332,34 @@
         const isExpired = info.status === "expired";
         const modality = a.modality || "Individual";
         const activityDates = getActivityDates(a);
+        const visibleCompletionRecords = modality === "Em grupo"
+          ? getVisibleGroupCompletionRecords(a.id)
+          : [];
+        const completionRecordsHtml = visibleCompletionRecords.length
+          ? visibleCompletionRecords.map(record => {
+              const currentTeam = completionAllGroups.find(team => team.id === record.team_id);
+              const teamName = record.snapshot_team_name || currentTeam?.name || "Grupo";
+              const memberNames = (record.snapshot_member_names || []).length
+                ? record.snapshot_member_names
+                : (currentTeam?.memberNames || []);
+              const memberCount = Number(record.snapshot_member_count) || memberNames.length;
+              const createdAt = record.created_at ? formatDate(record.created_at) : "";
+              const canEditRecord = canEditGroupCompletionRecord(record);
+
+              return `
+                <div class="completion-record-summary">
+                  <strong>${escapeHtml(teamName)} · ${memberCount} ${memberCount === 1 ? "integrante" : "integrantes"}</strong>
+                  <span>${escapeHtml(memberNames.join(", ") || "Integrantes não informados")}</span>
+                  ${createdAt ? `<span>Registrado em ${escapeHtml(createdAt)}</span>` : ""}
+                  ${canEditRecord ? `
+                    <div class="completion-record-actions">
+                      <button type="button" class="btn btn-secondary" data-edit-group-completion="${escapeHtml(record.activity_id)}:${escapeHtml(record.team_id)}">Editar registro</button>
+                    </div>
+                  ` : ""}
+                </div>
+              `;
+            }).join("")
+          : "";
         const cardClass = [
           "activity-card",
           isDone ? "done" : "",
@@ -9102,6 +9389,7 @@
               </div>
 
               ${a.description ? `<p class="card-desc" style="margin-top: 8px;">${escapeHtml(a.description)}</p>` : ""}
+              ${completionRecordsHtml}
             </div>
 
             <div class="card-bottom">
@@ -9194,6 +9482,16 @@
           }
 
           await loadActivities();
+        });
+      });
+
+      $$("[data-edit-group-completion]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const [activityId, teamId] = String(btn.dataset.editGroupCompletion || "").split(":");
+          const record = groupCompletionAssignments.find(item =>
+            item.activity_id === activityId && item.team_id === teamId
+          );
+          if (record) openGroupCompletionRecordEditor(record);
         });
       });
 
