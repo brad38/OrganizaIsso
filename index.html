@@ -2940,16 +2940,22 @@
       content: "";
       width: 4px;
       height: 8px;
-      border-right: 2px solid #171717;
-      border-bottom: 2px solid #171717;
+      border-right: 2px solid var(--parchment);
+      border-bottom: 2px solid var(--parchment);
       transform: rotate(45deg) translate(-1px, -1px) scale(0);
       transform-origin: center;
       transition: transform .12s ease;
     }
 
+    .signup-check:hover input {
+      border-color: #646464;
+      background: #232323;
+    }
+
     .signup-check input:checked {
-      background: var(--parchment);
-      border-color: var(--parchment);
+      background: #303030;
+      border-color: #707070;
+      box-shadow: inset 0 0 0 1px rgba(236, 236, 236, .08);
     }
 
     .signup-check input:checked::after {
@@ -4360,6 +4366,15 @@
         max-height: calc(var(--visual-viewport-height, 100dvh) - 8px);
         scroll-padding-top: 76px;
         scroll-padding-bottom: max(160px, 32dvh);
+      }
+
+      #signupModal.keyboard-active .modal {
+        padding-bottom: max(180px, calc(32dvh + env(safe-area-inset-bottom)));
+        scroll-padding-bottom: max(200px, 38dvh);
+      }
+
+      #signupModal .field input {
+        font-size: 16px;
       }
 
       .signup-grid {
@@ -7147,6 +7162,34 @@
       const list = $("#groupCompletionTeamList");
 
       if (!items.length) {
+        if (completionPickerMode === "group" && !editingGroupCompletionRecord) {
+          list.innerHTML = `
+            <div class="empty-state" style="padding:18px 12px;">
+              <div>Você ainda não participa de nenhum grupo.</div>
+              <button
+                type="button"
+                class="btn btn-primary"
+                data-create-group-for-completion
+                style="margin-top:12px;"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+                Criar grupo
+              </button>
+            </div>
+          `;
+
+          list.querySelector("[data-create-group-for-completion]")?.addEventListener("click", () => {
+            const activityId = pendingGroupCompletionActivityId;
+            $("#groupCompletionModal").classList.remove("open");
+            openTopicTeamCreationModal({
+              completionActivityId: activityId
+            });
+          });
+          return;
+        }
+
         list.innerHTML = `
           <div class="empty-state" style="padding:18px 12px;">
             ${completionPickerMode === "group"
@@ -7206,13 +7249,6 @@
       const isPair = activity?.modality === "Em dupla";
 
       if (!isGroup && !isPair) return;
-
-      if (isGroup && !completionGroups.length) {
-        openTopicTeamCreationModal({
-          completionActivityId: activity.id
-        });
-        return;
-      }
 
       if (isPair && !completionPeople.length) {
         showSiteNotice("Nenhuma pessoa disponível", "Não há outra pessoa disponível para formar a dupla.");
@@ -10824,27 +10860,27 @@
       });
 
       if (target.closest("#signupModal")) {
-        [180, 320, 520, 760].forEach(delay => {
+        [120, 240, 380, 560, 780].forEach(delay => {
           setTimeout(() => {
             if (!target.isConnected || document.activeElement !== target) return;
 
+            syncSignupKeyboardState();
             updateVisualViewportVars();
 
             const viewport = window.visualViewport;
-            const viewportTop = viewport?.offsetTop || 0;
             const viewportHeight = viewport?.height || window.innerHeight;
+            const modalRect = modal.getBoundingClientRect();
             const fieldBlock = target.closest(".field") || target;
             const fieldRect = fieldBlock.getBoundingClientRect();
-            const preferredTop =
-              viewportTop + Math.max(72, Math.min(150, viewportHeight * .26));
-            const delta = fieldRect.top - preferredTop;
+            const fieldTopInsideModal =
+              modal.scrollTop + fieldRect.top - modalRect.top;
+            const preferredOffset =
+              Math.max(66, Math.min(118, viewportHeight * .22));
 
-            if (Math.abs(delta) > 4) {
-              modal.scrollBy({
-                top: delta,
-                behavior: "auto"
-              });
-            }
+            modal.scrollTo({
+              top: Math.max(0, fieldTopInsideModal - preferredOffset),
+              behavior: "auto"
+            });
           }, delay);
         });
       }
@@ -10950,8 +10986,25 @@
       }, 0);
     });
 
+    function syncSignupKeyboardState() {
+      const active = document.activeElement;
+      const isTypingInSignup = Boolean(
+        mobileSheetMedia.matches &&
+        signupModal.classList.contains("open") &&
+        active?.matches?.("input, textarea, select") &&
+        active.closest("#signupModal")
+      );
+
+      signupModal.classList.toggle("keyboard-active", isTypingInSignup);
+    }
+
     document.addEventListener("focusin", event => {
+      syncSignupKeyboardState();
       keepFocusedFieldVisible(event.target);
+    });
+
+    document.addEventListener("focusout", () => {
+      setTimeout(syncSignupKeyboardState, 40);
     });
 
     updateVisualViewportVars();
@@ -12504,7 +12557,7 @@
     }
 
     function closeSignupSheet() {
-      signupModal.classList.remove("open");
+      signupModal.classList.remove("open", "keyboard-active");
     }
 
     async function startGoogleAuth(messageTarget) {
@@ -12706,7 +12759,7 @@
           "Defina uma nova senha para continuar usando esta conta.";
       } else if (currentUser) {
         authModal.classList.remove("open");
-        signupModal.classList.remove("open");
+        signupModal.classList.remove("open", "keyboard-active");
       }
 
       if (!isOwner()) ownerUsersModal.classList.remove("open");
