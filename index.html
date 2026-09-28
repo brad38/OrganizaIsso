@@ -458,12 +458,15 @@
     }
 
     .my-work-original {
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid var(--border-divider);
       color: var(--muted-dark);
       font-size: .69rem;
       line-height: 1.45;
+    }
+
+    .my-work-original + .my-work-description {
+      margin-top: 0;
+      padding-top: 9px;
+      border-top: 1px solid var(--border-divider);
     }
 
     .my-work-actions {
@@ -533,8 +536,10 @@
 
     .my-works-page-header {
       display: grid;
-      grid-template-columns: 1fr auto auto;
-      grid-template-areas: "info back choose";
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      grid-template-areas:
+        "back back back"
+        "info share choose";
       align-items: flex-start;
       gap: 12px 14px;
       margin-bottom: 12px;
@@ -548,7 +553,8 @@
       min-width: 0;
     }
 
-    .my-works-nav-back { grid-area: back; }
+    .my-works-nav-back { grid-area: back; justify-self: start; }
+    .my-works-share-action { grid-area: share; }
     .my-works-choose-action { grid-area: choose; }
 
     .my-works-badge-top {
@@ -706,7 +712,8 @@
       }
 
       .my-works-header-info { order: 2; }
-      .my-works-choose-action { order: 3; }
+      .my-works-share-action { order: 3; }
+      .my-works-choose-action { order: 4; }
 
       .my-works-list {
         grid-template-columns: 1fr;
@@ -715,7 +722,12 @@
     }
 
     @media (max-width: 640px) {
+      .my-works-share-action,
       .my-works-choose-action { display: none; }
+
+      .desktop-section-share {
+        display: none;
+      }
 
       .my-work-card {
         min-height: 180px;
@@ -902,6 +914,18 @@
       opacity: 0.48;
       cursor: not-allowed;
       pointer-events: none;
+    }
+
+    .section-nav-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .desktop-section-share {
+      flex: 0 0 auto;
     }
 
     .section-nav {
@@ -3614,11 +3638,11 @@
     }
 
     .fab-action-cluster {
+      display: none;
       position: fixed;
       right: var(--fab-share-right, 28px);
       bottom: 28px;
       z-index: 900;
-      display: flex;
       flex-direction: column;
       align-items: flex-end;
       gap: 10px;
@@ -4184,6 +4208,10 @@
         bottom: calc(100% + 6px);
         max-height: min(32dvh, 210px);
         transform-origin: bottom center;
+      }
+
+      .fab-action-cluster:not([hidden]) {
+        display: flex;
       }
 
       .fab-action-cluster {
@@ -4966,11 +4994,22 @@
       </div>
     </header>
 
-    <nav class="section-nav" id="mainSectionNav" aria-label="Seções principais">
-      <button type="button" class="section-nav-btn active" data-section="activities">Atividades</button>
-      <button type="button" class="section-nav-btn" data-section="contents">Conteúdos</button>
-      <button type="button" class="section-nav-btn" data-section="topics">Artigos &amp; Equipes</button>
-    </nav>
+    <div class="section-nav-row" id="mainSectionNavRow">
+      <nav class="section-nav" id="mainSectionNav" aria-label="Seções principais">
+        <button type="button" class="section-nav-btn active" data-section="activities">Atividades</button>
+        <button type="button" class="section-nav-btn" data-section="contents">Conteúdos</button>
+        <button type="button" class="section-nav-btn" data-section="topics">Artigos &amp; Equipes</button>
+      </nav>
+
+      <button type="button" class="btn btn-secondary desktop-section-share" id="shareActivitiesDesktopBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+          <polyline points="16 6 12 2 8 6"/>
+          <line x1="12" y1="2" x2="12" y2="15"/>
+        </svg>
+        Compartilhar
+      </button>
+    </div>
 
     <div class="section-view" id="activitiesView">
     <!-- Indicadores KPI -->
@@ -5189,6 +5228,17 @@
               <polyline points="15 18 9 12 15 6"/>
             </svg>
             Voltar ao mural
+          </button>
+        </div>
+
+        <div class="my-works-share-action">
+          <button type="button" class="btn btn-secondary" id="shareMyWorksBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+              <polyline points="16 6 12 2 8 6"/>
+              <line x1="12" y1="2" x2="12" y2="15"/>
+            </svg>
+            Compartilhar
           </button>
         </div>
 
@@ -6853,7 +6903,7 @@
       const teams = getMyPrivateWorkTeams();
       const selectedId = $("#myWorkTeam").value || "";
 
-      menu.innerHTML = teams.length
+      const teamOptions = teams.length
         ? teams.map(team => `
             <div class="custom-select-option ${team.id === selectedId ? "selected" : ""}" data-my-work-team="${team.id}">
               <span class="discipline-name">${escapeHtml(team.name || "Equipe")}</span>
@@ -6861,12 +6911,27 @@
           `).join("")
         : '<div class="custom-select-option disabled">Você ainda não participa de uma equipe</div>';
 
+      menu.innerHTML = `
+        ${teamOptions}
+        <div class="custom-select-option my-work-create-team-option" data-create-my-work-team>
+          <div class="discipline-option-content">
+            <span class="discipline-name">Criar equipe</span>
+            <span class="discipline-subinfo">Cadastrar uma nova equipe</span>
+          </div>
+        </div>
+      `;
+
       menu.querySelectorAll("[data-my-work-team]").forEach(option => {
         option.addEventListener("click", () => {
           setMyWorkTeam(option.dataset.myWorkTeam || "");
           closeAllCustomSelects();
           prefillExistingPrivateWork();
         });
+      });
+
+      menu.querySelector("[data-create-my-work-team]")?.addEventListener("click", () => {
+        closeAllCustomSelects();
+        openTopicTeamCreationModal();
       });
     }
 
@@ -7024,8 +7089,6 @@
         const subject = activity?.subject || "";
         const customDescription = String(work.custom_description || "").trim();
         const publicDescription = String(activity?.description || "").trim();
-        const shownDescription = customDescription || publicDescription || "Sem descrição.";
-        const hasOverride = Boolean(customDescription);
         const isDone = doneIds.has(work.activity_id);
 
         return `
@@ -7055,10 +7118,12 @@
               </div>
             </div>
 
-            <div class="my-work-description">${escapeHtml(shownDescription)}</div>
-            ${hasOverride && publicDescription
+            ${publicDescription
               ? `<div class="my-work-original">Descrição do mural: ${escapeHtml(publicDescription)}</div>`
               : ""}
+            ${customDescription
+              ? `<div class="my-work-description">Descrição personalizada: ${escapeHtml(customDescription)}</div>`
+              : (!publicDescription ? '<div class="my-work-description">Sem descrição.</div>' : "")}
 
             <div class="my-work-card-bottom">
               <span class="my-work-state">${isDone ? "Atividade concluída" : "Atividade do mural"}</span>
@@ -8230,7 +8295,8 @@
       $("#contentsView").hidden = activeSection !== "contents";
       $("#topicsView").hidden = activeSection !== "topics";
       $("#myWorksView").hidden = activeSection !== "myworks";
-      $("#mainSectionNav").hidden = activeSection === "myworks";
+      $("#mainSectionNavRow").hidden = activeSection === "myworks";
+      $("#shareActivitiesDesktopBtn").hidden = activeSection !== "activities";
 
       $$("[data-section]").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.section === activeSection);
@@ -8258,6 +8324,44 @@
         hour: "2-digit",
         minute: "2-digit"
       }).format(d);
+    }
+
+    function formatActivityCardDate(iso) {
+      const d = new Date(iso);
+      const now = new Date();
+
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+      const monday = new Date(today);
+      const daysSinceMonday = (today.getDay() + 6) % 7;
+      monday.setDate(today.getDate() - daysSinceMonday);
+
+      const nextMonday = new Date(monday);
+      nextMonday.setDate(monday.getDate() + 7);
+
+      if (target >= monday && target < nextMonday) {
+        const diffDays = Math.round((target - today) / 86400000);
+        let label;
+
+        if (diffDays === 0) {
+          label = "Hoje";
+        } else if (diffDays === 1) {
+          label = "Amanhã";
+        } else {
+          label = new Intl.DateTimeFormat("pt-BR", { weekday: "long" }).format(d);
+          label = label.charAt(0).toUpperCase() + label.slice(1);
+        }
+
+        const time = new Intl.DateTimeFormat("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit"
+        }).format(d);
+
+        return `${label}, ${time}`;
+      }
+
+      return formatDate(iso);
     }
 
     function getDueInfo(iso) {
@@ -10861,7 +10965,7 @@
                       <line x1="8" y1="2" x2="8" y2="6"/>
                       <line x1="3" y1="10" x2="21" y2="10"/>
                     </svg>
-                    ${escapeHtml(formatDate(date))}
+                    ${escapeHtml(formatActivityCardDate(date))}
                   </span>
                 `).join("")}
               </div>
@@ -11600,6 +11704,15 @@
       openMyWorkEditor();
     });
 
+    $("#shareMyWorksBtn").addEventListener("click", async () => {
+      await loadPrivateActivityWorks();
+      openShareModal("myworks");
+    });
+
+    $("#shareActivitiesDesktopBtn").addEventListener("click", () => {
+      openShareModal("activities");
+    });
+
     $("#closeMyWorkEditorModal").addEventListener("click", closeMyWorkEditor);
     $("#cancelMyWorkBtn").addEventListener("click", closeMyWorkEditor);
 
@@ -11967,6 +12080,13 @@
         }
 
         const data = result.data;
+
+        if ($("#myWorkEditorModal").classList.contains("open")) {
+          setMyWorkTeam(data);
+          prefillExistingPrivateWork();
+          return;
+        }
+
         selectedTopicTeamId = data;
         $("#topicTeamId").value = data;
         const team = getTopicTeam(data);
