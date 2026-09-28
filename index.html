@@ -1744,6 +1744,28 @@
       line-height: 1.35;
     }
 
+    .activity-linked-title {
+      display: inline;
+      padding: 0;
+      color: inherit;
+      font: inherit;
+      line-height: inherit;
+      text-align: left;
+      text-decoration-line: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 4px;
+      text-decoration-color: var(--muted);
+      cursor: pointer;
+      transition: color .15s ease, text-decoration-color .15s ease;
+    }
+
+    .activity-linked-title:hover,
+    .activity-linked-title:focus-visible {
+      color: var(--parchment);
+      text-decoration-color: var(--parchment);
+      outline: none;
+    }
+
     .card-top-status {
       display: flex;
       align-items: center;
@@ -2138,6 +2160,11 @@
 
     .topic-card.locked {
       background: #252525;
+    }
+
+    .topic-card.activity-linked-highlight {
+      border-color: #4C8DFF;
+      box-shadow: 0 0 0 1px rgba(76, 141, 255, .72), 0 0 22px rgba(76, 141, 255, .12);
     }
 
     .topic-card-head {
@@ -2958,6 +2985,268 @@
     .field textarea {
       resize: vertical;
       min-height: 80px;
+    }
+
+    .activity-article-link-card {
+      background: #1C1C1C;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 13px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .activity-article-link-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .activity-article-link-copy {
+      color: var(--muted);
+      font-size: .78rem;
+      line-height: 1.42;
+      max-width: 62%;
+    }
+
+    .activity-article-link-btn {
+      min-height: 38px;
+      padding: 8px 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: 1px solid var(--border-accent);
+      border-radius: 8px;
+      background: #2A2A2A;
+      color: var(--parchment);
+      font-size: .78rem;
+      font-weight: 650;
+      white-space: nowrap;
+      transition: background .15s ease, border-color .15s ease, opacity .15s ease;
+    }
+
+    .activity-article-link-btn:hover:not(:disabled) {
+      background: #323232;
+      border-color: #555;
+    }
+
+    .activity-article-link-btn:disabled {
+      opacity: .45;
+      cursor: default;
+    }
+
+    .activity-linked-articles-list {
+      min-height: 46px;
+      max-height: 152px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: #171717;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      scrollbar-width: thin;
+    }
+
+    .activity-linked-article-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 9px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: #222;
+    }
+
+    .activity-linked-article-copy {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .activity-linked-article-title {
+      color: var(--parchment);
+      font-size: .78rem;
+      font-weight: 650;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .activity-linked-article-meta {
+      color: var(--muted-dark);
+      font-family: var(--font-mono);
+      font-size: .64rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .activity-linked-article-remove {
+      flex: 0 0 auto;
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      color: var(--muted);
+    }
+
+    .activity-linked-article-remove:hover {
+      color: var(--parchment);
+      background: #303030;
+    }
+
+    .activity-linked-articles-empty {
+      padding: 7px 4px;
+      color: var(--muted-dark);
+      font-size: .76rem;
+      line-height: 1.4;
+    }
+
+    #activityArticlePickerModal {
+      z-index: 1800;
+    }
+
+    #activityArticlePickerModal .modal {
+      width: min(620px, 100%);
+    }
+
+    .activity-article-picker-search {
+      position: relative;
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .activity-article-picker-search svg {
+      position: absolute;
+      left: 12px;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .activity-article-picker-search input {
+      width: 100%;
+      min-height: 42px;
+      padding: 10px 12px 10px 38px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #1C1C1C;
+      color: var(--parchment);
+      outline: none;
+    }
+
+    .activity-article-picker-search input:focus {
+      border-color: var(--border-accent);
+    }
+
+    .activity-article-picker-list {
+      max-height: 330px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      padding-right: 3px;
+      scrollbar-width: thin;
+    }
+
+    .activity-article-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #1E1E1E;
+      cursor: pointer;
+      transition: background .12s ease, border-color .12s ease, opacity .12s ease;
+    }
+
+    .activity-article-option:hover:not(.disabled) {
+      background: #262626;
+      border-color: var(--border-accent);
+    }
+
+    .activity-article-option.selected {
+      background: #292929;
+      border-color: #555;
+    }
+
+    .activity-article-option.disabled {
+      opacity: .48;
+      cursor: default;
+    }
+
+    .activity-article-option-check {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      margin-top: 2px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #555;
+      border-radius: 4px;
+      background: #151515;
+      color: #111;
+    }
+
+    .activity-article-option.selected .activity-article-option-check {
+      background: var(--parchment);
+      border-color: var(--parchment);
+    }
+
+    .activity-article-option-body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .activity-article-option-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .activity-article-option-title {
+      color: var(--parchment);
+      font-size: .82rem;
+      font-weight: 650;
+      line-height: 1.35;
+    }
+
+    .activity-article-option-badge {
+      flex: 0 0 auto;
+      padding: 2px 6px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--muted);
+      background: #292929;
+      font-family: var(--font-mono);
+      font-size: .61rem;
+      text-transform: uppercase;
+    }
+
+    .activity-article-option-note {
+      color: var(--muted);
+      font-size: .73rem;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .activity-article-picker-counter {
+      margin-right: auto;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: .7rem;
     }
 
     .modal-foot {
@@ -3842,6 +4131,30 @@
 
       .card-desc {
         font-size: .82rem;
+      }
+
+      .activity-article-link-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .activity-article-link-copy {
+        max-width: none;
+      }
+
+      .activity-article-link-btn {
+        width: 100%;
+        min-height: 42px;
+      }
+
+      #activityArticlePickerModal .modal-foot {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      #activityArticlePickerModal .activity-article-picker-counter {
+        grid-column: 1 / -1;
+        margin-right: 0;
       }
 
       .meta-tags {
@@ -4896,6 +5209,26 @@
           </div>
 
           <div class="field full">
+            <div class="activity-article-link-card">
+              <div class="activity-article-link-head">
+                <span class="activity-article-link-copy">
+                  Selecione os artigos da disciplina vinculados a esta tarefa:
+                </span>
+
+                <button type="button" class="activity-article-link-btn" id="openActivityArticlesPicker">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  Linkar artigos
+                </button>
+              </div>
+
+              <div class="activity-linked-articles-list" id="activityLinkedArticlesList"></div>
+            </div>
+          </div>
+
+          <div class="field full">
             <label for="actDesc">Instruções / Notas</label>
             <textarea id="actDesc" placeholder="Observações de entrega, parceiros de grupo, bibliografia recomendada"></textarea>
           </div>
@@ -4906,6 +5239,47 @@
           <button type="submit" class="btn btn-primary" id="activitySubmitBtn">Registrar</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal: selecionar artigos vinculados à atividade -->
+  <div class="modal-backdrop modal-backdrop-top" id="activityArticlePickerModal">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h3>Linkar artigos</h3>
+          <p id="activityArticlePickerSubtitle" style="font-size:.76rem;color:var(--muted);margin-top:3px;">
+            Selecione os itens que ficarão associados à atividade.
+          </p>
+        </div>
+        <button class="icon-close" id="closeActivityArticlePicker" type="button" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="activity-article-picker-search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="search"
+          id="activityArticlePickerSearch"
+          placeholder="Pesquisar artigo, tema ou palavra-chave"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="activity-article-picker-list" id="activityArticlePickerList"></div>
+
+      <div class="modal-foot">
+        <span class="activity-article-picker-counter" id="activityArticlePickerCounter">0 selecionados</span>
+        <button type="button" class="btn btn-secondary" id="cancelActivityArticlePicker">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="confirmActivityArticlePicker">Aplicar seleção</button>
+      </div>
     </div>
   </div>
 
@@ -5737,6 +6111,9 @@
     let editingActivityOriginalDue = null;
     let editingActivityOriginalDates = [];
     let activityDatesDraft = [];
+    let activityLinkedTopicIdsDraft = new Set();
+    let activityLinkedTopicTempIds = new Set();
+    let highlightedActivityTopicIds = new Set();
     let activeFilter = "all";
     let selectedSubject = "";
     let currentUser = null;
@@ -7781,6 +8158,7 @@
       renderInvitationCenter();
       renderTopicTeamMenu();
       renderTopicMemberPicker();
+      if (activities.length) renderList();
     }
 
     function getTopicDisplayName(userId) {
@@ -8420,7 +8798,10 @@
         }
 
         return `
-          <article class="topic-card ${isLocked ? "locked" : ""}">
+          <article
+            class="topic-card ${isLocked ? "locked" : ""} ${highlightedActivityTopicIds.has(topic.id) ? "activity-linked-highlight" : ""}"
+            data-topic-card-id="${topic.id}"
+          >
             <div class="topic-card-main">
               <div class="topic-card-head">
                 <div>
@@ -8856,6 +9237,9 @@
       actSubjectMenu.querySelectorAll("[data-subject-name]").forEach(option => {
         option.classList.toggle("selected", option.dataset.subjectName === name);
       });
+
+      reconcileActivityLinkedTopicsForSubject(name);
+      syncActivityArticleLinkControl();
     }
 
     function renderActivitySubjectMenu() {
@@ -9685,6 +10069,244 @@
       menu.querySelectorAll(".custom-select-option[data-value]").forEach(option => {
         option.classList.toggle("selected", option.dataset.value === value);
       });
+
+      if (inputSelector === "#actModality") {
+        if (value === "Individual") {
+          activityLinkedTopicIdsDraft.clear();
+          renderActivityLinkedTopicsDraft();
+        }
+        syncActivityArticleLinkControl();
+      }
+    }
+
+    function getActivityLinkedTopics(activityId) {
+      if (!activityId) return [];
+      return topicItems.filter(topic => topic.activity_id === activityId);
+    }
+
+    function syncActivityArticleLinkControl() {
+      const button = $("#openActivityArticlesPicker");
+      if (!button) return;
+
+      const subject = $("#actSubject")?.value.trim() || "";
+      const modality = $("#actModality")?.value || "Individual";
+      const disabled = !subject || modality === "Individual";
+
+      button.disabled = disabled;
+      button.title = !subject
+        ? "Selecione uma disciplina antes de linkar artigos."
+        : modality === "Individual"
+          ? "Artigos & Equipes só podem ser vinculados a atividades em dupla ou grupo."
+          : "Selecionar artigos vinculados";
+    }
+
+    function reconcileActivityLinkedTopicsForSubject(subject = "") {
+      const allowedIds = new Set(
+        topicItems
+          .filter(topic =>
+            topic.subject === subject &&
+            (!topic.activity_id || topic.activity_id === editingActivityId)
+          )
+          .map(topic => topic.id)
+      );
+
+      activityLinkedTopicIdsDraft = new Set(
+        [...activityLinkedTopicIdsDraft].filter(topicId => allowedIds.has(topicId))
+      );
+
+      renderActivityLinkedTopicsDraft();
+    }
+
+    function renderActivityLinkedTopicsDraft() {
+      const container = $("#activityLinkedArticlesList");
+      if (!container) return;
+
+      const selectedTopics = [...activityLinkedTopicIdsDraft]
+        .map(topicId => topicItems.find(topic => topic.id === topicId))
+        .filter(Boolean)
+        .sort((a, b) => a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" }));
+
+      if (!selectedTopics.length) {
+        container.innerHTML = '<div class="activity-linked-articles-empty">Nenhum artigo linkado a esta atividade ainda.</div>';
+        syncActivityArticleLinkControl();
+        return;
+      }
+
+      container.innerHTML = selectedTopics.map(topic => `
+        <div class="activity-linked-article-row">
+          <div class="activity-linked-article-copy">
+            <span class="activity-linked-article-title">${escapeHtml(topic.title)}</span>
+            <span class="activity-linked-article-meta">${escapeHtml(topic.item_type || "Artigo")}</span>
+          </div>
+          <button
+            type="button"
+            class="activity-linked-article-remove"
+            data-remove-activity-topic="${topic.id}"
+            title="Desvincular da seleção"
+            aria-label="Desvincular ${escapeHtml(topic.title)}"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      `).join("");
+
+      container.querySelectorAll("[data-remove-activity-topic]").forEach(button => {
+        button.addEventListener("click", () => {
+          activityLinkedTopicIdsDraft.delete(button.dataset.removeActivityTopic);
+          renderActivityLinkedTopicsDraft();
+        });
+      });
+
+      syncActivityArticleLinkControl();
+    }
+
+    function renderActivityArticlePicker() {
+      const list = $("#activityArticlePickerList");
+      const counter = $("#activityArticlePickerCounter");
+      if (!list || !counter) return;
+
+      const subject = $("#actSubject")?.value.trim() || "";
+      const search = normalizeSearch($("#activityArticlePickerSearch")?.value || "");
+
+      const eligible = topicItems
+        .filter(topic => topic.subject === subject)
+        .filter(topic => {
+          if (!search) return true;
+          return normalizeSearch(
+            `${topic.title} ${topic.item_type || ""} ${topic.notes || ""}`
+          ).includes(search);
+        })
+        .sort((a, b) => a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" }));
+
+      counter.textContent = `${activityLinkedTopicTempIds.size} selecionado${activityLinkedTopicTempIds.size === 1 ? "" : "s"}`;
+
+      if (!eligible.length) {
+        list.innerHTML = `
+          <div class="activity-linked-articles-empty" style="padding:22px 6px;text-align:center;">
+            Nenhum artigo ou tema cadastrado nesta disciplina.
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = eligible.map(topic => {
+        const selected = activityLinkedTopicTempIds.has(topic.id);
+        const linkedElsewhere = Boolean(
+          topic.activity_id &&
+          topic.activity_id !== editingActivityId
+        );
+        const linkedActivity = linkedElsewhere
+          ? activities.find(activity => activity.id === topic.activity_id)
+          : null;
+
+        return `
+          <div
+            class="activity-article-option ${selected ? "selected" : ""} ${linkedElsewhere ? "disabled" : ""}"
+            data-picker-topic-id="${topic.id}"
+            aria-disabled="${linkedElsewhere ? "true" : "false"}"
+          >
+            <span class="activity-article-option-check">
+              ${selected ? `
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              ` : ""}
+            </span>
+
+            <div class="activity-article-option-body">
+              <div class="activity-article-option-title-row">
+                <span class="activity-article-option-title">${escapeHtml(topic.title)}</span>
+                <span class="activity-article-option-badge">${escapeHtml(topic.item_type || "Artigo")}</span>
+              </div>
+              ${linkedElsewhere
+                ? `<span class="activity-article-option-note">Já linkado a ${escapeHtml(linkedActivity?.title || "outra atividade")}.</span>`
+                : topic.notes
+                  ? `<span class="activity-article-option-note">${escapeHtml(topic.notes)}</span>`
+                  : ""}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      list.querySelectorAll("[data-picker-topic-id]").forEach(row => {
+        row.addEventListener("click", () => {
+          if (row.getAttribute("aria-disabled") === "true") return;
+
+          const topicId = row.dataset.pickerTopicId;
+          if (activityLinkedTopicTempIds.has(topicId)) {
+            activityLinkedTopicTempIds.delete(topicId);
+          } else {
+            activityLinkedTopicTempIds.add(topicId);
+          }
+
+          renderActivityArticlePicker();
+        });
+      });
+    }
+
+    function openActivityArticlePicker() {
+      const subject = $("#actSubject")?.value.trim() || "";
+      const modality = $("#actModality")?.value || "Individual";
+
+      if (!subject) {
+        alert("Selecione uma disciplina antes de linkar artigos.");
+        return;
+      }
+
+      if (modality === "Individual") {
+        alert("Para linkar artigos, a atividade precisa ser Em dupla ou Em grupo.");
+        return;
+      }
+
+      activityLinkedTopicTempIds = new Set(activityLinkedTopicIdsDraft);
+      $("#activityArticlePickerSearch").value = "";
+      $("#activityArticlePickerSubtitle").textContent = `Disciplina: ${subject}`;
+      renderActivityArticlePicker();
+      $("#activityArticlePickerModal").classList.add("open");
+    }
+
+    function closeActivityArticlePicker() {
+      $("#activityArticlePickerModal").classList.remove("open");
+    }
+
+    function confirmActivityArticlePicker() {
+      activityLinkedTopicIdsDraft = new Set(activityLinkedTopicTempIds);
+      closeActivityArticlePicker();
+      renderActivityLinkedTopicsDraft();
+    }
+
+    async function openLinkedTopicsForActivity(activityId) {
+      const linked = getActivityLinkedTopics(activityId);
+      if (!linked.length) return;
+
+      highlightedActivityTopicIds = new Set(linked.map(topic => topic.id));
+      topicFilter = "all";
+      selectedTopicSubject = "";
+      $("#topicSearchInput").value = "";
+      $("#topicFilterSubjectLabel").textContent = "Todas as disciplinas";
+
+      $$(".tab-btn[data-topic-filter]").forEach(tab => {
+        tab.classList.toggle("active", (tab.dataset.topicFilter || "all") === "all");
+      });
+
+      renderTopicFilterSubjectMenu();
+      setActiveSection("topics");
+      await loadTopicBoardData();
+
+      highlightedActivityTopicIds = new Set(
+        getActivityLinkedTopics(activityId).map(topic => topic.id)
+      );
+      renderTopics();
+
+      requestAnimationFrame(() => {
+        document.querySelector(".topic-card.activity-linked-highlight")?.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+      });
     }
 
     function resetActivityForm() {
@@ -9693,6 +10315,8 @@
       editingActivityOriginalDue = null;
       editingActivityOriginalDates = [];
       activityDatesDraft = [];
+      activityLinkedTopicIdsDraft = new Set();
+      activityLinkedTopicTempIds = new Set();
 
       setFormDiscipline("");
       setActivityDropdownValue("#typeMenu", "#actType", "#typeLabel", "Exercício");
@@ -9708,6 +10332,8 @@
 
       $("#activityModalTitle").textContent = "Registrar Atividade";
       $("#activitySubmitBtn").textContent = "Registrar";
+      renderActivityLinkedTopicsDraft();
+      syncActivityArticleLinkControl();
     }
 
     function openCreateActivityModal() {
@@ -9732,6 +10358,9 @@
       editingActivityOriginalDue = activity.due;
       editingActivityOriginalDates = getActivityDates(activity);
       activityDatesDraft = [...editingActivityOriginalDates];
+      activityLinkedTopicIdsDraft = new Set(
+        getActivityLinkedTopics(activity.id).map(topic => topic.id)
+      );
 
       $("#actTitle").value = activity.title || "";
       setFormDiscipline(activity.subject || "");
@@ -9740,6 +10369,8 @@
       setActivityDropdownValue("#modalityMenu", "#actModality", "#modalityLabel", activity.modality || "Individual");
       $("#actPoints").value = activity.points === null || activity.points === undefined ? "" : activity.points;
       $("#actDesc").value = activity.description || "";
+      renderActivityLinkedTopicsDraft();
+      syncActivityArticleLinkControl();
 
       selectedDate = null;
       const firstFutureDate = activityDatesDraft
@@ -9808,6 +10439,8 @@
         const isExpired = info.status === "expired";
         const modality = a.modality || "Individual";
         const activityDates = getActivityDates(a);
+        const linkedTopics = getActivityLinkedTopics(a.id);
+        const hasLinkedTopics = linkedTopics.length > 0;
         const visibleCompletionRecords = modality === "Em grupo"
           ? getVisibleGroupCompletionRecords(a.id)
           : [];
@@ -9832,7 +10465,16 @@
                     <span class="subject-tag">${escapeHtml(a.subject)}</span>
                     ${professorPeriodText ? `<span class="subject-prof-tag">${escapeHtml(professorPeriodText)}</span>` : ""}
                   </div>
-                  <h4 class="card-title">${escapeHtml(a.title)}</h4>
+                  <h4 class="card-title">
+                    ${hasLinkedTopics
+                      ? `<button
+                          type="button"
+                          class="activity-linked-title"
+                          data-open-linked-topics="${escapeHtml(a.id)}"
+                          title="Ver artigos vinculados em Artigos & Equipes"
+                        >${escapeHtml(a.title)}</button>`
+                      : escapeHtml(a.title)}
+                  </h4>
                 </div>
                 <div class="card-top-status">
                   ${visibleCompletionRecords.length ? `
@@ -9922,6 +10564,12 @@
       $$("[data-toggle-completion-records]").forEach(button => {
         button.addEventListener("click", () => {
           openCompletionRecordDetailsModal(button.dataset.toggleCompletionRecords || "");
+        });
+      });
+
+      $$("[data-open-linked-topics]").forEach(button => {
+        button.addEventListener("click", () => {
+          openLinkedTopicsForActivity(button.dataset.openLinkedTopics || "");
         });
       });
 
@@ -10018,6 +10666,12 @@
     const signupModal = $("#signupModal");
     const resetPasswordModal = $("#resetPasswordModal");
     const ownerUsersModal = $("#ownerUsersModal");
+
+    $("#openActivityArticlesPicker").addEventListener("click", openActivityArticlePicker);
+    $("#closeActivityArticlePicker").addEventListener("click", closeActivityArticlePicker);
+    $("#cancelActivityArticlePicker").addEventListener("click", closeActivityArticlePicker);
+    $("#confirmActivityArticlePicker").addEventListener("click", confirmActivityArticlePicker);
+    $("#activityArticlePickerSearch").addEventListener("input", renderActivityArticlePicker);
 
     const mobileSheetMedia = window.matchMedia("(max-width: 820px)");
 
@@ -12023,36 +12677,38 @@
         description: $("#actDesc").value.trim()
       };
 
-      let result;
+      const { data: savedActivityId, error: saveError } = await supabaseClient.rpc(
+        "save_activity_with_topic_links",
+        {
+          p_activity_id: isEditing ? editingActivityId : null,
+          p_title: payload.title,
+          p_subject: payload.subject,
+          p_type: payload.type,
+          p_modality: payload.modality,
+          p_due_at: payload.due_at,
+          p_additional_due_dates: payload.additional_due_dates,
+          p_points: payload.points,
+          p_description: payload.description,
+          p_topic_ids: [...activityLinkedTopicIdsDraft]
+        }
+      );
 
-      if (isEditing) {
-        result = await supabaseClient
-          .from("activities")
-          .update(payload)
-          .eq("id", editingActivityId);
-      } else {
-        result = await supabaseClient
-          .from("activities")
-          .insert({
-            ...payload,
-            created_by: currentUser.id
-          });
-      }
+      if (saveError) {
+        console.error(saveError);
 
-      if (result.error) {
-        console.error(result.error);
-
-        const message = String(result.error.message || "");
+        const message = String(saveError.message || "");
 
         if (
-          result.error.code === "22007" ||
+          saveError.code === "22007" ||
           message.includes("deadline must be in the future")
         ) {
           alert("Não é possível usar um prazo que já passou.");
-        } else if (message.includes("must remain a team activity")) {
-          alert("Esta atividade está vinculada a Artigos & Equipes. Desvincule os artigos/temas antes de mudar para Individual.");
-        } else if (message.includes("before changing the activity subject")) {
-          alert("Esta atividade está vinculada a Artigos & Equipes. Desvincule os artigos/temas antes de trocar a disciplina.");
+        } else if (message.includes("linked activity must be a team activity")) {
+          alert("Para linkar artigos, a atividade precisa ser Em dupla ou Em grupo.");
+        } else if (message.includes("linked activity must belong to the same subject")) {
+          alert("Os artigos linkados precisam pertencer à mesma disciplina da atividade.");
+        } else if (message.includes("already linked to another activity")) {
+          alert("Um dos artigos selecionados já está linkado a outra atividade.");
         } else {
           alert(
             isEditing
@@ -12068,7 +12724,7 @@
         const { error: teamCleanupError } = await supabaseClient
           .from("activity_teams")
           .delete()
-          .eq("activity_id", editingActivityId);
+          .eq("activity_id", savedActivityId || editingActivityId);
 
         if (teamCleanupError) {
           console.error("Falha ao limpar equipe da atividade individual:", teamCleanupError);
@@ -12077,6 +12733,7 @@
 
       addModal.classList.remove("open");
       resetActivityForm();
+      await loadTopicBoardData();
       await loadActivities();
     });
 
@@ -12104,6 +12761,9 @@
 
     $$("[data-section]").forEach(btn => {
       btn.addEventListener("click", () => {
+        if (btn.dataset.section === "topics") {
+          highlightedActivityTopicIds = new Set();
+        }
         setActiveSection(btn.dataset.section);
       });
     });
@@ -12113,6 +12773,7 @@
         closeCreateMenu();
         closeFabActionMenu();
         addModal.classList.remove("open");
+        $("#activityArticlePickerModal").classList.remove("open");
         invitesModal.classList.remove("open");
         topicModal.classList.remove("open");
         topicClaimModal.classList.remove("open");
