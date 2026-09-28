@@ -11641,7 +11641,16 @@
 
         if (error) {
           console.error(error);
-          $("#authMessage").textContent = "E-mail ou senha inválidos.";
+
+          if (
+            error.code === "email_not_confirmed" ||
+            /email not confirmed/i.test(error.message || "")
+          ) {
+            $("#authMessage").textContent =
+              "Confirme seu e-mail antes de entrar.";
+          } else {
+            $("#authMessage").textContent = "E-mail ou senha inválidos.";
+          }
           return;
         }
 
@@ -11861,53 +11870,51 @@
       message.textContent = "Criando conta";
 
       try {
-        const functionResponse = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/signup-free`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-              "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
-            },
-            body: JSON.stringify({
-              displayName,
-              email,
-              password,
-              termsAccepted,
-              privacyAcknowledged,
-              emailReminders,
-              legalVersion: LEGAL_VERSION
-            })
-          }
-        );
-
-        const result = await functionResponse.json().catch(() => ({}));
-
-        if (!functionResponse.ok) {
-          setSignupCooldown();
-          message.textContent =
-            result?.error || "Não foi possível criar a conta agora.";
-          return;
-        }
-
-        const { error: signInError } = await supabaseClient.auth.signInWithPassword({
+        const now = new Date().toISOString();
+        const { data, error } = await supabaseClient.auth.signUp({
           email,
-          password
+          password,
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: {
+              display_name: displayName,
+              terms_version: LEGAL_VERSION,
+              privacy_version: LEGAL_VERSION,
+              terms_accepted_at: now,
+              privacy_acknowledged_at: now,
+              email_reminders_opt_in: emailReminders
+            }
+          }
         });
 
-        if (signInError) {
-          console.error(signInError);
-          message.textContent =
-            "Conta criada. Entre com seu e-mail e senha.";
-          setSignupCooldown();
+        setSignupCooldown();
+
+        if (error) {
+          console.error(error);
+
+          if (
+            error.code === "over_email_send_rate_limit" ||
+            /email rate limit exceeded/i.test(error.message || "")
+          ) {
+            message.textContent =
+              "Muitas confirmações foram solicitadas. Aguarde alguns minutos e tente novamente.";
+          } else {
+            message.textContent =
+              "Não foi possível criar a conta agora. Verifique os dados e tente novamente.";
+          }
           return;
         }
 
-        localStorage.removeItem(SIGNUP_COOLDOWN_KEY);
-        message.textContent = "Conta criada.";
         $("#signupForm").reset();
-        setTimeout(closeSignupSheet, 350);
+
+        if (data.session) {
+          message.textContent = "Conta criada e confirmada.";
+          setTimeout(closeSignupSheet, 500);
+          return;
+        }
+
+        message.textContent =
+          "Conta criada. Enviamos um e-mail de confirmação. Abra sua caixa de entrada para ativar a conta.";
       } catch (error) {
         console.error(error);
         setSignupCooldown();
