@@ -85,7 +85,6 @@
 
     const LEGAL_VERSION = "2026-09-25";
     const COOLDOWN_MS = 60_000;
-    const EMAIL_RATE_LIMIT_COOLDOWN_MS = 60 * 60 * 1000;
     const COOLDOWN_KEY = "organizaisso_signup_cooldown_until";
 
     const form = document.querySelector("#signupForm");
@@ -154,58 +153,60 @@
       submitBtn.disabled = true;
       message.textContent = "Criando conta";
 
-      const now = new Date().toISOString();
-
       try {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: {
-              display_name: displayName,
-              terms_version: LEGAL_VERSION,
-              privacy_version: LEGAL_VERSION,
-              terms_accepted_at: now,
-              privacy_acknowledged_at: now,
-              email_reminders_opt_in: emailReminders
-            }
+        const functionResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/signup-free`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+            },
+            body: JSON.stringify({
+              displayName,
+              email,
+              password,
+              termsAccepted,
+              privacyAcknowledged,
+              emailReminders,
+              legalVersion: LEGAL_VERSION
+            })
           }
-        });
+        );
 
-        if (error) {
-          console.error(error);
+        const result = await functionResponse.json().catch(() => ({}));
 
-          const isEmailRateLimit =
-            error.code === "over_email_send_rate_limit" ||
-            /email rate limit exceeded/i.test(error.message || "");
+        if (!functionResponse.ok) {
+          console.error("Falha no cadastro", {
+            status: functionResponse.status,
+            error: result?.error
+          });
 
-          if (isEmailRateLimit) {
-            localStorage.setItem(
-              COOLDOWN_KEY,
-              String(Date.now() + EMAIL_RATE_LIMIT_COOLDOWN_MS)
-            );
-            message.textContent =
-              "O limite temporário de e-mails de confirmação foi atingido. Aguarde até 1 hora antes de tentar criar outra conta.";
-          } else {
-            localStorage.setItem(COOLDOWN_KEY, String(Date.now() + COOLDOWN_MS));
-            message.textContent =
-              "Não foi possível criar a conta agora. Aguarde e tente novamente.";
-          }
-
+          localStorage.setItem(COOLDOWN_KEY, String(Date.now() + COOLDOWN_MS));
+          message.textContent =
+            result?.error || "Não foi possível criar a conta agora.";
           renderCooldown();
           return;
         }
 
-        localStorage.setItem(COOLDOWN_KEY, String(Date.now() + COOLDOWN_MS));
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
 
-        if (data.session) {
-          message.textContent = "Conta criada. Redirecionando";
-          setTimeout(() => window.location.href = "/", 700);
-        } else {
-          message.textContent = "Conta criada. Se a confirmação de e-mail estiver ativa, confirme o endereço antes de entrar.";
+        if (signInError) {
+          console.error(signInError);
+          message.textContent =
+            "Conta criada. Entre com seu e-mail e senha na tela inicial.";
+          localStorage.setItem(COOLDOWN_KEY, String(Date.now() + COOLDOWN_MS));
           renderCooldown();
+          return;
         }
+
+        localStorage.removeItem(COOLDOWN_KEY);
+        message.textContent = "Conta criada. Redirecionando";
+        setTimeout(() => window.location.href = "/", 500);
       } finally {
         inFlight = false;
         if (remaining() <= 0) submitBtn.disabled = false;
