@@ -2437,6 +2437,20 @@
       height: 28px;
     }
 
+    .completion-record-details-list {
+      display: grid;
+      gap: 10px;
+      max-height: min(60vh, 520px);
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .completion-record-details-list .completion-record-summary {
+      margin: 0;
+      max-height: none;
+      overflow: visible;
+    }
+
     @media (max-width: 640px) {
       .completion-snapshot-member-list {
         grid-template-columns: 1fr;
@@ -4934,6 +4948,26 @@
     </div>
   </div>
 
+  <!-- Modal: detalhes da conclusão -->
+  <div class="modal-backdrop modal-backdrop-mid" id="completionRecordDetailsModal">
+    <div class="modal modal-sm" style="max-width:520px;">
+      <div class="modal-head">
+        <div>
+          <h3>Registro da conclusão</h3>
+          <p id="completionRecordDetailsTitle" style="font-size:.76rem;color:var(--muted);margin-top:3px;"></p>
+        </div>
+        <button class="icon-close" id="closeCompletionRecordDetailsModal" type="button" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="completion-record-details-list" id="completionRecordDetailsList"></div>
+    </div>
+  </div>
+
   <!-- Modal: aviso tematizado -->
   <div class="modal-backdrop modal-backdrop-top" id="siteNoticeModal">
     <div class="modal modal-sm">
@@ -6249,6 +6283,78 @@
         return record.assigned_by === currentUser.id ||
           (record.snapshot_member_ids || []).includes(currentUser.id);
       });
+    }
+
+    function buildCompletionRecordSummaryHtml(record) {
+      const currentTeam = completionAllGroups.find(team => team.id === record.team_id);
+      const teamName = record.snapshot_team_name || currentTeam?.name || "Grupo";
+      const memberNames = (record.snapshot_member_names || []).length
+        ? record.snapshot_member_names
+        : (currentTeam?.memberNames || []);
+      const memberCount = Number(record.snapshot_member_count) || memberNames.length;
+      const createdAt = record.created_at ? formatDate(record.created_at) : "";
+      const canEditRecord = canEditGroupCompletionRecord(record);
+
+      return `
+        <div class="completion-record-summary">
+          <div class="completion-record-head">
+            <strong class="completion-record-team">${escapeHtml(teamName)}</strong>
+            <span class="completion-record-count">${memberCount} ${memberCount === 1 ? "integrante" : "integrantes"}</span>
+          </div>
+          <span class="completion-record-members">${escapeHtml(memberNames.join(", ") || "Integrantes não informados")}</span>
+          ${createdAt ? `<span class="completion-record-date">Registrado em ${escapeHtml(createdAt)}</span>` : ""}
+          ${canEditRecord ? `
+            <div class="completion-record-actions">
+              <button
+                type="button"
+                class="del-btn edit-btn completion-record-edit-btn"
+                data-edit-group-completion-modal="${escapeHtml(record.activity_id)}:${escapeHtml(record.team_id)}"
+                title="Editar registro"
+                aria-label="Editar registro"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 20h9"/>
+                  <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
+                </svg>
+              </button>
+            </div>
+          ` : ""}
+        </div>
+      `;
+    }
+
+    function closeCompletionRecordDetailsModal() {
+      $("#completionRecordDetailsModal").classList.remove("open");
+      $("#completionRecordDetailsList").innerHTML = "";
+      $("#completionRecordDetailsTitle").textContent = "";
+    }
+
+    function openCompletionRecordDetailsModal(activityId) {
+      const activity = activities.find(item => item.id === activityId);
+      const records = getVisibleGroupCompletionRecords(activityId);
+      if (!activity || !records.length) return;
+
+      $("#completionRecordDetailsTitle").textContent = activity.title || "Atividade";
+      $("#completionRecordDetailsList").innerHTML = records
+        .map(buildCompletionRecordSummaryHtml)
+        .join("");
+
+      $("#completionRecordDetailsList")
+        .querySelectorAll("[data-edit-group-completion-modal]")
+        .forEach(button => {
+          button.addEventListener("click", () => {
+            const [recordActivityId, teamId] = String(button.dataset.editGroupCompletionModal || "").split(":");
+            const record = groupCompletionAssignments.find(item =>
+              item.activity_id === recordActivityId && item.team_id === teamId
+            );
+            if (!record) return;
+
+            closeCompletionRecordDetailsModal();
+            openGroupCompletionRecordEditor(record);
+          });
+        });
+
+      $("#completionRecordDetailsModal").classList.add("open");
     }
 
     function renderCompletionSnapshotEditor() {
@@ -9437,45 +9543,6 @@
         const visibleCompletionRecords = modality === "Em grupo"
           ? getVisibleGroupCompletionRecords(a.id)
           : [];
-        const completionRecordsHtml = visibleCompletionRecords.length
-          ? `<div class="completion-records-panel" data-completion-records-for="${escapeHtml(a.id)}" hidden>${visibleCompletionRecords.map(record => {
-              const currentTeam = completionAllGroups.find(team => team.id === record.team_id);
-              const teamName = record.snapshot_team_name || currentTeam?.name || "Grupo";
-              const memberNames = (record.snapshot_member_names || []).length
-                ? record.snapshot_member_names
-                : (currentTeam?.memberNames || []);
-              const memberCount = Number(record.snapshot_member_count) || memberNames.length;
-              const createdAt = record.created_at ? formatDate(record.created_at) : "";
-              const canEditRecord = canEditGroupCompletionRecord(record);
-
-              return `
-                <div class="completion-record-summary">
-                  <div class="completion-record-head">
-                    <strong class="completion-record-team">${escapeHtml(teamName)}</strong>
-                    <span class="completion-record-count">${memberCount} ${memberCount === 1 ? "integrante" : "integrantes"}</span>
-                  </div>
-                  <span class="completion-record-members">${escapeHtml(memberNames.join(", ") || "Integrantes não informados")}</span>
-                  ${createdAt ? `<span class="completion-record-date">Registrado em ${escapeHtml(createdAt)}</span>` : ""}
-                  ${canEditRecord ? `
-                    <div class="completion-record-actions">
-                      <button
-                        type="button"
-                        class="del-btn edit-btn completion-record-edit-btn"
-                        data-edit-group-completion="${escapeHtml(record.activity_id)}:${escapeHtml(record.team_id)}"
-                        title="Editar registro"
-                        aria-label="Editar registro"
-                      >
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M12 20h9"/>
-                          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
-                        </svg>
-                      </button>
-                    </div>
-                  ` : ""}
-                </div>
-              `;
-            }).join("")}</div>`
-          : "";
         const cardClass = [
           "activity-card",
           isDone ? "done" : "",
@@ -9524,7 +9591,6 @@
             </div>
 
             <div class="card-bottom">
-              ${completionRecordsHtml}
               <div class="activity-card-dates" aria-label="Datas da atividade">
                 ${activityDates.map((date, index) => `
                   <span class="tag date-tag" title="${index === 0 ? "Data principal" : "Data adicional"}">
@@ -9587,21 +9653,7 @@
 
       $$("[data-toggle-completion-records]").forEach(button => {
         button.addEventListener("click", () => {
-          const activityId = button.dataset.toggleCompletionRecords || "";
-          const panel = container.querySelector(`[data-completion-records-for="${CSS.escape(activityId)}"]`);
-          if (!panel) return;
-
-          const willOpen = panel.hidden;
-          panel.hidden = !willOpen;
-          button.setAttribute("aria-expanded", String(willOpen));
-          button.setAttribute(
-            "aria-label",
-            willOpen ? "Ocultar registro da conclusão" : "Ver registro da conclusão"
-          );
-          button.setAttribute(
-            "title",
-            willOpen ? "Ocultar registro da conclusão" : "Ver registro da conclusão"
-          );
+          openCompletionRecordDetailsModal(button.dataset.toggleCompletionRecords || "");
         });
       });
 
@@ -10136,6 +10188,8 @@
       closeUserMenu();
       await openMyGroupsModal();
     });
+
+    $("#closeCompletionRecordDetailsModal").addEventListener("click", closeCompletionRecordDetailsModal);
 
     $("#closeProfileInfoModal").addEventListener("click", () => {
       $("#profileInfoModal").classList.remove("open");
