@@ -6124,6 +6124,7 @@
     let editingProfessorId = null;
     let editingSubjectId = null;
     let topicItems = [];
+    let activityTopicLinks = [];
     let topicTeams = [];
     let topicTeamMembers = [];
     let topicClaims = [];
@@ -8113,11 +8114,14 @@
     }
 
     async function loadTopicBoardData() {
-      const [itemsResult, teamsResult, membersResult, claimsResult, directoryResult] = await Promise.all([
+      const [itemsResult, linksResult, teamsResult, membersResult, claimsResult, directoryResult] = await Promise.all([
         supabaseClient
           .from("topic_items")
           .select("id,title,subject,item_type,notes,allow_multiple_teams,activity_id,created_by,created_at")
           .order("created_at", { ascending: true }),
+        supabaseClient
+          .from("activity_topic_links")
+          .select("activity_id,topic_id"),
         supabaseClient
           .from("topic_teams")
           .select("id,name,owner_id,created_at")
@@ -8137,6 +8141,7 @@
 
       const firstError = [
         itemsResult.error,
+        linksResult.error,
         teamsResult.error,
         membersResult.error,
         claimsResult.error,
@@ -8148,6 +8153,7 @@
       }
 
       topicItems = itemsResult.data || [];
+      activityTopicLinks = linksResult.data || [];
       topicTeams = teamsResult.data || [];
       topicTeamMembers = membersResult.data || [];
       topicClaims = claimsResult.data || [];
@@ -8962,6 +8968,7 @@
       topicRealtimeChannel = supabaseClient
         .channel("topic-board-live")
         .on("postgres_changes", { event: "*", schema: "public", table: "topic_items" }, refreshTopicsAndActivityTeams)
+        .on("postgres_changes", { event: "*", schema: "public", table: "activity_topic_links" }, refreshTopicsAndActivityTeams)
         .on("postgres_changes", { event: "*", schema: "public", table: "topic_teams" }, refreshTopicsAndActivityTeams)
         .on("postgres_changes", { event: "*", schema: "public", table: "topic_team_members" }, refreshTopicsAndActivityTeams)
         .on("postgres_changes", { event: "*", schema: "public", table: "topic_claims" }, refreshTopicsAndActivityTeams)
@@ -10069,19 +10076,18 @@
       menu.querySelectorAll(".custom-select-option[data-value]").forEach(option => {
         option.classList.toggle("selected", option.dataset.value === value);
       });
-
-      if (inputSelector === "#actModality") {
-        if (value === "Individual") {
-          activityLinkedTopicIdsDraft.clear();
-          renderActivityLinkedTopicsDraft();
-        }
-        syncActivityArticleLinkControl();
-      }
     }
 
     function getActivityLinkedTopics(activityId) {
       if (!activityId) return [];
-      return topicItems.filter(topic => topic.activity_id === activityId);
+
+      const topicIds = new Set(
+        activityTopicLinks
+          .filter(link => link.activity_id === activityId)
+          .map(link => link.topic_id)
+      );
+
+      return topicItems.filter(topic => topicIds.has(topic.id));
     }
 
     function syncActivityArticleLinkControl() {
@@ -10089,24 +10095,16 @@
       if (!button) return;
 
       const subject = $("#actSubject")?.value.trim() || "";
-      const modality = $("#actModality")?.value || "Individual";
-      const disabled = !subject || modality === "Individual";
-
-      button.disabled = disabled;
-      button.title = !subject
-        ? "Selecione uma disciplina antes de linkar artigos."
-        : modality === "Individual"
-          ? "Artigos & Equipes só podem ser vinculados a atividades em dupla ou grupo."
-          : "Selecionar artigos vinculados";
+      button.disabled = !subject;
+      button.title = subject
+        ? "Selecionar artigos vinculados"
+        : "Selecione uma disciplina antes de linkar artigos.";
     }
 
     function reconcileActivityLinkedTopicsForSubject(subject = "") {
       const allowedIds = new Set(
         topicItems
-          .filter(topic =>
-            topic.subject === subject &&
-            (!topic.activity_id || topic.activity_id === editingActivityId)
-          )
+          .filter(topic => topic.subject === subject)
           .map(topic => topic.id)
       );
 
@@ -10194,19 +10192,11 @@
 
       list.innerHTML = eligible.map(topic => {
         const selected = activityLinkedTopicTempIds.has(topic.id);
-        const linkedElsewhere = Boolean(
-          topic.activity_id &&
-          topic.activity_id !== editingActivityId
-        );
-        const linkedActivity = linkedElsewhere
-          ? activities.find(activity => activity.id === topic.activity_id)
-          : null;
 
         return `
           <div
-            class="activity-article-option ${selected ? "selected" : ""} ${linkedElsewhere ? "disabled" : ""}"
+            class="activity-article-option ${selected ? "selected" : ""}"
             data-picker-topic-id="${topic.id}"
-            aria-disabled="${linkedElsewhere ? "true" : "false"}"
           >
             <span class="activity-article-option-check">
               ${selected ? `
@@ -10221,11 +10211,9 @@
                 <span class="activity-article-option-title">${escapeHtml(topic.title)}</span>
                 <span class="activity-article-option-badge">${escapeHtml(topic.item_type || "Artigo")}</span>
               </div>
-              ${linkedElsewhere
-                ? `<span class="activity-article-option-note">Já linkado a ${escapeHtml(linkedActivity?.title || "outra atividade")}.</span>`
-                : topic.notes
-                  ? `<span class="activity-article-option-note">${escapeHtml(topic.notes)}</span>`
-                  : ""}
+              ${topic.notes
+                ? `<span class="activity-article-option-note">${escapeHtml(topic.notes)}</span>`
+                : ""}
             </div>
           </div>
         `;
@@ -10233,8 +10221,6 @@
 
       list.querySelectorAll("[data-picker-topic-id]").forEach(row => {
         row.addEventListener("click", () => {
-          if (row.getAttribute("aria-disabled") === "true") return;
-
           const topicId = row.dataset.pickerTopicId;
           if (activityLinkedTopicTempIds.has(topicId)) {
             activityLinkedTopicTempIds.delete(topicId);
@@ -10249,15 +10235,9 @@
 
     function openActivityArticlePicker() {
       const subject = $("#actSubject")?.value.trim() || "";
-      const modality = $("#actModality")?.value || "Individual";
 
       if (!subject) {
         alert("Selecione uma disciplina antes de linkar artigos.");
-        return;
-      }
-
-      if (modality === "Individual") {
-        alert("Para linkar artigos, a atividade precisa ser Em dupla ou Em grupo.");
         return;
       }
 
@@ -12703,12 +12683,12 @@
           message.includes("deadline must be in the future")
         ) {
           alert("Não é possível usar um prazo que já passou.");
-        } else if (message.includes("linked activity must be a team activity")) {
-          alert("Para linkar artigos, a atividade precisa ser Em dupla ou Em grupo.");
-        } else if (message.includes("linked activity must belong to the same subject")) {
+        } else if (message.includes("linked article must belong to the same subject")) {
           alert("Os artigos linkados precisam pertencer à mesma disciplina da atividade.");
-        } else if (message.includes("already linked to another activity")) {
-          alert("Um dos artigos selecionados já está linkado a outra atividade.");
+        } else if (message.includes("activity linked to Artigos & Equipes must remain a team activity")) {
+          alert("Esta atividade possui uma vinculação de equipe existente e precisa continuar em dupla ou grupo.");
+        } else if (message.includes("unlink Artigos & Equipes before changing the activity subject")) {
+          alert("Desvincule a atividade na tela Artigos & Equipes antes de trocar a disciplina.");
         } else {
           alert(
             isEditing
