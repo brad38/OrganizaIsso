@@ -535,27 +535,46 @@
     }
 
     .my-works-page-header {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto auto;
-      grid-template-areas:
-        "back back back"
-        "info share choose";
-      align-items: flex-start;
-      gap: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
       margin-bottom: 12px;
     }
 
+    .my-works-back-row {
+      display: flex;
+      justify-content: flex-start;
+      width: 100%;
+    }
+
+    .my-works-main-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      width: 100%;
+    }
+
     .my-works-header-info {
-      grid-area: info;
       display: flex;
       flex-direction: column;
       gap: 4px;
       min-width: 0;
+      flex: 1 1 auto;
     }
 
-    .my-works-nav-back { grid-area: back; justify-self: start; }
-    .my-works-share-action { grid-area: share; }
-    .my-works-choose-action { grid-area: choose; }
+    .my-works-header-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex: 0 0 auto;
+    }
+
+    .my-works-header-actions .btn {
+      min-height: 42px;
+      white-space: nowrap;
+    }
 
     .my-works-badge-top {
       color: var(--muted-dark);
@@ -698,22 +717,36 @@
       background: #303030;
     }
 
+    .my-work-create-team-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-divider);
+    }
+
+    .my-work-create-team-option > svg {
+      flex: 0 0 auto;
+      color: var(--muted);
+    }
+
+    @media (min-width: 641px) {
+      #fabActionCluster {
+        display: none !important;
+      }
+    }
+
     @media (max-width: 820px) {
-      .my-works-page-header {
-        display: flex;
+      .my-works-main-row {
         flex-direction: column;
         align-items: stretch;
         gap: 12px;
       }
 
-      .my-works-nav-back {
-        order: 1;
-        align-self: flex-start;
+      .my-works-header-actions {
+        justify-content: flex-start;
       }
-
-      .my-works-header-info { order: 2; }
-      .my-works-share-action { order: 3; }
-      .my-works-choose-action { order: 4; }
 
       .my-works-list {
         grid-template-columns: 1fr;
@@ -722,8 +755,9 @@
     }
 
     @media (max-width: 640px) {
-      .my-works-share-action,
-      .my-works-choose-action { display: none; }
+      .my-works-header-actions {
+        display: none;
+      }
 
       .desktop-section-share {
         display: none;
@@ -5214,15 +5248,7 @@
 
     <section class="section-view my-works-view" id="myWorksView" hidden>
       <div class="my-works-page-header">
-        <div class="my-works-header-info">
-          <span class="my-works-badge-top">Área Privada</span>
-          <h2 class="my-works-title">Meus trabalhos</h2>
-          <p class="my-works-subtitle">
-            Use uma atividade do mural e, se quiser, defina uma descrição privada para você, sua dupla ou sua equipe.
-          </p>
-        </div>
-
-        <div class="my-works-nav-back">
+        <div class="my-works-back-row">
           <button type="button" class="btn btn-secondary" id="backFromMyWorks">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <polyline points="15 18 9 12 15 6"/>
@@ -5231,24 +5257,32 @@
           </button>
         </div>
 
-        <div class="my-works-share-action">
-          <button type="button" class="btn btn-secondary" id="shareMyWorksBtn">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-              <polyline points="16 6 12 2 8 6"/>
-              <line x1="12" y1="2" x2="12" y2="15"/>
-            </svg>
-            Compartilhar
-          </button>
-        </div>
+        <div class="my-works-main-row">
+          <div class="my-works-header-info">
+            <span class="my-works-badge-top">Área Privada</span>
+            <h2 class="my-works-title">Meus trabalhos</h2>
+            <p class="my-works-subtitle">
+              Use uma atividade do mural e, se quiser, defina uma descrição privada para você, sua dupla ou sua equipe.
+            </p>
+          </div>
 
-        <div class="my-works-choose-action">
-          <button type="button" class="btn btn-primary" id="openMyWorkPickerBtn">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
-              <path d="M12 5v14M5 12h14"/>
-            </svg>
-            Escolher atividade
-          </button>
+          <div class="my-works-header-actions">
+            <button type="button" class="btn btn-secondary" id="shareMyWorksBtn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                <polyline points="16 6 12 2 8 6"/>
+                <line x1="12" y1="2" x2="12" y2="15"/>
+              </svg>
+              Compartilhar
+            </button>
+
+            <button type="button" class="btn btn-primary" id="openMyWorkPickerBtn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              Escolher atividade
+            </button>
+          </div>
         </div>
       </div>
 
@@ -6912,13 +6946,18 @@
         : '<div class="custom-select-option disabled">Você ainda não participa de uma equipe</div>';
 
       menu.innerHTML = `
-        ${teamOptions}
         <div class="custom-select-option my-work-create-team-option" data-create-my-work-team>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M19 8v6M22 11h-6"/>
+          </svg>
           <div class="discipline-option-content">
             <span class="discipline-name">Criar equipe</span>
             <span class="discipline-subinfo">Cadastrar uma nova equipe</span>
           </div>
         </div>
+        ${teamOptions}
       `;
 
       menu.querySelectorAll("[data-my-work-team]").forEach(option => {
@@ -8349,8 +8388,15 @@
         } else if (diffDays === 1) {
           label = "Amanhã";
         } else {
-          label = new Intl.DateTimeFormat("pt-BR", { weekday: "long" }).format(d);
-          label = label.charAt(0).toUpperCase() + label.slice(1);
+          label = [
+            "Domingo",
+            "Segunda",
+            "Terça",
+            "Quarta",
+            "Quinta",
+            "Sexta",
+            "Sábado"
+          ][d.getDay()];
         }
 
         const time = new Intl.DateTimeFormat("pt-BR", {
