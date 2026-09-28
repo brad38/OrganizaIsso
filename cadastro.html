@@ -85,6 +85,7 @@
 
     const LEGAL_VERSION = "2026-09-25";
     const COOLDOWN_MS = 60_000;
+    const EMAIL_RATE_LIMIT_COOLDOWN_MS = 60 * 60 * 1000;
     const COOLDOWN_KEY = "organizaisso_signup_cooldown_until";
 
     const form = document.querySelector("#signupForm");
@@ -172,14 +173,31 @@
           }
         });
 
-        localStorage.setItem(COOLDOWN_KEY, String(Date.now() + COOLDOWN_MS));
-
         if (error) {
           console.error(error);
-          message.textContent = "Não foi possível criar a conta agora. Aguarde e tente novamente.";
+
+          const isEmailRateLimit =
+            error.code === "over_email_send_rate_limit" ||
+            /email rate limit exceeded/i.test(error.message || "");
+
+          if (isEmailRateLimit) {
+            localStorage.setItem(
+              COOLDOWN_KEY,
+              String(Date.now() + EMAIL_RATE_LIMIT_COOLDOWN_MS)
+            );
+            message.textContent =
+              "O limite temporário de e-mails de confirmação foi atingido. Aguarde até 1 hora antes de tentar criar outra conta.";
+          } else {
+            localStorage.setItem(COOLDOWN_KEY, String(Date.now() + COOLDOWN_MS));
+            message.textContent =
+              "Não foi possível criar a conta agora. Aguarde e tente novamente.";
+          }
+
           renderCooldown();
           return;
         }
+
+        localStorage.setItem(COOLDOWN_KEY, String(Date.now() + COOLDOWN_MS));
 
         if (data.session) {
           message.textContent = "Conta criada. Redirecionando";
