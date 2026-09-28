@@ -11021,7 +11021,7 @@
 
         const block = lines.join("\n");
         return shareShowState && state === "Eu já fiz"
-          ? `~${block}~`
+          ? lines.map(line => `~${line}~`).join("\n")
           : block;
       });
 
