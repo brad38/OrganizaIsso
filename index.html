@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
   <title>Mural Acadêmico</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2921,10 +2921,44 @@
     }
 
     .signup-check input {
-      width: 16px;
-      height: 16px;
-      margin: 2px 0 0;
-      accent-color: var(--brass);
+      appearance: none;
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      margin: 1px 0 0;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border: 1px solid var(--border-accent);
+      border-radius: 4px;
+      background: #1C1C1C;
+      cursor: pointer;
+      transition: background .15s ease, border-color .15s ease;
+    }
+
+    .signup-check input::after {
+      content: "";
+      width: 4px;
+      height: 8px;
+      border-right: 2px solid #171717;
+      border-bottom: 2px solid #171717;
+      transform: rotate(45deg) translate(-1px, -1px) scale(0);
+      transform-origin: center;
+      transition: transform .12s ease;
+    }
+
+    .signup-check input:checked {
+      background: var(--parchment);
+      border-color: var(--parchment);
+    }
+
+    .signup-check input:checked::after {
+      transform: rotate(45deg) translate(-1px, -1px) scale(1);
+    }
+
+    .signup-check input:focus-visible {
+      outline: 2px solid rgba(236, 236, 236, .28);
+      outline-offset: 2px;
     }
 
     .signup-check a {
@@ -4324,6 +4358,8 @@
 
       #signupModal .modal {
         max-height: calc(var(--visual-viewport-height, 100dvh) - 8px);
+        scroll-padding-top: 76px;
+        scroll-padding-bottom: max(160px, 32dvh);
       }
 
       .signup-grid {
@@ -5895,6 +5931,15 @@
       <div class="groups-list" id="myGroupsList">
         <div class="empty-state">Nenhum grupo encontrado.</div>
       </div>
+
+      <div class="modal-foot">
+        <button type="button" class="btn btn-primary" id="newGroupFromMyGroupsBtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Novo grupo
+        </button>
+      </div>
     </div>
   </div>
 
@@ -6136,6 +6181,8 @@
     let selectedTopicActivityId = "";
     let selectedTopicMemberIds = new Set();
     let selectedTopicTeamId = "";
+    let pendingCompletionAfterTeamCreateActivityId = null;
+    let reopenMyGroupsAfterTeamCreate = false;
     let activityPendingInvites = [];
     let topicPendingInvites = [];
     let invitationActivityTeams = [];
@@ -7161,7 +7208,9 @@
       if (!isGroup && !isPair) return;
 
       if (isGroup && !completionGroups.length) {
-        showSiteNotice("Nenhum grupo disponível", "Você não possui nenhum grupo");
+        openTopicTeamCreationModal({
+          completionActivityId: activity.id
+        });
         return;
       }
 
@@ -8388,16 +8437,22 @@
       setTimeout(() => $("#topicTitle").focus(), 80);
     }
 
-    function openTopicTeamCreationModal() {
+    function openTopicTeamCreationModal({
+      completionActivityId = null,
+      returnToGroups = false
+    } = {}) {
       if (!requireLogin()) return;
 
+      pendingCompletionAfterTeamCreateActivityId = completionActivityId || null;
+      reopenMyGroupsAfterTeamCreate = Boolean(returnToGroups);
       editingTopicTeamId = null;
       selectedTopicMemberIds = new Set();
       $("#topicTeamForm").reset();
       $("#topicMemberSearch").value = "";
       $("#topicTeamModalTitle").textContent = "Cadastrar Equipe";
-      $("#topicTeamModalSubtitle").textContent =
-        "Você entra automaticamente. Os demais integrantes precisam aceitar o convite.";
+      $("#topicTeamModalSubtitle").textContent = completionActivityId
+        ? "Crie um grupo para poder marcar esta atividade como feita."
+        : "Você entra automaticamente. Os demais integrantes precisam aceitar o convite.";
       $("#saveTopicTeamBtn").textContent = "Salvar Equipe";
       renderTopicMemberPicker();
       topicTeamModal.classList.add("open");
@@ -10767,6 +10822,32 @@
           ensureVisible("auto");
         }, delay);
       });
+
+      if (target.closest("#signupModal")) {
+        [180, 320, 520, 760].forEach(delay => {
+          setTimeout(() => {
+            if (!target.isConnected || document.activeElement !== target) return;
+
+            updateVisualViewportVars();
+
+            const viewport = window.visualViewport;
+            const viewportTop = viewport?.offsetTop || 0;
+            const viewportHeight = viewport?.height || window.innerHeight;
+            const fieldBlock = target.closest(".field") || target;
+            const fieldRect = fieldBlock.getBoundingClientRect();
+            const preferredTop =
+              viewportTop + Math.max(72, Math.min(150, viewportHeight * .26));
+            const delta = fieldRect.top - preferredTop;
+
+            if (Math.abs(delta) > 4) {
+              modal.scrollBy({
+                top: delta,
+                behavior: "auto"
+              });
+            }
+          }, delay);
+        });
+      }
     }
 
     function hasMobileInternalLayerOpen() {
@@ -11106,6 +11187,13 @@
       $("#myGroupsModal").classList.remove("open");
     });
 
+    $("#newGroupFromMyGroupsBtn").addEventListener("click", () => {
+      $("#myGroupsModal").classList.remove("open");
+      openTopicTeamCreationModal({
+        returnToGroups: true
+      });
+    });
+
     $("#profileInfoForm").addEventListener("submit", async event => {
       event.preventDefault();
       if (!requireLogin()) return;
@@ -11302,6 +11390,8 @@
       topicTeamModal.classList.remove("open");
       editingTopicTeamId = null;
       selectedTopicMemberIds = new Set();
+      pendingCompletionAfterTeamCreateActivityId = null;
+      reopenMyGroupsAfterTeamCreate = false;
     };
 
     $("#closeTopicTeamModal").addEventListener("click", closeTopicTeamEditor);
@@ -11487,13 +11577,37 @@
           return;
         }
 
+        const completionActivityIdAfterCreate = !isEditingTeam
+          ? pendingCompletionAfterTeamCreateActivityId
+          : null;
+        const shouldReturnToGroupsAfterCreate =
+          !isEditingTeam && reopenMyGroupsAfterTeamCreate;
+
         topicTeamModal.classList.remove("open");
         selectedTopicMemberIds = new Set();
         editingTopicTeamId = null;
-        await loadTopicBoardData();
+        pendingCompletionAfterTeamCreateActivityId = null;
+        reopenMyGroupsAfterTeamCreate = false;
+
+        await Promise.all([
+          loadTopicBoardData(),
+          loadTeamInfo()
+        ]);
 
         if (isEditingTeam) {
           renderMyGroupsList();
+          return;
+        }
+
+        if (completionActivityIdAfterCreate) {
+          const activity = activities.find(item => item.id === completionActivityIdAfterCreate);
+          if (activity) openCompletionPicker(activity);
+          return;
+        }
+
+        if (shouldReturnToGroupsAfterCreate) {
+          renderMyGroupsList();
+          $("#myGroupsModal").classList.add("open");
           return;
         }
 
