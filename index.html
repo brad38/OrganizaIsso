@@ -2776,6 +2776,144 @@
       background: #3B3B3B;
     }
 
+    .google-auth-btn {
+      width: 100%;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 14px;
+      border: 1px solid var(--border-accent);
+      border-radius: 8px;
+      background: #F5F5F5;
+      color: #202124;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s ease, transform .15s ease;
+    }
+
+    .google-auth-btn:hover {
+      background: #FFFFFF;
+    }
+
+    .google-auth-btn:active {
+      transform: translateY(1px);
+    }
+
+    .google-auth-btn:disabled {
+      opacity: .58;
+      cursor: default;
+      transform: none;
+    }
+
+    .google-auth-btn svg {
+      flex: 0 0 auto;
+      display: block;
+    }
+
+    .google-legal-note {
+      margin-top: 8px;
+      color: var(--muted-dark);
+      font-size: .68rem;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .google-legal-note a {
+      color: var(--muted);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 14px 0 12px;
+      color: var(--muted-dark);
+      font-size: .7rem;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: var(--border);
+    }
+
+    #signupModal {
+      align-items: flex-end;
+    }
+
+    #signupModal .modal {
+      width: min(560px, 100%);
+      max-height: min(90dvh, 780px);
+      overflow-y: auto;
+      border-radius: 18px 18px 0 0;
+      border-bottom: 0;
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
+    }
+
+    .signup-sheet-copy {
+      margin: -10px 0 18px;
+      color: var(--muted);
+      font-size: .78rem;
+      line-height: 1.5;
+    }
+
+    .signup-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .signup-grid .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .signup-checks {
+      display: grid;
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .signup-check {
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      align-items: start;
+      gap: 9px;
+      color: var(--muted);
+      font-size: .76rem;
+      line-height: 1.45;
+      cursor: pointer;
+    }
+
+    .signup-check input {
+      width: 16px;
+      height: 16px;
+      margin: 2px 0 0;
+      accent-color: var(--brass);
+    }
+
+    .signup-check a {
+      color: var(--parchment);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .signup-message {
+      min-height: 20px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: .78rem;
+      line-height: 1.45;
+    }
+
     .field-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -3869,6 +4007,18 @@
       #authModal .modal-foot > div .btn {
         width: 100%;
         padding-inline: 10px;
+      }
+
+      #signupModal .modal {
+        max-height: calc(var(--visual-viewport-height, 100dvh) - 8px);
+      }
+
+      .signup-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .signup-grid .field.full {
+        grid-column: auto;
       }
 
       .owner-note {
@@ -5410,6 +5560,23 @@
         </button>
       </div>
 
+      <button type="button" class="google-auth-btn" id="googleLoginBtn">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+          <path fill="#EA4335" d="M17.64 9.205c0-.638-.057-1.252-.164-1.841H9v3.482h4.844a4.14 4.14 0 0 1-1.797 2.715v2.258h2.909c1.702-1.567 2.684-3.874 2.684-6.614Z"/>
+          <path fill="#4285F4" d="M9 18c2.43 0 4.467-.806 5.956-2.181l-2.91-2.258c-.806.54-1.835.859-3.046.859-2.344 0-4.328-1.585-5.037-3.715H.956v2.332A9 9 0 0 0 9 18Z"/>
+          <path fill="#FBBC05" d="M3.963 10.705A5.41 5.41 0 0 1 3.681 9c0-.592.102-1.167.282-1.705V4.963H.956A9 9 0 0 0 0 9c0 1.452.347 2.827.956 4.037l3.007-2.332Z"/>
+          <path fill="#34A853" d="M9 3.58c1.322 0 2.508.455 3.442 1.346l2.582-2.582C13.463.89 11.426 0 9 0A9 9 0 0 0 .956 4.963l3.007 2.332C4.672 5.165 6.656 3.58 9 3.58Z"/>
+        </svg>
+        Continuar com Google
+      </button>
+      <p class="google-legal-note">
+        Ao continuar com Google, você concorda com os
+        <a href="/termos.html" target="_blank" rel="noopener">Termos de Uso</a>
+        e o <a href="/privacidade.html" target="_blank" rel="noopener">Aviso de Privacidade</a>.
+      </p>
+
+      <div class="auth-divider">ou entre com e-mail</div>
+
       <form id="authForm">
         <div class="field">
           <label for="authEmail">E-mail</label>
@@ -5435,6 +5602,93 @@
             <button type="button" class="btn btn-secondary" id="cancelAuthModal">Cancelar</button>
             <button type="submit" class="btn btn-primary" id="loginSubmitBtn">Entrar</button>
           </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Bottom sheet de cadastro -->
+  <div class="modal-backdrop modal-backdrop-mid" id="signupModal">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h3>Criar conta</h3>
+          <p style="font-size:.76rem;color:var(--muted);margin-top:3px;">Cadastre-se sem sair do mural.</p>
+        </div>
+        <button class="icon-close" id="closeSignupModal" type="button" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <p class="signup-sheet-copy">
+        Use um nome de exibição. Seu e-mail é usado para autenticação e não aparece publicamente.
+      </p>
+
+      <button type="button" class="google-auth-btn" id="googleSignupBtn">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+          <path fill="#EA4335" d="M17.64 9.205c0-.638-.057-1.252-.164-1.841H9v3.482h4.844a4.14 4.14 0 0 1-1.797 2.715v2.258h2.909c1.702-1.567 2.684-3.874 2.684-6.614Z"/>
+          <path fill="#4285F4" d="M9 18c2.43 0 4.467-.806 5.956-2.181l-2.91-2.258c-.806.54-1.835.859-3.046.859-2.344 0-4.328-1.585-5.037-3.715H.956v2.332A9 9 0 0 0 9 18Z"/>
+          <path fill="#FBBC05" d="M3.963 10.705A5.41 5.41 0 0 1 3.681 9c0-.592.102-1.167.282-1.705V4.963H.956A9 9 0 0 0 0 9c0 1.452.347 2.827.956 4.037l3.007-2.332Z"/>
+          <path fill="#34A853" d="M9 3.58c1.322 0 2.508.455 3.442 1.346l2.582-2.582C13.463.89 11.426 0 9 0A9 9 0 0 0 .956 4.963l3.007 2.332C4.672 5.165 6.656 3.58 9 3.58Z"/>
+        </svg>
+        Cadastrar com Google
+      </button>
+      <p class="google-legal-note">
+        Ao continuar com Google, você concorda com os
+        <a href="/termos.html" target="_blank" rel="noopener">Termos de Uso</a>
+        e o <a href="/privacidade.html" target="_blank" rel="noopener">Aviso de Privacidade</a>.
+      </p>
+
+      <div class="auth-divider">ou cadastre com e-mail</div>
+
+      <form id="signupForm">
+        <div class="signup-grid">
+          <div class="field full">
+            <label for="signupDisplayName">Nome de exibição</label>
+            <input id="signupDisplayName" type="text" minlength="2" maxlength="60" required autocomplete="name" placeholder="Ex.: Bradsson">
+          </div>
+
+          <div class="field full">
+            <label for="signupEmail">E-mail</label>
+            <input id="signupEmail" type="email" required autocomplete="email" placeholder="seuemail@exemplo.com">
+          </div>
+
+          <div class="field">
+            <label for="signupPassword">Senha</label>
+            <input id="signupPassword" type="password" minlength="8" required autocomplete="new-password" placeholder="Mínimo de 8 caracteres">
+          </div>
+
+          <div class="field">
+            <label for="signupConfirmPassword">Confirmar senha</label>
+            <input id="signupConfirmPassword" type="password" minlength="8" required autocomplete="new-password" placeholder="Repita a senha">
+          </div>
+        </div>
+
+        <div class="signup-checks">
+          <label class="signup-check">
+            <input id="signupTermsAccepted" type="checkbox" required>
+            <span>Li e aceito os <a href="/termos.html" target="_blank" rel="noopener">Termos de Uso</a>.</span>
+          </label>
+
+          <label class="signup-check">
+            <input id="signupPrivacyAcknowledged" type="checkbox" required>
+            <span>Li o <a href="/privacidade.html" target="_blank" rel="noopener">Aviso de Privacidade</a>.</span>
+          </label>
+
+          <label class="signup-check">
+            <input id="signupEmailReminders" type="checkbox">
+            <span>Quero receber lembretes de prazos por e-mail.</span>
+          </label>
+        </div>
+
+        <p class="signup-message" id="signupMessage"></p>
+
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" id="signupBackToLoginBtn">Já tenho conta</button>
+          <button type="submit" class="btn btn-primary" id="signupSubmitBtn">Criar conta</button>
         </div>
       </form>
     </div>
@@ -9761,6 +10015,7 @@
     const professorModal = $("#professorModal");
     const shareModal = $("#shareModal");
     const authModal = $("#authModal");
+    const signupModal = $("#signupModal");
     const resetPasswordModal = $("#resetPasswordModal");
     const ownerUsersModal = $("#ownerUsersModal");
 
@@ -11245,6 +11500,8 @@
       }
     });
 
+    const LEGAL_VERSION = "2026-09-25";
+    const GOOGLE_AUTH_PENDING_KEY = "organizaisso_google_auth_pending";
     const SIGNUP_COOLDOWN_MS = 60_000;
     const SIGNUP_COOLDOWN_KEY = "organizaisso_signup_cooldown_until";
     const RESET_COOLDOWN_MS = 60_000;
@@ -11265,7 +11522,7 @@
     }
 
     function refreshSignupCooldownUI() {
-      const btn = $("#signupBtn");
+      const btn = $("#signupSubmitBtn");
       const remaining = getSignupCooldownRemaining();
 
       if (signupCountdownTimer) {
@@ -11346,9 +11603,11 @@
     function setAuthBusy(busy) {
       authRequestInFlight = busy;
       $("#loginSubmitBtn").disabled = busy;
+      $("#googleLoginBtn").disabled = busy;
+      $("#googleSignupBtn").disabled = busy;
 
       if (getSignupCooldownRemaining() <= 0) {
-        $("#signupBtn").disabled = busy;
+        $("#signupSubmitBtn").disabled = busy;
       }
 
       if (getResetCooldownRemaining() <= 0) {
@@ -11480,14 +11739,193 @@
       }
     });
 
-    $("#signupBtn").addEventListener("click", () => {
-      window.location.href = "/cadastro.html";
+    function openSignupSheet() {
+      authModal.classList.remove("open");
+      signupModal.classList.add("open");
+      $("#signupMessage").textContent = "";
+      refreshSignupCooldownUI();
+    }
+
+    function closeSignupSheet() {
+      signupModal.classList.remove("open");
+    }
+
+    async function startGoogleAuth(messageTarget) {
+      if (authRequestInFlight) return;
+
+      localStorage.setItem(GOOGLE_AUTH_PENDING_KEY, String(Date.now()));
+      setAuthBusy(true);
+      messageTarget.textContent = "Abrindo Google";
+
+      try {
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: window.location.origin,
+            queryParams: {
+              prompt: "select_account"
+            }
+          }
+        });
+
+        if (error) {
+          console.error(error);
+          localStorage.removeItem(GOOGLE_AUTH_PENDING_KEY);
+          messageTarget.textContent =
+            "O login com Google ainda não está disponível. Tente novamente depois.";
+        }
+      } finally {
+        setAuthBusy(false);
+      }
+    }
+
+    async function applyPendingGoogleLegalAcceptance(user = currentUser) {
+      const startedAt = Number(localStorage.getItem(GOOGLE_AUTH_PENDING_KEY) || 0);
+      if (!startedAt) return;
+
+      if (Date.now() - startedAt > 30 * 60 * 1000) {
+        localStorage.removeItem(GOOGLE_AUTH_PENDING_KEY);
+        return;
+      }
+
+      const isGoogleUser =
+        user?.app_metadata?.provider === "google" ||
+        user?.identities?.some(identity => identity.provider === "google");
+
+      if (!isGoogleUser) return;
+
+      const { error } = await supabaseClient.rpc("accept_current_legal_terms", {
+        p_terms_version: LEGAL_VERSION,
+        p_privacy_version: LEGAL_VERSION
+      });
+
+      if (error) {
+        console.error("Falha ao registrar aceite legal do Google", error);
+        return;
+      }
+
+      localStorage.removeItem(GOOGLE_AUTH_PENDING_KEY);
+    }
+
+    $("#signupBtn").addEventListener("click", openSignupSheet);
+    $("#closeSignupModal").addEventListener("click", closeSignupSheet);
+
+    $("#signupBackToLoginBtn").addEventListener("click", () => {
+      closeSignupSheet();
+      $("#authMessage").textContent = "Entre com seu e-mail e senha.";
+      authModal.classList.add("open");
+    });
+
+    $("#googleLoginBtn").addEventListener("click", () => {
+      startGoogleAuth($("#authMessage"));
+    });
+
+    $("#googleSignupBtn").addEventListener("click", () => {
+      startGoogleAuth($("#signupMessage"));
+    });
+
+    $("#signupForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      if (authRequestInFlight || getSignupCooldownRemaining() > 0) return;
+
+      const displayName = $("#signupDisplayName").value.trim();
+      const email = $("#signupEmail").value.trim();
+      const password = $("#signupPassword").value;
+      const confirmation = $("#signupConfirmPassword").value;
+      const termsAccepted = $("#signupTermsAccepted").checked;
+      const privacyAcknowledged = $("#signupPrivacyAcknowledged").checked;
+      const emailReminders = $("#signupEmailReminders").checked;
+      const message = $("#signupMessage");
+
+      if (displayName.length < 2) {
+        message.textContent = "Informe um nome de exibição válido.";
+        return;
+      }
+
+      if (password.length < 8) {
+        message.textContent = "A senha precisa ter pelo menos 8 caracteres.";
+        return;
+      }
+
+      if (password !== confirmation) {
+        message.textContent = "As senhas não coincidem.";
+        return;
+      }
+
+      if (!termsAccepted || !privacyAcknowledged) {
+        message.textContent = "Leia e aceite os Termos de Uso e o Aviso de Privacidade.";
+        return;
+      }
+
+      setAuthBusy(true);
+      message.textContent = "Criando conta";
+
+      try {
+        const functionResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/signup-free`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+            },
+            body: JSON.stringify({
+              displayName,
+              email,
+              password,
+              termsAccepted,
+              privacyAcknowledged,
+              emailReminders,
+              legalVersion: LEGAL_VERSION
+            })
+          }
+        );
+
+        const result = await functionResponse.json().catch(() => ({}));
+
+        if (!functionResponse.ok) {
+          setSignupCooldown();
+          message.textContent =
+            result?.error || "Não foi possível criar a conta agora.";
+          return;
+        }
+
+        const { error: signInError } = await supabaseClient.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (signInError) {
+          console.error(signInError);
+          message.textContent =
+            "Conta criada. Entre com seu e-mail e senha.";
+          setSignupCooldown();
+          return;
+        }
+
+        localStorage.removeItem(SIGNUP_COOLDOWN_KEY);
+        message.textContent = "Conta criada.";
+        $("#signupForm").reset();
+        setTimeout(closeSignupSheet, 350);
+      } catch (error) {
+        console.error(error);
+        setSignupCooldown();
+        message.textContent = "Não foi possível criar a conta agora.";
+      } finally {
+        setAuthBusy(false);
+        refreshSignupCooldownUI();
+      }
     });
 
     supabaseClient.auth.onAuthStateChange(async (event, session) => {
       if (event === "INITIAL_SESSION") return;
 
       currentUser = session?.user || null;
+
+      if (currentUser) {
+        await applyPendingGoogleLegalAcceptance(currentUser);
+      }
 
       if (!currentUser) {
         privateActivityWorks = [];
@@ -11513,6 +11951,7 @@
           "Defina uma nova senha para continuar usando esta conta.";
       } else if (currentUser) {
         authModal.classList.remove("open");
+        signupModal.classList.remove("open");
       }
 
       if (!isOwner()) ownerUsersModal.classList.remove("open");
@@ -11697,8 +12136,18 @@
     async function initializeApp() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       currentUser = session?.user || null;
+
+      if (currentUser) {
+        await applyPendingGoogleLegalAcceptance(currentUser);
+      }
+
       await loadCurrentProfile();
       updateAuthUI();
+
+      if (!currentUser && new URLSearchParams(window.location.search).get("signup") === "1") {
+        openSignupSheet();
+        history.replaceState(history.state, "", window.location.pathname);
+      }
       renderCalendar();
       await subscribeToCompletionRealtime();
       await subscribeToTopicRealtime();
