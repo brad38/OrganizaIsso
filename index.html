@@ -2725,6 +2725,55 @@
       color: var(--parchment);
       font-size: .75rem;
       cursor: pointer;
+      transition: background .15s ease, border-color .15s ease, opacity .15s ease;
+    }
+
+    .completion-snapshot-member input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      flex: 0 0 14px;
+      margin: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      border: 1px solid #5A5A5A;
+      border-radius: 3px;
+      background: #242424;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .completion-snapshot-member input[type="checkbox"]::after {
+      content: "";
+      width: 7px;
+      height: 4px;
+      border-left: 2px solid #111111;
+      border-bottom: 2px solid #111111;
+      transform: rotate(-45deg) translate(1px, -1px);
+      opacity: 0;
+    }
+
+    .completion-snapshot-member input[type="checkbox"]:checked {
+      background: var(--parchment);
+      border-color: var(--parchment);
+    }
+
+    .completion-snapshot-member input[type="checkbox"]:checked::after {
+      opacity: 1;
+    }
+
+    .completion-snapshot-member.is-pending {
+      background: #202020;
+      border-color: #343434;
+      color: var(--muted-dark);
+      cursor: default;
+      opacity: .62;
+    }
+
+    .completion-snapshot-member.is-pending input[type="checkbox"] {
+      background: #292929;
+      border-color: #454545;
+      cursor: default;
     }
 
     .completion-snapshot-member-name {
@@ -6808,8 +6857,7 @@
           .select("id,name,owner_id"),
         supabaseClient
           .from("topic_team_members")
-          .select("team_id,user_id,status")
-          .eq("status", "accepted"),
+          .select("team_id,user_id,status"),
         supabaseClient
           .from("user_directory")
           .select("user_id,display_name"),
@@ -6892,11 +6940,19 @@
 
       completionAllGroups = (topicTeamsResult.data || [])
         .map(team => {
-          const memberIds = [
-            team.owner_id,
-            ...(topicMembersByTeam.get(team.id) || []).map(member => member.user_id)
-          ].filter(Boolean);
-          const uniqueMemberIds = [...new Set(memberIds)];
+          const teamMembers = topicMembersByTeam.get(team.id) || [];
+          const acceptedMemberIds = teamMembers
+            .filter(member => member.status === "accepted")
+            .map(member => member.user_id)
+            .filter(Boolean);
+          const pendingMemberIds = teamMembers
+            .filter(member => member.status === "pending")
+            .map(member => member.user_id)
+            .filter(Boolean);
+
+          const uniqueMemberIds = [...new Set([team.owner_id, ...acceptedMemberIds].filter(Boolean))];
+          const uniquePendingMemberIds = [...new Set(pendingMemberIds)]
+            .filter(userId => !uniqueMemberIds.includes(userId));
 
           return {
             id: team.id,
@@ -6904,6 +6960,9 @@
             ownerId: team.owner_id,
             memberIds: uniqueMemberIds,
             memberNames: uniqueMemberIds
+              .map(userId => directory.get(userId) || "Usuário"),
+            pendingMemberIds: uniquePendingMemberIds,
+            pendingMemberNames: uniquePendingMemberIds
               .map(userId => directory.get(userId) || "Usuário")
           };
         })
@@ -7300,13 +7359,6 @@
         return;
       }
 
-      const getNoticeLabel = status => {
-        if (status === "registered") return "Registrou";
-        if (status === "read") return "Lido";
-        if (status === "delivered") return "Entregue";
-        return "Sem aviso registrado";
-      };
-
       list.innerHTML = privateActivityWorks.map(work => {
         const activity = activities.find(item => item.id === work.activity_id);
         const title = activity?.title || "Atividade removida";
@@ -7327,20 +7379,6 @@
 
         const snapshotMemberIds = groupRecord?.snapshot_member_ids || [];
         const snapshotMemberNames = groupRecord?.snapshot_member_names || [];
-        const currentTeam = work.scope_type === "group"
-          ? completionAllGroups.find(team => team.id === work.team_id)
-          : null;
-
-        const currentButNotRecordedNames = currentTeam
-          ? currentTeam.memberIds
-              .map((userId, index) => ({
-                userId,
-                name: currentTeam.memberNames[index] || "Usuário"
-              }))
-              .filter(member => !snapshotMemberIds.includes(member.userId))
-              .map(member => member.name)
-          : [];
-
         const noticeRows = groupRecord
           ? (groupCompletionNotificationStatuses.get(`${work.activity_id}:${work.team_id}`) || [])
           : [];
@@ -7349,10 +7387,6 @@
         const currentUserInSnapshot = Boolean(
           currentUser && snapshotMemberIds.includes(currentUser.id)
         );
-        const currentUserInCurrentTeam = Boolean(
-          currentUser && currentTeam?.memberIds.includes(currentUser.id)
-        );
-
         const completionHistoryHtml = groupRecord ? `
           <div class="my-work-completion-history">
             <div class="my-work-completion-head">
@@ -7377,24 +7411,11 @@
               ${escapeHtml(snapshotMemberNames.join(", ") || "Participantes não informados")}
             </div>
 
-            ${currentButNotRecordedNames.length ? `
-              <div class="my-work-completion-late">
-                No grupo atual, mas fora deste registro: ${escapeHtml(currentButNotRecordedNames.join(", "))}
-              </div>
-            ` : ""}
-
-            ${currentUserInCurrentTeam && !currentUserInSnapshot ? `
-              <div class="my-work-participation-note">
-                Você está no grupo atualmente, mas não consta como participante desta conclusão.
-              </div>
-            ` : ""}
-
             ${noticeRows.length ? `
               <div class="my-work-notice-statuses">
                 ${noticeRows.map(row => `
-                  <span class="my-work-notice-chip ${row.notice_status === "not_recorded" ? "notice-missing" : ""}">
+                  <span class="my-work-notice-chip">
                     <strong>${escapeHtml(row.display_name || "Usuário")}</strong>
-                    <span>${escapeHtml(getNoticeLabel(row.notice_status))}</span>
                   </span>
                 `).join("")}
               </div>
@@ -7760,8 +7781,19 @@
       (selectedTeam?.memberIds || []).forEach((userId, index) => {
         candidates.set(userId, {
           name: selectedTeam.memberNames?.[index] || "Usuário",
-          current: true
+          current: true,
+          pending: false
         });
+      });
+
+      (selectedTeam?.pendingMemberIds || []).forEach((userId, index) => {
+        if (!candidates.has(userId)) {
+          candidates.set(userId, {
+            name: selectedTeam.pendingMemberNames?.[index] || "Usuário",
+            current: false,
+            pending: true
+          });
+        }
       });
 
       if (selectedGroupCompletionKey === editingGroupCompletionRecord.team_id) {
@@ -7771,7 +7803,8 @@
           if (!candidates.has(userId)) {
             candidates.set(userId, {
               name: oldNames[index] || "Usuário",
-              current: false
+              current: false,
+              pending: false
             });
           }
         });
@@ -7781,10 +7814,15 @@
       count.textContent = selectedCompletionSnapshotMemberIds.size + " " + (selectedCompletionSnapshotMemberIds.size === 1 ? "integrante" : "integrantes");
 
       list.innerHTML = [...candidates.entries()].map(([userId, member]) => `
-        <label class="completion-snapshot-member">
-          <input type="checkbox" data-completion-snapshot-member="${escapeHtml(userId)}" ${selectedCompletionSnapshotMemberIds.has(userId) ? "checked" : ""} />
+        <label class="completion-snapshot-member ${member.pending ? "is-pending" : ""}">
+          <input type="checkbox"
+            data-completion-snapshot-member="${escapeHtml(userId)}"
+            ${selectedCompletionSnapshotMemberIds.has(userId) ? "checked" : ""}
+            ${member.pending ? "disabled" : ""} />
           <span class="completion-snapshot-member-name">${escapeHtml(member.name)}</span>
-          <em class="completion-snapshot-member-status">${member.current ? "Membro atual" : "Histórico"}</em>
+          ${member.pending
+            ? ""
+            : `<em class="completion-snapshot-member-status">${member.current ? "Membro atual" : "Histórico"}</em>`}
         </label>
       `).join("");
 
