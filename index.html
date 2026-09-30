@@ -745,49 +745,6 @@
       line-height: 1.45;
     }
 
-    .my-work-completion-late {
-      color: var(--muted-dark);
-      font-size: .7rem;
-      line-height: 1.45;
-    }
-
-    .my-work-notice-statuses {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .my-work-notice-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      min-height: 24px;
-      padding: 4px 7px;
-      border: 1px solid #343434;
-      border-radius: 6px;
-      background: #202020;
-      color: var(--muted);
-      font-size: .66rem;
-      line-height: 1.2;
-    }
-
-    .my-work-notice-chip strong {
-      color: var(--parchment);
-      font-weight: 650;
-    }
-
-    .my-work-notice-chip.notice-missing {
-      border-style: dashed;
-      color: var(--muted-dark);
-    }
-
-    .my-work-participation-note {
-      color: var(--muted-dark);
-      font-size: .68rem;
-      font-style: italic;
-      line-height: 1.4;
-    }
-
     .my-work-actions { gap: 4px; }
 
     .my-work-actions button {
@@ -6738,7 +6695,6 @@
     let completionAllGroups = [];
     let completionPeople = [];
     let groupCompletionAssignments = [];
-    let groupCompletionNotificationStatuses = new Map();
     let editingGroupCompletionRecord = null;
     let selectedCompletionSnapshotMemberIds = new Set();
     let shareRangeFilter = "14";
@@ -6835,7 +6791,6 @@
         topicMembersResult,
         directoryResult,
         groupAssignmentsResult,
-        notificationStatusesResult,
         pairAssignmentsResult
       ] = await Promise.all([
         supabaseClient
@@ -6864,7 +6819,6 @@
         supabaseClient
           .from("activity_group_assignments")
           .select("activity_id,team_id,assigned_by,created_at,updated_at,snapshot_team_name,snapshot_member_ids,snapshot_member_names,snapshot_member_count"),
-        supabaseClient.rpc("get_visible_group_completion_notification_statuses"),
         supabaseClient
           .from("activity_pair_assignments")
           .select("activity_id,member_a,member_b,assigned_by")
@@ -6879,7 +6833,6 @@
         topicMembersResult,
         directoryResult,
         groupAssignmentsResult,
-        notificationStatusesResult,
         pairAssignmentsResult
       ];
 
@@ -6982,15 +6935,6 @@
           ? assignment.snapshot_member_names
           : []
       }));
-
-      groupCompletionNotificationStatuses = new Map();
-      (notificationStatusesResult.data || []).forEach(status => {
-        const key = `${status.activity_id}:${status.team_id}`;
-        if (!groupCompletionNotificationStatuses.has(key)) {
-          groupCompletionNotificationStatuses.set(key, []);
-        }
-        groupCompletionNotificationStatuses.get(key).push(status);
-      });
 
       completionPeople = (directoryResult.data || [])
         .filter(person => person.user_id !== currentUser?.id)
@@ -7379,9 +7323,6 @@
 
         const snapshotMemberIds = groupRecord?.snapshot_member_ids || [];
         const snapshotMemberNames = groupRecord?.snapshot_member_names || [];
-        const noticeRows = groupRecord
-          ? (groupCompletionNotificationStatuses.get(`${work.activity_id}:${work.team_id}`) || [])
-          : [];
 
         const canEditCompletion = groupRecord && canEditGroupCompletionRecord(groupRecord);
         const currentUserInSnapshot = Boolean(
@@ -7411,15 +7352,6 @@
               ${escapeHtml(snapshotMemberNames.join(", ") || "Participantes não informados")}
             </div>
 
-            ${noticeRows.length ? `
-              <div class="my-work-notice-statuses">
-                ${noticeRows.map(row => `
-                  <span class="my-work-notice-chip">
-                    <strong>${escapeHtml(row.display_name || "Usuário")}</strong>
-                  </span>
-                `).join("")}
-              </div>
-            ` : ""}
           </div>
         ` : "";
 
