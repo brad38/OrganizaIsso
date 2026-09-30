@@ -644,7 +644,10 @@
       background: #242424;
     }
 
-    .my-work-card.completed { opacity: .66; }
+    .my-work-card.completed {
+      opacity: 1;
+      border-color: #3D3D3D;
+    }
 
     .my-work-title {
       font-family: var(--font-sans);
@@ -689,6 +692,100 @@
     .my-work-state {
       color: var(--muted-dark);
       font-size: .7rem;
+    }
+
+    .my-work-completion-history {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 11px 12px;
+      border: 1px solid var(--border-divider);
+      border-radius: 8px;
+      background: #1A1A1A;
+    }
+
+    .my-work-completion-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .my-work-completion-label {
+      color: var(--muted-dark);
+      font-family: var(--font-mono);
+      font-size: .64rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .my-work-completion-edit {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted-dark);
+      cursor: pointer;
+    }
+
+    .my-work-completion-edit:hover {
+      color: var(--parchment);
+      background: #2A2A2A;
+    }
+
+    .my-work-completion-members {
+      color: var(--parchment);
+      font-size: .78rem;
+      font-weight: 650;
+      line-height: 1.45;
+    }
+
+    .my-work-completion-late {
+      color: var(--muted-dark);
+      font-size: .7rem;
+      line-height: 1.45;
+    }
+
+    .my-work-notice-statuses {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .my-work-notice-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 24px;
+      padding: 4px 7px;
+      border: 1px solid #343434;
+      border-radius: 6px;
+      background: #202020;
+      color: var(--muted);
+      font-size: .66rem;
+      line-height: 1.2;
+    }
+
+    .my-work-notice-chip strong {
+      color: var(--parchment);
+      font-weight: 650;
+    }
+
+    .my-work-notice-chip.notice-missing {
+      border-style: dashed;
+      color: var(--muted-dark);
+    }
+
+    .my-work-participation-note {
+      color: var(--muted-dark);
+      font-size: .68rem;
+      font-style: italic;
+      line-height: 1.4;
     }
 
     .my-work-actions { gap: 4px; }
@@ -2628,6 +2725,18 @@
       color: var(--parchment);
       font-size: .75rem;
       cursor: pointer;
+    }
+
+    .completion-snapshot-member-name {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .completion-snapshot-member-status {
+      flex: 0 0 auto;
+      color: var(--muted-dark);
+      font-size: .64rem;
+      font-style: italic;
     }
 
     .completion-record-summary {
@@ -6580,6 +6689,7 @@
     let completionAllGroups = [];
     let completionPeople = [];
     let groupCompletionAssignments = [];
+    let groupCompletionNotificationStatuses = new Map();
     let editingGroupCompletionRecord = null;
     let selectedCompletionSnapshotMemberIds = new Set();
     let shareRangeFilter = "14";
@@ -6676,6 +6786,7 @@
         topicMembersResult,
         directoryResult,
         groupAssignmentsResult,
+        notificationStatusesResult,
         pairAssignmentsResult
       ] = await Promise.all([
         supabaseClient
@@ -6705,6 +6816,7 @@
         supabaseClient
           .from("activity_group_assignments")
           .select("activity_id,team_id,assigned_by,created_at,updated_at,snapshot_team_name,snapshot_member_ids,snapshot_member_names,snapshot_member_count"),
+        supabaseClient.rpc("get_visible_group_completion_notification_statuses"),
         supabaseClient
           .from("activity_pair_assignments")
           .select("activity_id,member_a,member_b,assigned_by")
@@ -6719,6 +6831,7 @@
         topicMembersResult,
         directoryResult,
         groupAssignmentsResult,
+        notificationStatusesResult,
         pairAssignmentsResult
       ];
 
@@ -6810,6 +6923,15 @@
           ? assignment.snapshot_member_names
           : []
       }));
+
+      groupCompletionNotificationStatuses = new Map();
+      (notificationStatusesResult.data || []).forEach(status => {
+        const key = `${status.activity_id}:${status.team_id}`;
+        if (!groupCompletionNotificationStatuses.has(key)) {
+          groupCompletionNotificationStatuses.set(key, []);
+        }
+        groupCompletionNotificationStatuses.get(key).push(status);
+      });
 
       completionPeople = (directoryResult.data || [])
         .filter(person => person.user_id !== currentUser?.id)
@@ -7178,13 +7300,115 @@
         return;
       }
 
+      const getNoticeLabel = status => {
+        if (status === "registered") return "Registrou";
+        if (status === "read") return "Lido";
+        if (status === "delivered") return "Entregue";
+        return "Sem aviso registrado";
+      };
+
       list.innerHTML = privateActivityWorks.map(work => {
         const activity = activities.find(item => item.id === work.activity_id);
         const title = activity?.title || "Atividade removida";
         const subject = activity?.subject || "";
         const customDescription = String(work.custom_description || "").trim();
         const publicDescription = String(activity?.description || "").trim();
-        const isDone = doneIds.has(work.activity_id);
+
+        const groupRecord = work.scope_type === "group"
+          ? groupCompletionAssignments.find(record =>
+              record.activity_id === work.activity_id &&
+              record.team_id === work.team_id
+            )
+          : null;
+
+        const isDone = work.scope_type === "group"
+          ? Boolean(groupRecord)
+          : doneIds.has(work.activity_id);
+
+        const snapshotMemberIds = groupRecord?.snapshot_member_ids || [];
+        const snapshotMemberNames = groupRecord?.snapshot_member_names || [];
+        const currentTeam = work.scope_type === "group"
+          ? completionAllGroups.find(team => team.id === work.team_id)
+          : null;
+
+        const currentButNotRecordedNames = currentTeam
+          ? currentTeam.memberIds
+              .map((userId, index) => ({
+                userId,
+                name: currentTeam.memberNames[index] || "Usuário"
+              }))
+              .filter(member => !snapshotMemberIds.includes(member.userId))
+              .map(member => member.name)
+          : [];
+
+        const noticeRows = groupRecord
+          ? (groupCompletionNotificationStatuses.get(`${work.activity_id}:${work.team_id}`) || [])
+          : [];
+
+        const canEditCompletion = groupRecord && canEditGroupCompletionRecord(groupRecord);
+        const currentUserInSnapshot = Boolean(
+          currentUser && snapshotMemberIds.includes(currentUser.id)
+        );
+        const currentUserInCurrentTeam = Boolean(
+          currentUser && currentTeam?.memberIds.includes(currentUser.id)
+        );
+
+        const completionHistoryHtml = groupRecord ? `
+          <div class="my-work-completion-history">
+            <div class="my-work-completion-head">
+              <span class="my-work-completion-label">Participantes desta conclusão</span>
+              ${canEditCompletion ? `
+                <button
+                  type="button"
+                  class="my-work-completion-edit"
+                  data-edit-my-work-completion="${escapeHtml(work.activity_id)}:${escapeHtml(work.team_id)}"
+                  title="Editar participantes desta conclusão"
+                  aria-label="Editar participantes desta conclusão"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>
+                  </svg>
+                </button>
+              ` : ""}
+            </div>
+
+            <div class="my-work-completion-members">
+              ${escapeHtml(snapshotMemberNames.join(", ") || "Participantes não informados")}
+            </div>
+
+            ${currentButNotRecordedNames.length ? `
+              <div class="my-work-completion-late">
+                No grupo atual, mas fora deste registro: ${escapeHtml(currentButNotRecordedNames.join(", "))}
+              </div>
+            ` : ""}
+
+            ${currentUserInCurrentTeam && !currentUserInSnapshot ? `
+              <div class="my-work-participation-note">
+                Você está no grupo atualmente, mas não consta como participante desta conclusão.
+              </div>
+            ` : ""}
+
+            ${noticeRows.length ? `
+              <div class="my-work-notice-statuses">
+                ${noticeRows.map(row => `
+                  <span class="my-work-notice-chip ${row.notice_status === "not_recorded" ? "notice-missing" : ""}">
+                    <strong>${escapeHtml(row.display_name || "Usuário")}</strong>
+                    <span>${escapeHtml(getNoticeLabel(row.notice_status))}</span>
+                  </span>
+                `).join("")}
+              </div>
+            ` : ""}
+          </div>
+        ` : "";
+
+        const stateText = groupRecord
+          ? currentUserInSnapshot
+            ? "Concluída com sua participação registrada"
+            : "Concluída pelo grupo"
+          : isDone
+            ? "Atividade concluída"
+            : "Atividade do mural";
 
         return `
           <article class="my-work-card ${isDone ? "completed" : ""}">
@@ -7220,8 +7444,10 @@
               ? `<div class="my-work-description">Descrição personalizada: ${escapeHtml(customDescription)}</div>`
               : (!publicDescription ? '<div class="my-work-description">Sem descrição.</div>' : "")}
 
+            ${completionHistoryHtml}
+
             <div class="my-work-card-bottom">
-              <span class="my-work-state">${isDone ? "Atividade concluída" : "Atividade do mural"}</span>
+              <span class="my-work-state">${escapeHtml(stateText)}</span>
             </div>
           </article>
         `;
@@ -7232,6 +7458,17 @@
           const work = privateActivityWorks.find(item => item.id === button.dataset.myWorkEdit);
           if (!work) return;
           openMyWorkEditor(work.activity_id, work.id);
+        });
+      });
+
+      list.querySelectorAll("[data-edit-my-work-completion]").forEach(button => {
+        button.addEventListener("click", () => {
+          const [activityId, teamId] = String(button.dataset.editMyWorkCompletion || "").split(":");
+          const record = groupCompletionAssignments.find(item =>
+            item.activity_id === activityId && item.team_id === teamId
+          );
+          if (!record) return;
+          openGroupCompletionRecordEditor(record);
         });
       });
 
@@ -7318,6 +7555,7 @@
       if (!activities.length) await loadActivities();
       if (!topicDirectory.length) await loadTopicBoardData();
 
+      await loadTeamInfo();
       await loadPrivateActivityWorks();
       setActiveSection("myworks");
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -7406,10 +7644,14 @@
     }
 
     function canEditGroupCompletionRecord(record) {
+      if (!currentUser || !record) return false;
+
+      const team = completionAllGroups.find(item => item.id === record.team_id);
+
       return Boolean(
-        currentUser &&
-        record &&
-        (record.assigned_by === currentUser.id || isOwner())
+        record.assigned_by === currentUser.id ||
+        team?.ownerId === currentUser.id ||
+        isOwner()
       );
     }
 
@@ -7420,7 +7662,10 @@
         if (record.activity_id !== activityId) return false;
         if (isOwner()) return true;
 
+        const team = completionAllGroups.find(item => item.id === record.team_id);
+
         return record.assigned_by === currentUser.id ||
+          team?.ownerId === currentUser.id ||
           (record.snapshot_member_ids || []).includes(currentUser.id);
       });
     }
@@ -7513,24 +7758,33 @@
       const candidates = new Map();
 
       (selectedTeam?.memberIds || []).forEach((userId, index) => {
-        candidates.set(userId, selectedTeam.memberNames?.[index] || "Usuário");
+        candidates.set(userId, {
+          name: selectedTeam.memberNames?.[index] || "Usuário",
+          current: true
+        });
       });
 
       if (selectedGroupCompletionKey === editingGroupCompletionRecord.team_id) {
         const oldIds = editingGroupCompletionRecord.snapshot_member_ids || [];
         const oldNames = editingGroupCompletionRecord.snapshot_member_names || [];
         oldIds.forEach((userId, index) => {
-          if (!candidates.has(userId)) candidates.set(userId, oldNames[index] || "Usuário");
+          if (!candidates.has(userId)) {
+            candidates.set(userId, {
+              name: oldNames[index] || "Usuário",
+              current: false
+            });
+          }
         });
       }
 
       editor.hidden = false;
       count.textContent = selectedCompletionSnapshotMemberIds.size + " " + (selectedCompletionSnapshotMemberIds.size === 1 ? "integrante" : "integrantes");
 
-      list.innerHTML = [...candidates.entries()].map(([userId, name]) => `
+      list.innerHTML = [...candidates.entries()].map(([userId, member]) => `
         <label class="completion-snapshot-member">
           <input type="checkbox" data-completion-snapshot-member="${escapeHtml(userId)}" ${selectedCompletionSnapshotMemberIds.has(userId) ? "checked" : ""} />
-          <span>${escapeHtml(name)}</span>
+          <span class="completion-snapshot-member-name">${escapeHtml(member.name)}</span>
+          <em class="completion-snapshot-member-status">${member.current ? "Membro atual" : "Histórico"}</em>
         </label>
       `).join("");
 
@@ -7546,7 +7800,7 @@
 
     function openGroupCompletionRecordEditor(record) {
       if (!canEditGroupCompletionRecord(record)) {
-        showSiteNotice("Sem permissão", "Somente quem criou este registro ou o proprietário pode editá-lo.");
+        showSiteNotice("Sem permissão", "Somente quem criou o registro, o responsável pelo grupo ou o proprietário pode editá-lo.");
         return;
       }
 
@@ -7561,7 +7815,7 @@
 
       $("#groupCompletionTitle").textContent = activity.title || "Atividade";
       $("#completionPickerHeading").textContent = "Editar registro da conclusão";
-      $("#completionPickerSubtitle").textContent = "O histórico mantém os integrantes registrados nesta conclusão, mesmo que o grupo seja alterado depois.";
+      $("#completionPickerSubtitle").textContent = "Marque quem realmente participou desta conclusão. Pessoas adicionadas ao grupo depois não entram neste histórico automaticamente.";
       $("#completionPickerSearchLabel").textContent = "Buscar grupo";
       $("#completionPickerSearch").placeholder = "Buscar grupo";
       $("#completionPickerSearch").value = "";
@@ -7772,11 +8026,11 @@
       if (result.error) {
         console.error(result.error);
         button.disabled = false;
-        const permissionDenied = /only record creator or owner|permission/i.test(result.error.message || "");
+        const permissionDenied = /only record creator|team owner|permission/i.test(result.error.message || "");
         showSiteNotice(
           permissionDenied ? "Sem permissão" : (isEditingRecord ? "Não foi possível editar" : "Não foi possível concluir"),
           permissionDenied
-            ? "Somente quem criou este registro ou o proprietário pode editá-lo."
+            ? "Somente quem criou o registro, o responsável pelo grupo ou o proprietário pode editá-lo."
             : isEditingRecord
               ? "Não foi possível salvar as alterações desse registro."
               : completionPickerMode === "group"
@@ -7787,10 +8041,8 @@
       }
 
       closeGroupCompletionModal();
-      await Promise.all([
-        loadActivities(),
-        loadPrivateActivityWorks()
-      ]);
+      await loadActivities();
+      await loadPrivateActivityWorks();
       showSiteNotice(
         isEditingRecord ? "Registro atualizado" : "Atividade concluída",
         isEditingRecord
@@ -9168,7 +9420,7 @@
       }
 
       const notificationRows = userNotifications.map(notification => {
-        const kindLabel = notification.kind === "group_activity_completed"
+        const kindLabel = String(notification.kind || "").startsWith("group_activity_")
           ? "Atividade em grupo"
           : "Grupo";
 
