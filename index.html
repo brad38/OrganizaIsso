@@ -2961,6 +2961,60 @@
       border-color: var(--parchment);
     }
 
+    .team-member-name {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .team-member-row.pending-invite {
+      cursor: default;
+    }
+
+    .team-member-pending-actions {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .team-member-pending-label {
+      color: var(--muted-dark);
+      font-size: .7rem;
+      font-style: italic;
+    }
+
+    .team-member-cancel-invite {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted-dark);
+      cursor: pointer;
+      transition: color .15s ease, background .15s ease;
+    }
+
+    .team-member-cancel-invite:hover {
+      color: var(--parchment);
+      background: #2B2B2B;
+    }
+
+    .notification-row.unread {
+      border-color: #555;
+      background: #242424;
+    }
+
+    .notification-time {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted-dark);
+      font-size: .66rem;
+    }
+
     .topic-choice-summary {
       padding: 12px;
       border: 1px solid var(--border);
@@ -5648,9 +5702,9 @@
     <div class="modal modal-sm">
       <div class="modal-head">
         <div>
-          <h3>Convites</h3>
+          <h3>Mensagens</h3>
           <p style="font-size:.76rem;color:var(--muted);margin-top:3px;">
-            Aceite para entrar oficialmente na equipe.
+            Convites e avisos das suas equipes.
           </p>
         </div>
         <button class="icon-close" id="closeInvitesModal" type="button" aria-label="Fechar">
@@ -6504,11 +6558,13 @@
     let editingTopicTeamId = null;
     let selectedTopicActivityId = "";
     let selectedTopicMemberIds = new Set();
+    let editingTopicTeamMemberStatuses = new Map();
     let selectedTopicTeamId = "";
     let pendingCompletionAfterTeamCreateActivityId = null;
     let reopenMyGroupsAfterTeamCreate = false;
     let activityPendingInvites = [];
     let topicPendingInvites = [];
+    let userNotifications = [];
     let invitationActivityTeams = [];
     let invitationTopicTeams = [];
     let invitationDirectory = [];
@@ -8913,6 +8969,7 @@
       reopenMyGroupsAfterTeamCreate = Boolean(returnToGroups);
       editingTopicTeamId = null;
       selectedTopicMemberIds = new Set();
+      editingTopicTeamMemberStatuses = new Map();
       $("#topicTeamForm").reset();
       $("#topicMemberSearch").value = "";
       $("#topicTeamModalTitle").textContent = "Cadastrar Equipe";
@@ -8936,6 +8993,7 @@
 
       editingTopicTeamId = team.id;
       selectedTopicMemberIds = new Set();
+      editingTopicTeamMemberStatuses = new Map();
       $("#topicTeamForm").reset();
       $("#topicTeamName").value = team.name || "";
       $("#topicMemberSearch").value = "";
@@ -8956,9 +9014,12 @@
         return;
       }
 
+      editingTopicTeamMemberStatuses = new Map();
+
       (data || []).forEach(member => {
         if (member.user_id !== currentUser.id) {
           selectedTopicMemberIds.add(member.user_id);
+          editingTopicTeamMemberStatuses.set(member.user_id, member.status || "pending");
         }
       });
 
@@ -8980,6 +9041,7 @@
       if (!currentUser) {
         activityPendingInvites = [];
         topicPendingInvites = [];
+        userNotifications = [];
         invitationActivityTeams = [];
         invitationTopicTeams = [];
         invitationDirectory = [];
@@ -8990,7 +9052,7 @@
         }
 
         if (list) {
-          list.innerHTML = '<div class="invite-empty">Entre na sua conta para ver convites.</div>';
+          list.innerHTML = '<div class="invite-empty">Entre na sua conta para ver suas mensagens.</div>';
         }
 
         return;
@@ -8999,6 +9061,7 @@
       const [
         activityInvitesResult,
         topicInvitesResult,
+        notificationsResult,
         activityTeamsResult,
         topicTeamsResult,
         directoryResult
@@ -9014,6 +9077,12 @@
           .eq("user_id", currentUser.id)
           .eq("status", "pending"),
         supabaseClient
+          .from("user_notifications")
+          .select("id,kind,message,event_key,metadata,read_at,created_at")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending: false })
+          .limit(50),
+        supabaseClient
           .from("activity_teams")
           .select("id,activity_id,owner_id"),
         supabaseClient
@@ -9027,17 +9096,19 @@
       const firstError = [
         activityInvitesResult.error,
         topicInvitesResult.error,
+        notificationsResult.error,
         activityTeamsResult.error,
         topicTeamsResult.error,
         directoryResult.error
       ].find(Boolean);
 
       if (firstError) {
-        console.error("Falha ao carregar convites:", firstError);
+        console.error("Falha ao carregar mensagens:", firstError);
       }
 
       activityPendingInvites = activityInvitesResult.data || [];
       topicPendingInvites = topicInvitesResult.data || [];
+      userNotifications = notificationsResult.data || [];
       invitationActivityTeams = activityTeamsResult.data || [];
       invitationTopicTeams = topicTeamsResult.data || [];
       invitationDirectory = directoryResult.data || [];
@@ -9045,31 +9116,72 @@
       renderInvitationCenter();
     }
 
+    async function markNotificationMessagesRead() {
+      if (!currentUser || !userNotifications.some(item => !item.read_at)) return;
+
+      const readAt = new Date().toISOString();
+      const { error } = await supabaseClient
+        .from("user_notifications")
+        .update({ read_at: readAt })
+        .eq("user_id", currentUser.id)
+        .is("read_at", null);
+
+      if (error) {
+        console.error("Falha ao marcar mensagens como lidas:", error);
+        return;
+      }
+
+      userNotifications = userNotifications.map(item => (
+        item.read_at ? item : { ...item, read_at: readAt }
+      ));
+      renderInvitationCenter();
+    }
+
     function renderInvitationCenter() {
       const badge = $("#invitesBadge");
       const list = $("#invitesList");
-      const total = activityPendingInvites.length + topicPendingInvites.length;
+      const pendingInviteCount = activityPendingInvites.length + topicPendingInvites.length;
+      const unreadNotificationCount = userNotifications.filter(item => !item.read_at).length;
+      const unreadTotal = pendingInviteCount + unreadNotificationCount;
+      const totalItems = pendingInviteCount + userNotifications.length;
 
       if (badge) {
-        badge.hidden = total === 0;
-        badge.textContent = total > 9 ? "9+" : String(total);
+        badge.hidden = unreadTotal === 0;
+        badge.textContent = unreadTotal > 9 ? "9+" : String(unreadTotal);
       }
 
-      $("#invitesBtn").title = total
-        ? `${total} convite${total === 1 ? "" : "s"} pendente${total === 1 ? "" : "s"}`
-        : "Convites";
+      $("#invitesBtn").title = unreadTotal
+        ? `${unreadTotal} mensagem${unreadTotal === 1 ? "" : "s"} nova${unreadTotal === 1 ? "" : "s"}`
+        : "Mensagens";
+      $("#invitesBtn").setAttribute("aria-label", "Abrir mensagens");
 
       if (!list) return;
 
       if (!currentUser) {
-        list.innerHTML = '<div class="invite-empty">Entre na sua conta para ver convites.</div>';
+        list.innerHTML = '<div class="invite-empty">Entre na sua conta para ver suas mensagens.</div>';
         return;
       }
 
-      if (!total) {
-        list.innerHTML = '<div class="invite-empty">Nenhum convite pendente.</div>';
+      if (!totalItems) {
+        list.innerHTML = '<div class="invite-empty">Nenhuma mensagem.</div>';
         return;
       }
+
+      const notificationRows = userNotifications.map(notification => {
+        const kindLabel = notification.kind === "group_activity_completed"
+          ? "Atividade em grupo"
+          : "Grupo";
+
+        return `
+          <div class="topic-invite-row notification-row ${notification.read_at ? "" : "unread"}">
+            <div class="topic-invite-copy">
+              <span class="invite-kind">${escapeHtml(kindLabel)}</span>
+              <div class="topic-invite-name">${escapeHtml(notification.message || "Novo aviso")}</div>
+              <span class="notification-time">${escapeHtml(formatDate(notification.created_at))}</span>
+            </div>
+          </div>
+        `;
+      });
 
       const activityRows = activityPendingInvites.map(invite => {
         const activity = activities.find(item => item.id === invite.activity_id);
@@ -9118,7 +9230,7 @@
         return `
           <div class="topic-invite-row">
             <div class="topic-invite-copy">
-              <span class="invite-kind">Artigos &amp; Equipes</span>
+              <span class="invite-kind">Grupo</span>
               <div class="topic-invite-name">${escapeHtml(team?.name || "Equipe")}</div>
               <div class="topic-invite-sub">
                 Convite enviado por ${escapeHtml(inviter)}
@@ -9149,9 +9261,9 @@
         `;
       });
 
-      list.innerHTML = [...activityRows, ...topicRows].join("");
+      list.innerHTML = [...activityRows, ...topicRows, ...notificationRows].join("");
 
-      $$("[data-invite-action]").forEach(button => {
+      list.querySelectorAll("[data-invite-action]").forEach(button => {
         button.addEventListener("click", async () => {
           const kind = button.dataset.inviteKind;
           const teamId = button.dataset.inviteTeam;
@@ -9170,8 +9282,8 @@
           if (error) {
             console.error(error);
             alert(accept
-              ? "Não foi possível aceitar o convite."
-              : "Não foi possível recusar o convite.");
+              ? "N?o foi poss?vel aceitar o convite."
+              : "N?o foi poss?vel recusar o convite.");
             button.disabled = false;
             return;
           }
@@ -9209,6 +9321,18 @@
           async () => {
             await loadInvitationCenter();
             await loadTopicBoardData();
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "user_notifications",
+            filter: `user_id=eq.${currentUser.id}`
+          },
+          async () => {
+            await loadInvitationCenter();
           }
         )
         .subscribe();
@@ -9657,6 +9781,38 @@
       } else {
         list.innerHTML = people.map(person => {
           const selected = selectedTopicMemberIds.has(person.user_id);
+          const status = editingTopicTeamId
+            ? editingTopicTeamMemberStatuses.get(person.user_id)
+            : null;
+          const isPendingInvite = status === "pending";
+
+          if (isPendingInvite) {
+            return `
+              <div class="team-member-row selected pending-invite">
+                <span class="team-member-checkbox">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </span>
+                <span class="team-member-name">${escapeHtml(person.display_name)}</span>
+                <span class="team-member-pending-actions">
+                  <em class="team-member-pending-label">Convidado</em>
+                  <button
+                    type="button"
+                    class="team-member-cancel-invite"
+                    data-cancel-topic-invite="${person.user_id}"
+                    title="Cancelar convite"
+                    aria-label="Cancelar convite de ${escapeHtml(person.display_name)}"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </span>
+              </div>
+            `;
+          }
 
           return `
             <div class="team-member-row ${selected ? "selected" : ""}" data-topic-member="${person.user_id}">
@@ -9667,7 +9823,7 @@
                   </svg>
                 ` : ""}
               </span>
-              <span>${escapeHtml(person.display_name)}</span>
+              <span class="team-member-name">${escapeHtml(person.display_name)}</span>
             </div>
           `;
         }).join("");
@@ -9687,6 +9843,36 @@
           }
 
           renderTopicMemberPicker();
+        });
+      });
+
+      list.querySelectorAll("[data-cancel-topic-invite]").forEach(button => {
+        button.addEventListener("click", async event => {
+          event.stopPropagation();
+          if (!editingTopicTeamId) return;
+
+          const userId = button.dataset.cancelTopicInvite;
+          button.disabled = true;
+
+          const { data, error } = await supabaseClient.rpc("cancel_topic_team_invite", {
+            p_team_id: editingTopicTeamId,
+            p_user_id: userId
+          });
+
+          if (error || !data) {
+            console.error(error);
+            showSiteNotice("Não foi possível cancelar", "O convite não pôde ser cancelado agora.");
+            button.disabled = false;
+            return;
+          }
+
+          selectedTopicMemberIds.delete(userId);
+          editingTopicTeamMemberStatuses.delete(userId);
+          renderTopicMemberPicker();
+          await Promise.all([
+            loadTopicBoardData(),
+            loadInvitationCenter()
+          ]);
         });
       });
     }
@@ -11851,6 +12037,7 @@
       if (!currentUser) return;
       await loadInvitationCenter();
       invitesModal.classList.add("open");
+      await markNotificationMessagesRead();
     });
 
     $("#closeInvitesModal").addEventListener("click", () => {
@@ -11904,6 +12091,7 @@
       topicTeamModal.classList.remove("open");
       editingTopicTeamId = null;
       selectedTopicMemberIds = new Set();
+      editingTopicTeamMemberStatuses = new Map();
       pendingCompletionAfterTeamCreateActivityId = null;
       reopenMyGroupsAfterTeamCreate = false;
     };
@@ -12067,6 +12255,9 @@
       const saveBtn = $("#saveTopicTeamBtn");
       const isEditingTeam = Boolean(editingTopicTeamId);
       const teamIdBeingEdited = editingTopicTeamId;
+      const newlyInvitedIds = [...selectedTopicMemberIds].filter(userId =>
+        !isEditingTeam || !editingTopicTeamMemberStatuses.has(userId)
+      );
       if (!name) return;
 
       saveBtn.disabled = true;
@@ -12100,13 +12291,24 @@
         topicTeamModal.classList.remove("open");
         selectedTopicMemberIds = new Set();
         editingTopicTeamId = null;
+        editingTopicTeamMemberStatuses = new Map();
         pendingCompletionAfterTeamCreateActivityId = null;
         reopenMyGroupsAfterTeamCreate = false;
 
         await Promise.all([
           loadTopicBoardData(),
-          loadTeamInfo()
+          loadTeamInfo(),
+          loadInvitationCenter()
         ]);
+
+        if (newlyInvitedIds.length) {
+          showSiteNotice(
+            "Convite enviado",
+            newlyInvitedIds.length === 1
+              ? "O convite foi enviado."
+              : `${newlyInvitedIds.length} convites foram enviados.`
+          );
+        }
 
         if (isEditingTeam) {
           renderMyGroupsList();
