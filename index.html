@@ -7885,9 +7885,9 @@
             ${selectedCompletionSnapshotMemberIds.has(userId) ? "checked" : ""}
             ${member.pending ? "disabled" : ""} />
           <span class="completion-snapshot-member-name">${escapeHtml(member.name)}</span>
-          ${member.pending
-            ? ""
-            : `<em class="completion-snapshot-member-status">${member.current ? "Membro atual" : "Histórico"}</em>`}
+          ${!member.pending && !member.current
+            ? `<em class="completion-snapshot-member-status">Histórico</em>`
+            : ""}
         </label>
       `).join("");
 
