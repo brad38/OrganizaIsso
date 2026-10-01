@@ -8,6 +8,13 @@
   "display": "standalone",
   "background_color": "#212121",
   "theme_color": "#212121",
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "/manifest.webmanifest",
+      "id": "/"
+    }
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",

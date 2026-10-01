@@ -6789,7 +6789,6 @@
     let currentProfile = null;
     let currentUserRole = null;
     let deferredInstallPrompt = null;
-    const INSTALLED_APP_STORAGE_KEY = "organizaisso-installed-app";
     let professors = [];
     let subjects = [];
     let editingProfessorId = null;
@@ -8363,34 +8362,27 @@
       );
     }
 
-    function hasInstalledAppFlag() {
-      try {
-        return localStorage.getItem(INSTALLED_APP_STORAGE_KEY) === "1";
-      } catch {
-        return false;
+    async function isAppInstalled() {
+      if (isRunningAsInstalledApp()) return true;
+
+      if (typeof navigator.getInstalledRelatedApps === "function") {
+        try {
+          const apps = await navigator.getInstalledRelatedApps();
+          return apps.some(app => app.platform === "webapp");
+        } catch (error) {
+          console.warn("Não foi possível verificar o app instalado:", error);
+        }
       }
+
+      return false;
     }
 
-    function markInstalledApp() {
-      try {
-        localStorage.setItem(INSTALLED_APP_STORAGE_KEY, "1");
-      } catch {}
-    }
-
-    function clearInstalledAppFlag() {
-      try {
-        localStorage.removeItem(INSTALLED_APP_STORAGE_KEY);
-      } catch {}
-    }
-
-    function isAppInstalled() {
-      return isRunningAsInstalledApp() || hasInstalledAppFlag();
-    }
-
-    function syncInstallAppUI() {
+    async function syncInstallAppUI() {
       const section = $("#profileInstallSection");
       if (!section) return;
-      section.hidden = isAppInstalled();
+
+      const installed = await isAppInstalled();
+      section.hidden = installed;
     }
 
     function openInstallHelpModal({ ios = false } = {}) {
@@ -8428,8 +8420,8 @@
     }
 
     async function handleInstallAppClick() {
-      if (isAppInstalled()) {
-        syncInstallAppUI();
+      if (await isAppInstalled()) {
+        await syncInstallAppUI();
         return;
       }
 
@@ -8446,11 +8438,10 @@
         try {
           const choice = await promptEvent.userChoice;
           if (choice?.outcome === "accepted") {
-            markInstalledApp();
+            $("#profileInstallSection").hidden = true;
           }
         } catch {}
 
-        syncInstallAppUI();
         return;
       }
 
@@ -8458,29 +8449,20 @@
     }
 
     function setupInstallExperience() {
-      if (isRunningAsInstalledApp()) {
-        markInstalledApp();
-      }
-
       window.addEventListener("beforeinstallprompt", event => {
         event.preventDefault();
         deferredInstallPrompt = event;
-        clearInstalledAppFlag();
         syncInstallAppUI();
       });
 
       window.addEventListener("appinstalled", () => {
         deferredInstallPrompt = null;
-        markInstalledApp();
-        syncInstallAppUI();
+        $("#profileInstallSection").hidden = true;
         $("#installHelpModal")?.classList.remove("open");
       });
 
       const standaloneQuery = window.matchMedia?.("(display-mode: standalone)");
-      standaloneQuery?.addEventListener?.("change", () => {
-        if (isRunningAsInstalledApp()) markInstalledApp();
-        syncInstallAppUI();
-      });
+      standaloneQuery?.addEventListener?.("change", syncInstallAppUI);
 
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
