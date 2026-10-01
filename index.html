@@ -5181,6 +5181,15 @@
                 Meu perfil
               </button>
 
+              <button class="user-menu-action" id="installAppMenuBtn" type="button" hidden>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 3v12"/>
+                  <path d="m7 10 5 5 5-5"/>
+                  <path d="M5 21h14"/>
+                </svg>
+                Instalar como app
+              </button>
+
               <button class="user-menu-action" id="myGroupsBtn" type="button" hidden>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
@@ -8336,6 +8345,7 @@
 
       $("#userMenuRole").textContent = roleLabel;
       $("#userMenuRole").hidden = !currentUser;
+      syncInstallAppUI();
 
       if (!currentUser) {
         userMenu.classList.remove("open");
@@ -8379,10 +8389,11 @@
 
     async function syncInstallAppUI() {
       const section = $("#profileInstallSection");
-      if (!section) return;
-
+      const menuButton = $("#installAppMenuBtn");
       const installed = await isAppInstalled();
-      section.hidden = installed;
+
+      if (section) section.hidden = installed;
+      if (menuButton) menuButton.hidden = installed || !currentUser;
     }
 
     function openInstallHelpModal({ ios = false } = {}) {
@@ -12339,6 +12350,11 @@
     $("#profileInfoBtn").addEventListener("click", () => {
       closeUserMenu();
       openProfileInfoModal();
+    });
+
+    $("#installAppMenuBtn").addEventListener("click", async () => {
+      closeUserMenu();
+      await handleInstallAppClick();
     });
 
     $("#installAppBtn").addEventListener("click", handleInstallAppClick);
