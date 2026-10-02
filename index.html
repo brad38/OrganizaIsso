@@ -10,6 +10,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Organiza Isso" />
   <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" type="image/png" href="/organiza-isso-logo.png" />
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -147,6 +148,25 @@
       object-fit: contain;
       transform: translateY(-7px) scale(.94);
       transform-origin: center center;
+    }
+
+    .brand-product {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .product-logo {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .brand-copy {
+      min-width: 0;
     }
 
     .user-menu {
@@ -4436,6 +4456,16 @@
         border-radius: 9px;
       }
 
+      .brand-product {
+        gap: 8px;
+      }
+
+      .product-logo {
+        width: 34px;
+        height: 34px;
+        flex-basis: 34px;
+      }
+
       .user-menu {
         width: min(310px, calc(100vw - 20px));
       }
@@ -5229,9 +5259,12 @@
           </div>
         </div>
 
-        <div>
-          <h1>Organiza Isso</h1>
-          <p>Gestão contínua de prazos, disciplinas e atividades de estudo</p>
+        <div class="brand-product">
+          <img class="product-logo" src="/organiza-isso-logo.png" alt="" aria-hidden="true" />
+          <div class="brand-copy">
+            <h1>Organiza Isso</h1>
+            <p>Gestão contínua de prazos, disciplinas e atividades de estudo</p>
+          </div>
         </div>
       </div>
 
