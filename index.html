@@ -5737,19 +5737,18 @@
             <label>Tipo</label>
             <div class="custom-select-container" id="typeDropdown">
               <button type="button" class="custom-select-trigger" id="typeTrigger">
-                <span id="typeLabel">Exercício</span>
+                <span id="typeLabel">Trabalho</span>
                 <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
               </button>
               <div class="custom-select-menu" id="typeMenu">
-                <div class="custom-select-option selected" data-value="Exercício">Exercício</div>
-                <div class="custom-select-option" data-value="Trabalho">Trabalho</div>
+                <div class="custom-select-option selected" data-value="Trabalho">Trabalho</div>
                 <div class="custom-select-option" data-value="Seminário">Seminário</div>
-                <div class="custom-select-option" data-value="Frequência / Exame">Frequência / Exame</div>
+                <div class="custom-select-option" data-value="Prova">Prova</div>
                 <div class="custom-select-option" data-value="Projeto">Projeto</div>
               </div>
-              <input type="hidden" id="actType" value="Exercício" />
+              <input type="hidden" id="actType" value="Trabalho" />
             </div>
           </div>
 
@@ -11498,7 +11497,7 @@
       activityLinkedTopicTempIds = new Set();
 
       setFormDiscipline("");
-      setActivityDropdownValue("#typeMenu", "#actType", "#typeLabel", "Exercício");
+      setActivityDropdownValue("#typeMenu", "#actType", "#typeLabel", "Trabalho");
       setActivityDropdownValue("#modalityMenu", "#actModality", "#modalityLabel", "Individual");
 
       selectedDate = null;
@@ -11544,7 +11543,11 @@
       $("#actTitle").value = activity.title || "";
       setFormDiscipline(activity.subject || "");
       renderActivitySubjectMenu();
-      setActivityDropdownValue("#typeMenu", "#actType", "#typeLabel", activity.type || "Exercício");
+      const normalizedActivityType =
+        activity.type === "Exercício" ? "Trabalho" :
+        activity.type === "Frequência / Exame" ? "Prova" :
+        (activity.type || "Trabalho");
+      setActivityDropdownValue("#typeMenu", "#actType", "#typeLabel", normalizedActivityType);
       setActivityDropdownValue("#modalityMenu", "#actModality", "#modalityLabel", activity.modality || "Individual");
       $("#actPoints").value = activity.points === null || activity.points === undefined ? "" : activity.points;
       $("#actDesc").value = activity.description || "";
