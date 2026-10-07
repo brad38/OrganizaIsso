@@ -22,6 +22,7 @@ self.addEventListener("push", event => {
   const options = {
     body: payload.body || "Você recebeu uma nova notificação.",
     icon: payload.icon || "/organiza-isso-logo.png?v=20261007-2",
+    badge: payload.badge || "/icons/notification-badge-transparent.png?v=20261007-1",
     tag: payload.tag || undefined,
     data: {
       ...(payload.data || {}),
