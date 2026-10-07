@@ -21,8 +21,7 @@ self.addEventListener("push", event => {
   const title = payload.title || "Organiza Isso";
   const options = {
     body: payload.body || "Você recebeu uma nova notificação.",
-    icon: payload.icon || "/icons/icon-192.png",
-    badge: payload.badge || "/icons/icon-192.png",
+    icon: payload.icon || "/organiza-isso-logo.png?v=20261007-2",
     tag: payload.tag || undefined,
     data: {
       ...(payload.data || {}),
