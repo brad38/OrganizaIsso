@@ -5191,6 +5191,14 @@
                 Instalar como app
               </button>
 
+              <button class="user-menu-action" id="pushNotificationsBtn" type="button" hidden>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+                  <path d="M10 21h4"/>
+                </svg>
+                <span id="pushNotificationsLabel">Ativar notificações</span>
+              </button>
+
               <button class="user-menu-action" id="myGroupsBtn" type="button" hidden>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
@@ -6545,6 +6553,35 @@
     </div>
   </div>
 
+  <!-- Modal: ativar notificações -->
+  <div class="modal-backdrop" id="pushPermissionModal">
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <div>
+          <h3>Ativar notificações</h3>
+          <p style="font-size:.76rem;color:var(--muted);margin-top:3px;">
+            Receba avisos de convites, conclusões de atividades e outros eventos importantes.
+          </p>
+        </div>
+        <button class="icon-close" id="closePushPermissionModal" type="button" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.55;">
+        O sistema do seu aparelho vai perguntar se o Organiza Isso pode enviar notificações.
+      </p>
+
+      <div class="modal-foot">
+        <button type="button" class="btn btn-secondary" id="laterPushPermissionBtn">Agora não</button>
+        <button type="button" class="btn btn-primary" id="enablePushPermissionBtn">Ativar notificações</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: meus grupos -->
   <div class="modal-backdrop" id="myGroupsModal">
     <div class="modal" style="max-width:620px;">
@@ -6798,6 +6835,9 @@
     let currentProfile = null;
     let currentUserRole = null;
     let deferredInstallPrompt = null;
+    let pushSyncInFlight = false;
+    const WEB_PUSH_VAPID_PUBLIC_KEY = "BE1Bz3LLKORctkAl9Sbk8Lu6rVDdvevB9Yudw4q5l72vIrdoGJsSuJmdNTRf4ZWQeQycW6udhXd5j_jAVfMZICg";
+    const PUSH_PROMPT_SESSION_KEY = "organizaisso_push_prompt_seen";
     let professors = [];
     let subjects = [];
     let editingProfessorId = null;
@@ -8346,6 +8386,7 @@
       $("#userMenuRole").textContent = roleLabel;
       $("#userMenuRole").hidden = !currentUser;
       syncInstallAppUI();
+      syncPushNotificationUI();
 
       if (!currentUser) {
         userMenu.classList.remove("open");
@@ -8477,13 +8518,193 @@
 
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
-          navigator.serviceWorker.register("/sw.js").catch(error => {
-            console.error("Falha ao registrar service worker:", error);
-          });
+          navigator.serviceWorker.register("/sw.js")
+            .then(registration => registration.update())
+            .catch(error => {
+              console.error("Falha ao registrar service worker:", error);
+            });
         }, { once: true });
       }
 
       syncInstallAppUI();
+    }
+
+    function isPushSupported() {
+      return Boolean(
+        "serviceWorker" in navigator &&
+        "PushManager" in window &&
+        "Notification" in window
+      );
+    }
+
+    function urlBase64ToUint8Array(value) {
+      const padding = "=".repeat((4 - value.length % 4) % 4);
+      const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");
+      const raw = atob(base64);
+      return Uint8Array.from([...raw].map(char => char.charCodeAt(0)));
+    }
+
+    async function savePushSubscription(subscription) {
+      if (!currentUser || !subscription) return;
+
+      const json = subscription.toJSON();
+      const p256dh = json.keys?.p256dh;
+      const auth = json.keys?.auth;
+      if (!json.endpoint || !p256dh || !auth) {
+        throw new Error("Assinatura de push incompleta.");
+      }
+
+      const { error } = await supabaseClient
+        .from("push_subscriptions")
+        .upsert({
+          user_id: currentUser.id,
+          endpoint: json.endpoint,
+          p256dh,
+          auth,
+          user_agent: navigator.userAgent
+        }, { onConflict: "endpoint" });
+
+      if (error) throw error;
+    }
+
+    async function getCurrentPushSubscription() {
+      if (!isPushSupported()) return null;
+      const registration = await navigator.serviceWorker.ready;
+      return registration.pushManager.getSubscription();
+    }
+
+    async function syncPushNotificationUI() {
+      const button = $("#pushNotificationsBtn");
+      const label = $("#pushNotificationsLabel");
+      if (!button || !label) return;
+
+      if (!currentUser) {
+        button.hidden = true;
+        return;
+      }
+
+      if (isIOSDevice() && !isRunningAsInstalledApp()) {
+        button.hidden = false;
+        label.textContent = "Ativar notificações";
+        return;
+      }
+
+      if (!isPushSupported()) {
+        button.hidden = true;
+        return;
+      }
+
+      button.hidden = false;
+
+      if (Notification.permission === "denied") {
+        label.textContent = "Notificações bloqueadas";
+        return;
+      }
+
+      if (Notification.permission === "granted") {
+        try {
+          const subscription = await getCurrentPushSubscription();
+          if (subscription) {
+            await savePushSubscription(subscription);
+            label.textContent = "Notificações ativas";
+            return;
+          }
+        } catch (error) {
+          console.error("Falha ao sincronizar notificações:", error);
+        }
+      }
+
+      label.textContent = "Ativar notificações";
+    }
+
+    async function enablePushNotifications() {
+      if (!currentUser || pushSyncInFlight) return;
+
+      if (isIOSDevice() && !isRunningAsInstalledApp()) {
+        openInstallHelpModal({ ios: true });
+        return;
+      }
+
+      if (!isPushSupported()) {
+        alert("Este navegador não oferece suporte a notificações push neste dispositivo.");
+        return;
+      }
+
+      if (Notification.permission === "denied") {
+        alert("As notificações estão bloqueadas nas configurações do aparelho ou navegador. Libere o Organiza Isso nas configurações de notificações e tente novamente.");
+        return;
+      }
+
+      pushSyncInFlight = true;
+      const buttons = [$("#pushNotificationsBtn"), $("#enablePushPermissionBtn")].filter(Boolean);
+      buttons.forEach(button => button.disabled = true);
+
+      try {
+        const permission = Notification.permission === "granted"
+          ? "granted"
+          : await Notification.requestPermission();
+
+        if (permission !== "granted") {
+          await syncPushNotificationUI();
+          return;
+        }
+
+        const registration = await navigator.serviceWorker.ready;
+        let subscription = await registration.pushManager.getSubscription();
+
+        if (!subscription) {
+          subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(WEB_PUSH_VAPID_PUBLIC_KEY)
+          });
+        }
+
+        await savePushSubscription(subscription);
+        $("#pushPermissionModal")?.classList.remove("open");
+        await syncPushNotificationUI();
+
+        await registration.showNotification("Organiza Isso", {
+          body: "Notificações ativadas neste aparelho.",
+          icon: "/icons/icon-192.png",
+          badge: "/icons/icon-192.png",
+          tag: "push-enabled",
+          data: { url: "/" }
+        });
+      } catch (error) {
+        console.error("Falha ao ativar notificações:", error);
+        alert("Não foi possível ativar as notificações neste aparelho.");
+      } finally {
+        pushSyncInFlight = false;
+        buttons.forEach(button => button.disabled = false);
+      }
+    }
+
+    async function detachPushSubscriptionFromCurrentUser() {
+      if (!currentUser || !isPushSupported() || Notification.permission !== "granted") return;
+
+      try {
+        const subscription = await getCurrentPushSubscription();
+        if (!subscription) return;
+        await supabaseClient
+          .from("push_subscriptions")
+          .delete()
+          .eq("user_id", currentUser.id)
+          .eq("endpoint", subscription.endpoint);
+      } catch (error) {
+        console.error("Falha ao desvincular notificações:", error);
+      }
+    }
+
+    async function maybeOfferPushPermission() {
+      if (!currentUser || !isPushSupported() || Notification.permission !== "default") return;
+      if (isIOSDevice() && !isRunningAsInstalledApp()) return;
+
+      try {
+        if (sessionStorage.getItem(PUSH_PROMPT_SESSION_KEY) === "1") return;
+        sessionStorage.setItem(PUSH_PROMPT_SESSION_KEY, "1");
+      } catch {}
+
+      setTimeout(() => $("#pushPermissionModal")?.classList.add("open"), 450);
     }
 
     function openProfileInfoModal() {
@@ -12370,6 +12591,19 @@
     $("#closeInstallHelpModal").addEventListener("click", closeInstallHelpModal);
     $("#closeInstallHelpBtn").addEventListener("click", closeInstallHelpModal);
 
+    $("#pushNotificationsBtn").addEventListener("click", async () => {
+      closeUserMenu();
+      await enablePushNotifications();
+    });
+
+    const closePushPermissionModal = () => {
+      $("#pushPermissionModal").classList.remove("open");
+    };
+
+    $("#closePushPermissionModal").addEventListener("click", closePushPermissionModal);
+    $("#laterPushPermissionBtn").addEventListener("click", closePushPermissionModal);
+    $("#enablePushPermissionBtn").addEventListener("click", enablePushNotifications);
+
     $("#myGroupsBtn").addEventListener("click", async () => {
       closeUserMenu();
       await openMyGroupsModal();
@@ -13489,6 +13723,7 @@
       closeUserMenu();
       $("#logoutBtn").disabled = true;
       try {
+        await detachPushSubscriptionFromCurrentUser();
         await supabaseClient.auth.signOut();
       } finally {
         $("#logoutBtn").disabled = false;
@@ -13937,6 +14172,8 @@
 
       await loadCurrentProfile();
       updateAuthUI();
+      await syncPushNotificationUI();
+      maybeOfferPushPermission();
       await subscribeToCompletionRealtime();
       await subscribeToTopicRealtime();
       await subscribeToInvitationRealtime();
@@ -14152,6 +14389,8 @@
 
       await loadCurrentProfile();
       updateAuthUI();
+      await syncPushNotificationUI();
+      maybeOfferPushPermission();
 
       if (!currentUser && new URLSearchParams(window.location.search).get("signup") === "1") {
         openSignupSheet();
