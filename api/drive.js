@@ -31,6 +31,49 @@ function extractDataset(html, key) {
   }
 }
 
+function findFolderDataset(html) {
+  const keys = [...html.matchAll(/AF_initDataCallback\(\{key:\s*'([^']+)'/g)]
+    .map(match => match[1]);
+
+  let bestData = null;
+  let bestCount = 0;
+
+  const countDriveItems = value => {
+    let count = 0;
+
+    const walk = current => {
+      if (!Array.isArray(current)) return;
+
+      if (
+        Array.isArray(current[0]) &&
+        typeof current[0]?.[1] === "string" &&
+        typeof current[4] === "string" &&
+        current[4].includes("/")
+      ) {
+        count += 1;
+      }
+
+      current.forEach(walk);
+    };
+
+    walk(value);
+    return count;
+  };
+
+  for (const key of [...new Set(keys)]) {
+    const data = extractDataset(html, key);
+    if (!data) continue;
+
+    const count = countDriveItems(data);
+    if (count > bestCount) {
+      bestData = data;
+      bestCount = count;
+    }
+  }
+
+  return bestData;
+}
+
 function getItemName(item) {
   const direct = item?.[24]?.[2]?.[0]?.[2]?.[1]?.[0]?.[0]?.[0];
   if (typeof direct === "string" && direct.trim()) return direct.trim();
@@ -130,7 +173,7 @@ function fileLabel(mimeType) {
 }
 
 function parseFolderPage(html, fallbackName) {
-  const data = extractDataset(html, "ds:4");
+  const data = findFolderDataset(html);
   if (!data) throw new Error("Estrutura pública do Google Drive não reconhecida.");
 
   const titleData = extractDataset(html, "ds:1");
