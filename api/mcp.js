@@ -135,18 +135,13 @@ export default async function handler(req, res) {
   const request = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
   if (!request || request.jsonrpc !== "2.0" || typeof request.method !== "string") return res.status(400).json(err(request?.id ?? null, -32600, "Invalid Request"));
   if (request.method === "notifications/initialized") return res.status(202).end();
-  if (request.method === "initialize") return res.status(200).json(reply(request.id, {
-    protocolVersion: VERSION, capabilities: { tools: { listChanged: false } },
-    serverInfo: { name: "organiza-isso", version: "0.1.0" },
-    instructions: "Ferramentas de atividade do Organiza Isso. Antes de ações de escrita, confirme IDs, prazo, grupo/dupla e solicite aprovação explícita."
-  }));
-  if (request.method === "ping") return res.status(200).json(reply(request.id, {}));
 
-  // O cliente MCP deve apresentar um token da própria pessoa (Supabase Auth).
-  // Nunca é aceito service_role, chave de app ou identidade fornecida no payload.
+  // O cliente MCP precisa de um JWT de usuario emitido pelo Supabase OAuth 2.1.
+  // Nunca aceite credenciais administrativas ou identidade recebida nos argumentos.
+  const authChallenge = 'Bearer resource_metadata="https://organizaisso.vercel.app/api/mcp/oauth-protected-resource"';
   const match = /^Bearer\s+(.+)$/i.exec(req.headers.authorization || "");
   if (!match) {
-    res.setHeader("WWW-Authenticate", 'Bearer realm="Organiza Isso"');
+    res.setHeader("WWW-Authenticate", authChallenge);
     return res.status(401).json(err(request.id ?? null, -32001, "Autenticação necessária."));
   }
   const token = match[1].trim();
@@ -155,8 +150,17 @@ export default async function handler(req, res) {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
   });
   const { data: auth, error: authError } = await db.auth.getUser(token);
-  if (authError || !auth?.user || auth.user.is_anonymous) return res.status(401).json(err(request.id ?? null, -32001, "Sessão inválida."));
+  if (authError || !auth?.user || auth.user.is_anonymous) {
+    res.setHeader("WWW-Authenticate", authChallenge);
+    return res.status(401).json(err(request.id ?? null, -32001, "Sessão inválida."));
+  }
 
+  if (request.method === "initialize") return res.status(200).json(reply(request.id, {
+    protocolVersion: VERSION, capabilities: { tools: { listChanged: false } },
+    serverInfo: { name: "organiza-isso", version: "0.1.0" },
+    instructions: "Ferramentas de atividade do Organiza Isso. Antes de ações de escrita, confirme IDs, prazo, grupo/dupla e solicite aprovação explícita."
+  }));
+  if (request.method === "ping") return res.status(200).json(reply(request.id, {}));
   if (request.method === "tools/list") return res.status(200).json(reply(request.id, { tools }));
   if (request.method === "tools/call") {
     const name = request.params?.name;

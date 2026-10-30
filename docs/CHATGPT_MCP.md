@@ -10,8 +10,8 @@
 
 ## Pendente para funcionar em ChatGPT Plus
 1. **Disponibilizar o host do plugin no ChatGPT Sites.** A ferramenta de publicação do Sites não está conectada nesta sessão. A existência de `/api/mcp` por si só não cria um plugin instalável no Plus.
-2. **Habilitar OAuth 2.1 Server no Supabase (dashboard > Authentication > OAuth Server)**. No momento a URL de descoberta OAuth do projeto responde 404.
-3. Configurar uma tela de consentimento OAuth no domínio Organiza Isso e o caminho de autorização na configuração do Supabase.
+2. **Habilitar OAuth 2.1 Server no Supabase (dashboard > Authentication > OAuth Server)**. No momento a URL de descoberta OAuth do projeto responde 404. Definir o caminho de autorização como `/oauth-consent.html` (exposto em `https://organizaisso.vercel.app/oauth-consent.html`); manter Site URL `https://organizaisso.vercel.app`. Habilitar registro dinâmico de clientes somente após revisar políticas de consentimento.
+3. A tela de consentimento OAuth foi criada e publicada junto com o site, mas **não foi validada em uma concessão OAuth real** até o servidor de OAuth estar ativado. O recurso protegido é descrito em `/api/mcp/oauth-protected-resource`.
 4. Testar login por conta existente, expiração e renovação dos tokens, limites de autorização e tentativas sem permissão.
 5. Publicar/instalar o plugin no ChatGPT Sites e validar ferramentas de leitura/escrita com uma conta de teste.
 

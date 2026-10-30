@@ -15,6 +15,7 @@ export default defineConfig({
         cadastro: resolve(process.cwd(), 'cadastro.html'),
         termos: resolve(process.cwd(), 'termos.html'),
         privacidade: resolve(process.cwd(), 'privacidade.html'),
+        oauthConsent: resolve(process.cwd(), 'oauth-consent.html'),
       },
     },
   },

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Autorizar ChatGPT · Organiza Isso</title>
+  <meta name="theme-color" content="#212121" />
+  <style>
+    :root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+    *{box-sizing:border-box}
+    body{background:#181818;color:#f2f0ec;min-height:100vh;margin:0;display:grid;place-items:center;padding:24px}
+    main{background:#252525;border:1px solid #404040;border-radius:14px;padding:26px;max-width:470px;width:100%}
+    h1{font-size:1.35rem;margin:0 0 10px}
+    p,li{color:#c7c5c0;font-size:.93rem;line-height:1.6}
+    .overline{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#a9a8a3;margin-bottom:9px}
+    .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+    button,a.button{border-radius:7px;border:1px solid #505050;background:#343434;color:#fff;min-height:42px;padding:10px 16px;font:inherit;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+    button.primary{background:#e7e4df;color:#1c1c1c;border-color:#e7e4df;font-weight:650}
+    button:disabled{opacity:.6;cursor:wait}
+    .error{color:#ffadad}
+  </style>
+</head>
+<body>
+<main>
+  <div class="overline">Organiza Isso · Conexão externa</div>
+  <h1>Autorizar acesso ao Organiza Isso</h1>
+  <p id="status">Verificando sua conta e o pedido de autorização…</p>
+  <div id="details" hidden>
+    <p>O aplicativo <strong id="clientName"></strong> solicita acesso para consultar suas atividades e executar ações permitidas à sua conta.</p>
+    <p>Escopos solicitados: <span id="scopes"></span></p>
+    <p>Revise pedidos de cadastro e conclusão antes de autorizá-los no ChatGPT. Você pode negar esta conexão.</p>
+    <div class="btnrow">
+      <button class="primary" id="approve">Autorizar</button>
+      <button id="deny">Negar</button>
+    </div>
+  </div>
+  <div id="signin" hidden>
+    <p>Primeiro entre na sua conta no Organiza Isso. O site abrirá em outra aba; depois volte aqui e clique em Verificar novamente.</p>
+    <div class="btnrow">
+      <a class="button" target="_blank" rel="noopener" href="/">Abrir Organiza Isso</a>
+      <button id="retry">Verificar novamente</button>
+    </div>
+  </div>
+</main>
+<script type="module">
+  import { createClient } from "@supabase/supabase-js";
+
+  const authId = new URLSearchParams(location.search).get("authorization_id");
+  const status = document.getElementById("status");
+  const details = document.getElementById("details");
+  const signin = document.getElementById("signin");
+  const approve = document.getElementById("approve");
+  const deny = document.getElementById("deny");
+  const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
+  function fail(msg) { status.className = "error"; status.textContent = msg; }
+  function proceed(url) {
+    const target = new URL(url);
+    if (!["https:", "http:"].includes(target.protocol)) throw new Error("Destino de autorização inválido.");
+    window.location.assign(target.toString());
+  }
+  async function load() {
+    if (!authId) return fail("O pedido de autorização não foi encontrado.");
+    details.hidden = true;
+    signin.hidden = true;
+    status.className = "";
+    status.textContent = "Verificando sua conta…";
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) {
+        signin.hidden = false;
+        status.textContent = "Você precisa entrar na sua conta para continuar.";
+        return;
+      }
+      const { data, error } = await supabase.auth.oauth.getAuthorizationDetails(authId);
+      if (error) throw error;
+      if (!data) throw new Error("Pedido de autorização expirado ou inválido.");
+      document.getElementById("clientName").textContent = data.client?.name || data.client?.client_name || "ChatGPT";
+      document.getElementById("scopes").textContent = data.scope || "acesso autorizado à conta";
+      status.textContent = "Conectado. Revise o aplicativo antes de conceder acesso.";
+      details.hidden = false;
+    } catch (e) {
+      fail("Não foi possível carregar a autorização: " + (e?.message || "erro desconhecido"));
+    }
+  }
+  async function decide(action) {
+    approve.disabled = true;
+    deny.disabled = true;
+    status.className = "";
+    status.textContent = action === "approve" ? "Autorizando…" : "Negando…";
+    try {
+      const method = action === "approve" ? "approveAuthorization" : "denyAuthorization";
+      const { data, error } = await supabase.auth.oauth[method](authId);
+      if (error) throw error;
+      if (!data?.redirect_url) throw new Error("Resposta sem URL de redirecionamento.");
+      proceed(data.redirect_url);
+    } catch (e) {
+      fail("Falha ao responder: " + (e?.message || "erro desconhecido"));
+      approve.disabled = false;
+      deny.disabled = false;
+    }
+  }
+  approve.addEventListener("click", () => decide("approve"));
+  deny.addEventListener("click", () => decide("deny"));
+  document.getElementById("retry").addEventListener("click", load);
+  load();
+</script>
+</body>
+</html>
