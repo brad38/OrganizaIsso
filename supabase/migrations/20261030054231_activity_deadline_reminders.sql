@@ -93,3 +93,13 @@ select cron.schedule(
   '0 11-23 * * *',
   $cron$select app_private.queue_activity_deadline_push();$cron$
 );
+
+-- Funcoes internas de disparo de push nao devem ser acessiveis via REST/RPC.
+revoke execute on function public.send_direct_web_push(uuid, text, text, text, jsonb)
+  from public, anon, authenticated;
+revoke execute on function public.dispatch_user_notification_push()
+  from public, anon, authenticated;
+revoke execute on function public.push_activity_team_invite()
+  from public, anon, authenticated;
+revoke execute on function public.push_topic_team_invite()
+  from public, anon, authenticated;
