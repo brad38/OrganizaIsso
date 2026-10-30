@@ -13,7 +13,26 @@ const tools = [
   { name: "listar_notificacoes", title: "Minhas notificações", description: "Mostra as notificações da conta atual no Organiza Isso.", inputSchema: { type: "object", properties: { limite: property("integer", "Máximo de 50 notificações", { minimum: 1, maximum: 50 }) }, additionalProperties: false } },
   { name: "criar_atividade", title: "Cadastrar uma atividade", description: "AÇÃO DE ESCRITA. Cria uma atividade global. Somente contas owner/admin/editor podem cadastrar. Confirme explicitamente os dados com o usuário antes de chamar.", inputSchema: { type: "object", properties: { titulo: property("string", "Título da atividade"), disciplina: property("string", "Disciplina exatamente como cadastrada"), tipo: property("string", "Trabalho, Seminário, Prova ou Projeto", { enum: ["Trabalho", "Seminário", "Prova", "Projeto"] }), modalidade: property("string", "Modalidade", { enum: ["Individual", "Em dupla", "Em grupo"] }), prazo: property("string", "Data/hora ISO 8601 com offset explícito, por exemplo 2026-11-02T19:00:00-03:00"), pontos: property("number", "Pontuação da atividade, se houver"), descricao: property("string", "Descrição opcional"), confirmado: property("boolean", "Deve ser true somente depois de o usuário confirmar os dados") }, required: ["titulo", "disciplina", "tipo", "modalidade", "prazo", "confirmado"], additionalProperties: false } },
   { name: "concluir_atividade", title: "Marcar atividade como concluída", description: "AÇÃO DE ESCRITA. Marca conclusão individual, em dupla ou grupo, respeitando a modalidade original. Use listar_atividades, listar_pessoas ou listar_grupos para confirmar IDs e solicite autorização antes da ação.", inputSchema: { type: "object", properties: { atividade_id: property("string", "UUID exato da atividade"), parceiro_id: property("string", "UUID do colega, obrigatório apenas para Em dupla"), grupo_id: property("string", "UUID do grupo, obrigatório apenas para Em grupo"), confirmado: property("boolean", "Deve ser true depois da confirmação explícita da pessoa") }, required: ["atividade_id", "confirmado"], additionalProperties: false } }
-];
+].map(tool => ({
+  ...tool,
+  securitySchemes: [{ type: "oauth2", scopes: [] }],
+  annotations: {
+    readOnlyHint: !["criar_atividade", "concluir_atividade"].includes(tool.name),
+    destructiveHint: false,
+    openWorldHint: false
+  }
+}));
+
+const RESOURCE_METADATA_URL = "https://organizaisso.vercel.app/api/mcp/oauth-protected-resource";
+function authenticationChallenge(reason = "Autorização necessária para usar o Organiza Isso.") {
+  return `Bearer resource_metadata="${RESOURCE_METADATA_URL}", error="invalid_token", error_description="${reason}"`;
+}
+function authToolError(message) {
+  return {
+    ...failure(message),
+    _meta: { "mcp/www_authenticate": [authenticationChallenge()] }
+  };
+}
 
 function reply(id, result) { return { jsonrpc: "2.0", id, result }; }
 function err(id, code, message) { return { jsonrpc: "2.0", id, error: { code, message } }; }
@@ -136,14 +155,28 @@ export default async function handler(req, res) {
   if (!request || request.jsonrpc !== "2.0" || typeof request.method !== "string") return res.status(400).json(err(request?.id ?? null, -32600, "Invalid Request"));
   if (request.method === "notifications/initialized") return res.status(202).end();
 
-  // O cliente MCP precisa de um JWT de usuario emitido pelo Supabase OAuth 2.1.
-  // Nunca aceite credenciais administrativas ou identidade recebida nos argumentos.
-  const authChallenge = 'Bearer resource_metadata="https://organizaisso.vercel.app/api/mcp/oauth-protected-resource"';
+  // Descoberta MCP nao pode exigir autenticacao: ChatGPT precisa conhecer as
+  // ferramentas e securitySchemes antes de apresentar a conexao OAuth.
+  if (request.method === "initialize") return res.status(200).json(reply(request.id, {
+    protocolVersion: VERSION, capabilities: { tools: { listChanged: false } },
+    serverInfo: { name: "organiza-isso", version: "0.2.0" },
+    instructions: "Ações de escrita exigem confirmação explícita. Cada ferramenta requer login OAuth no Organiza Isso."
+  }));
+  if (request.method === "ping") return res.status(200).json(reply(request.id, {}));
+  if (request.method === "tools/list") return res.status(200).json(reply(request.id, { tools }));
+  if (request.method !== "tools/call") return res.status(200).json(err(request.id, -32601, "Método não suportado."));
+
+  const name = request.params?.name;
+  const args = request.params?.arguments || {};
+  if (!tools.some(tool => tool.name === name)) return res.status(200).json(err(request.id, -32602, "Ferramenta desconhecida."));
+
+  // As operações efetivas continuam protegidas pelo token do usuário.
   const match = /^Bearer\s+(.+)$/i.exec(req.headers.authorization || "");
   if (!match) {
-    res.setHeader("WWW-Authenticate", authChallenge);
-    return res.status(401).json(err(request.id ?? null, -32001, "Autenticação necessária."));
+    res.setHeader("WWW-Authenticate", authenticationChallenge());
+    return res.status(200).json(reply(request.id, authToolError("Conecte sua conta do Organiza Isso para continuar.")));
   }
+
   const token = match[1].trim();
   const db = createClient(SUPABASE_URL, SUPABASE_KEY, {
     global: { headers: { Authorization: "Bearer " + token } },
@@ -151,28 +184,15 @@ export default async function handler(req, res) {
   });
   const { data: auth, error: authError } = await db.auth.getUser(token);
   if (authError || !auth?.user || auth.user.is_anonymous) {
-    res.setHeader("WWW-Authenticate", authChallenge);
-    return res.status(401).json(err(request.id ?? null, -32001, "Sessão inválida."));
+    res.setHeader("WWW-Authenticate", authenticationChallenge());
+    return res.status(200).json(reply(request.id, authToolError("A autorização expirou ou é inválida. Conecte novamente.")));
   }
 
-  if (request.method === "initialize") return res.status(200).json(reply(request.id, {
-    protocolVersion: VERSION, capabilities: { tools: { listChanged: false } },
-    serverInfo: { name: "organiza-isso", version: "0.1.0" },
-    instructions: "Ferramentas de atividade do Organiza Isso. Antes de ações de escrita, confirme IDs, prazo, grupo/dupla e solicite aprovação explícita."
-  }));
-  if (request.method === "ping") return res.status(200).json(reply(request.id, {}));
-  if (request.method === "tools/list") return res.status(200).json(reply(request.id, { tools }));
-  if (request.method === "tools/call") {
-    const name = request.params?.name;
-    const args = request.params?.arguments || {};
-    if (!tools.some(tool => tool.name === name)) return res.status(200).json(err(request.id, -32602, "Ferramenta desconhecida."));
-    try {
-      const data = await run(name, args, db, auth.user);
-      return res.status(200).json(reply(request.id, textResult(data)));
-    } catch (e) {
-      console.error("mcp tool error", name, e?.code || e?.message);
-      return res.status(200).json(reply(request.id, failure(e?.message || "Erro ao executar ação.")));
-    }
+  try {
+    const data = await run(name, args, db, auth.user);
+    return res.status(200).json(reply(request.id, textResult(data)));
+  } catch (e) {
+    console.error("mcp tool error", name, e?.code || e?.message);
+    return res.status(200).json(reply(request.id, failure(e?.message || "Erro ao executar ação.")));
   }
-  return res.status(200).json(err(request.id, -32601, "Método não suportado."));
 }
