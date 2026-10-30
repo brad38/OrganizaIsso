@@ -115,8 +115,21 @@ async function prepareCompletion(args, db, id) {
       estado: "ESCOLHER_PESSOA",
       mensagem: "Mais de uma conta tem o nome " + name + ". Use listar_pessoas e escolha o ID correto antes de continuar."
     };
-    if (matching.length) found.push({ nome: name, id: matching[0].user_id });
-    else unknown.push(name);
+    if (matching.length) {
+      found.push({ nome: name, id: matching[0].user_id });
+    } else {
+      const term = name.toLocaleLowerCase("pt-BR");
+      const candidates = (directory.data || []).filter(row => {
+        const display = row.display_name.trim().toLocaleLowerCase("pt-BR");
+        return display.includes(term) || term.includes(display);
+      });
+      if (candidates.length) return {
+        estado: "ESCOLHER_PESSOA",
+        mensagem: "O nome " + name + " pode corresponder a uma conta cadastrada. Confirme a identidade antes de tratar como pessoa sem cadastro.",
+        candidatos: candidates.map(x => ({id:x.user_id, nome:x.display_name}))
+      };
+      unknown.push(name);
+    }
   }
   if (unknown.length && typeof args.incluir_nomes_na_descricao !== "boolean") {
     return {
