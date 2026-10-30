@@ -12,10 +12,10 @@ const tools = [
   { name: "listar_pessoas", title: "Listar colegas", description: "Lista usuários disponíveis para selecionar a dupla pelo nome e ID, sem presumir identidade quando nomes se repetem.", inputSchema: { type: "object", properties: { busca: property("string", "Nome a pesquisar") }, additionalProperties: false } },
   { name: "listar_notificacoes", title: "Minhas notificações", description: "Mostra as notificações da conta atual no Organiza Isso.", inputSchema: { type: "object", properties: { limite: property("integer", "Máximo de 50 notificações", { minimum: 1, maximum: 50 }) }, additionalProperties: false } },
   { name: "verificar_permissao_cadastro", title: "Verificar permissão para cadastrar", description: "Use PRIMEIRO quando a pessoa pedir para cadastrar uma atividade, antes de pedir qualquer campo. Confere na conta autenticada se ela pode cadastrar; se pode_cadastrar=false, informe e não continue. Consulta de leitura, não cadastra.", inputSchema: { type: "object", properties: {}, additionalProperties: false } },
-  { name: "preparar_atividade", title: "Preparar cadastro", description: "Valida os campos obrigatórios e gera uma proposta para aprovação no site. NÃO cadastra nada. Depois que a pessoa aprovar no navegador, chame confirmar_acao.", inputSchema: { type: "object", properties: { titulo: property("string", "Título da atividade"), disciplina: property("string", "Disciplina"), tipo: property("string", "Tipo", { enum: ["Trabalho", "Seminário", "Prova", "Projeto"] }), modalidade: property("string", "Modalidade", { enum: ["Individual", "Em dupla", "Em grupo"] }), prazo: property("string", "Data/hora ISO com fuso explícito"), pontos: property("number", "Pontuação opcional"), descricao: property("string", "Descrição opcional") }, required: ["titulo", "disciplina", "tipo", "modalidade", "prazo"], additionalProperties: false } },
-  { name: "preparar_edicao", title: "Preparar edição", description: "Edita título e/ou descrição de uma atividade existente, preservando ID, prazo, pontuação, modalidade e membros. Exige owner/admin/editor e aprovação no site. NÃO cria uma segunda atividade. Localize primeiro o ID por listar_atividades.", inputSchema: { type: "object", properties: { atividade_id: property("string", "UUID da atividade existente"), novo_titulo: property("string", "Novo título; omitir se não mudar"), nova_descricao: property("string", "Nova descrição; omitir se não mudar; vazia para apagar") }, required: ["atividade_id"], additionalProperties: false } },
-  { name: "preparar_conclusao", title: "Preparar conclusão", description: "Confere modalidade, colegas cadastrados e não cadastrados, prepara descrição personalizada e pede aprovação no site antes de registrar. NÃO conclui nada. Se houver pessoas sem conta, pergunte se os nomes devem entrar na descrição personalizada opcional e só então envie incluir_nomes_na_descricao. Pessoas sem conta nunca recebem conclusão como membros.", inputSchema: { type: "object", properties: { atividade_id: property("string", "UUID da atividade"), nomes_colegas: property("array", "Nomes informados pelo usuário para verificar cadastro", { items: { type: "string" } }), parceiro_id: property("string", "UUID do colega cadastrado para dupla"), grupo_id: property("string", "UUID do grupo existente"), incluir_nomes_na_descricao: property("boolean", "Resposta explícita do usuário sobre incluir nomes de pessoas sem cadastro na descrição opcional"), conclusao_apenas_minha: property("boolean", "Usuário concordou expressamente em registrar apenas sua própria conclusão quando dupla/grupo não pode ser vinculado"), descricao_personalizada: property("string", "Texto opcional do trabalho privado") }, required: ["atividade_id"], additionalProperties: false } },
-  { name: "confirmar_acao", title: "Executar ação aprovada", description: "Finaliza a criação, edição ou conclusão de uma proposta APROVADA no site pelo próprio usuário. Não aceita dados livres nem confirmado=true.", inputSchema: { type: "object", properties: { proposta_id: property("string", "UUID gerado pela ferramenta preparar_atividade ou preparar_conclusao") }, required: ["proposta_id"], additionalProperties: false } }
+  { name: "preparar_atividade", title: "Preparar cadastro", description: "Valida os campos e prepara o cadastro, SEM gravar. Mostre o resumo e pergunte se a pessoa CONFIRMA NA CONVERSA. Só após uma resposta afirmativa explícita use confirmar_acao com confirmado_na_conversa=true.", inputSchema: { type: "object", properties: { titulo: property("string", "Título da atividade"), disciplina: property("string", "Disciplina"), tipo: property("string", "Tipo", { enum: ["Trabalho", "Seminário", "Prova", "Projeto"] }), modalidade: property("string", "Modalidade", { enum: ["Individual", "Em dupla", "Em grupo"] }), prazo: property("string", "Data/hora ISO com fuso explícito"), pontos: property("number", "Pontuação opcional"), descricao: property("string", "Descrição opcional") }, required: ["titulo", "disciplina", "tipo", "modalidade", "prazo"], additionalProperties: false } },
+  { name: "preparar_edicao", title: "Preparar edição", description: "Edita título e/ou descrição de uma atividade existente, preservando ID, prazo, pontuação, modalidade e membros. Exige owner/admin/editor e confirmação na conversa antes de executar. NÃO cria uma segunda atividade. Localize primeiro o ID por listar_atividades.", inputSchema: { type: "object", properties: { atividade_id: property("string", "UUID da atividade existente"), novo_titulo: property("string", "Novo título; omitir se não mudar"), nova_descricao: property("string", "Nova descrição; omitir se não mudar; vazia para apagar") }, required: ["atividade_id"], additionalProperties: false } },
+  { name: "preparar_conclusao", title: "Preparar conclusão", description: "Confere modalidade, colegas cadastrados e não cadastrados, prepara descrição personalizada e pede confirmação na própria conversa antes de registrar. NÃO conclui nada. Se houver pessoas sem conta, pergunte se os nomes devem entrar na descrição personalizada opcional e só então envie incluir_nomes_na_descricao. Pessoas sem conta nunca recebem conclusão como membros.", inputSchema: { type: "object", properties: { atividade_id: property("string", "UUID da atividade"), nomes_colegas: property("array", "Nomes informados pelo usuário para verificar cadastro", { items: { type: "string" } }), parceiro_id: property("string", "UUID do colega cadastrado para dupla"), grupo_id: property("string", "UUID do grupo existente"), incluir_nomes_na_descricao: property("boolean", "Resposta explícita do usuário sobre incluir nomes de pessoas sem cadastro na descrição opcional"), conclusao_apenas_minha: property("boolean", "Usuário concordou expressamente em registrar apenas sua própria conclusão quando dupla/grupo não pode ser vinculado"), descricao_personalizada: property("string", "Texto opcional do trabalho privado") }, required: ["atividade_id"], additionalProperties: false } },
+  { name: "confirmar_acao", title: "Executar ação aprovada", description: "Finaliza a criação, edição ou conclusão SOMENTE quando o usuário confirmou explicitamente o resumo na conversa. Não abre outra aba. Nunca configure confirmado_na_conversa=true com base somente em pedido inicial, dados preenchidos ou confirmação genérica anterior.", inputSchema: { type: "object", properties: { proposta_id: property("string", "UUID retornado por preparar_atividade, preparar_edicao ou preparar_conclusao"), confirmado_na_conversa: property("boolean", "true SOMENTE após o usuário confirmar explicitamente o resumo desta proposta na conversa") }, required: ["proposta_id", "confirmado_na_conversa"], additionalProperties: false } }
 ].map(tool => ({
   ...tool,
   securitySchemes: [{ type: "oauth2", scopes: [] }],
@@ -55,21 +55,17 @@ function clampText(value, max, label) {
   if (result.length > max) throw new Error(label + " é muito longo.");
   return result;
 }
-function approvalUrl(id) {
-  return "https://organizaisso.vercel.app/confirm-action.html?id=" + encodeURIComponent(id);
-}
 async function prepare(db, userId, actionType, payload, summary) {
   const { data, error } = await db.from("mcp_pending_actions")
     .insert({ user_id: userId, action_type: actionType, payload, summary })
     .select("id,expires_at").single();
   if (error) throw error;
   return {
-    estado: "AGUARDANDO_APROVACAO_NO_SITE",
+    estado: "AGUARDANDO_CONFIRMACAO_NO_CHAT",
     proposta_id: data.id,
     expira_em: data.expires_at,
     resumo: summary,
-    url_para_aprovar: approvalUrl(data.id),
-    instrucoes: "Abra a URL e clique em Autorizar no Organiza Isso. Depois volte ao chat e peça para confirmar a proposta. Ainda não foi salvo nada."
+    instrucoes: "Apresente o resumo e pergunte se o usuário confirma esta operação aqui na conversa. Não abra outra aba. Somente após um SIM explícito, chame confirmar_acao com proposta_id e confirmado_na_conversa=true. Até lá nada foi salvo."
   };
 }
 
@@ -284,7 +280,7 @@ async function prepareCompletion(args, db, id) {
 
 export { validateCreation, prepareCompletion, resolveToolName };
 
-async function run(name, args, db, user) {
+export async function run(name, args, db, user) {
   const id = user.id;
   if (name === "listar_atividades") {
     const limit = Math.min(100, Math.max(1, Number(args.limite || 30)));
@@ -345,17 +341,24 @@ async function run(name, args, db, user) {
   }
   if (name === "confirmar_acao") {
     checkId(args.proposta_id, "ID da proposta");
+    // A confirmacao corresponde a uma decisao explicita do usuario na conversa.
+    // O OAuth do usuario continua obrigatorio, e o banco revalida sua permissao.
+    if (args.confirmado_na_conversa !== true) return {
+      estado: "AGUARDANDO_CONFIRMACAO_NO_CHAT",
+      mensagem: "Mostre o resumo da proposta e pergunte se a pessoa confirma esta operação na conversa. Nenhuma alteração foi salva."
+    };
     const { data: proposal, error: readError } = await db.from("mcp_pending_actions")
-      .select("id,action_type,expires_at,approved_at,consumed_at").eq("id",args.proposta_id).eq("user_id",id).maybeSingle();
+      .select("id,action_type,expires_at,approved_at,consumed_at")
+      .eq("id",args.proposta_id).eq("user_id",id).maybeSingle();
     if (readError) throw readError;
     if (!proposal) throw new Error("Proposta não encontrada nesta conta.");
     if (proposal.consumed_at) return {estado:"JA_EXECUTADA",mensagem:"Essa proposta já foi executada."};
     if (new Date(proposal.expires_at).getTime() <= Date.now()) throw new Error("A proposta expirou. Prepare uma nova.");
-    if (!proposal.approved_at) return {
-      estado:"AGUARDANDO_APROVACAO_NO_SITE",
-      url_para_aprovar:approvalUrl(proposal.id),
-      mensagem:"Abra a URL, entre na sua conta e clique em Autorizar. Ainda não houve gravação."
-    };
+    if (!proposal.approved_at) {
+      const { data: authorized, error: approvalError } = await db.rpc("approve_mcp_pending_action", {p_id: proposal.id});
+      if (approvalError) throw approvalError;
+      if (authorized !== true) throw new Error("Não foi possível autorizar a proposta.");
+    }
     const rpc = proposal.action_type === "edit_activity"
       ? "execute_mcp_edit_action" : "execute_mcp_pending_action";
     const { data, error } = await db.rpc(rpc, { p_id: proposal.id });
@@ -382,8 +385,8 @@ export default async function handler(req, res) {
   // ferramentas e securitySchemes antes de apresentar a conexao OAuth.
   if (request.method === "initialize") return res.status(200).json(reply(request.id, {
     protocolVersion: VERSION, capabilities: { tools: { listChanged: false } },
-    serverInfo: { name: "organiza-isso", version: "0.5.0" },
-    instructions: "Sempre chame verificar_permissao_cadastro antes de pedir os dados de uma nova atividade. Se a conta não tiver permissão, informe e interrompa o cadastro. Ações de escrita exigem aprovação no site e login OAuth individual."
+    serverInfo: { name: "organiza-isso", version: "0.6.0" },
+    instructions: "Sempre chame verificar_permissao_cadastro antes de pedir os dados de uma nova atividade. Se a conta não tiver permissão, informe e interrompa o cadastro. Ações de escrita exigem resumo e confirmação explícita do usuário NA CONVERSA; não exigir aprovação em outra aba. Login OAuth individual obrigatório."
   }));
   if (request.method === "ping") return res.status(200).json(reply(request.id, {}));
   if (request.method === "tools/list") return res.status(200).json(reply(request.id, { tools }));

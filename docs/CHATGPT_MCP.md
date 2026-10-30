@@ -1,39 +1,30 @@
 # Integração Organiza Isso (ChatGPT e Claude)
 
-Servidor remoto MCP: `https://organizaisso.vercel.app/api/mcp`.
+Servidor MCP: `https://organizaisso.vercel.app/api/mcp`.
 
 ## Ferramentas
-- Consultas: `listar_atividades`, `listar_grupos`, `listar_pessoas`, `listar_notificacoes`.
-- Preparação de gravações: `preparar_atividade`, `preparar_conclusao`.
-- Execução após aprovação externa: `confirmar_acao`.
+- Consultas: `listar_atividades`, `listar_grupos`, `listar_pessoas`, `listar_notificacoes`, `verificar_permissao_cadastro`.
+- Preparação: `preparar_atividade`, `preparar_edicao`, `preparar_conclusao`.
+- Execução: `confirmar_acao`, com `proposta_id` e `confirmado_na_conversa: true` depois de confirmação explícita da pessoa.
 
-## Aprovação obrigatória em duas etapas
-1. O assistente verifica dados obrigatórios e modalidade; não salva atividades nem conclusões.
-2. A proposta é armazenada em `mcp_pending_actions` com usuário, prazo de 20 minutos e resumo imutável (não existe permissão UPDATE para usuários).
-3. O assistente entrega `https://organizaisso.vercel.app/confirm-action.html?id=<UUID>`.
-4. O usuário entra no site com **a mesma conta**, lê os detalhes e clica em Autorizar.
-5. O assistente chama `confirmar_acao`; `execute_mcp_pending_action` valida aprovação, propriedade e prazo e executa a ação em transação atômica. A proposta só é executada uma vez.
-6. Se não aprovada, a chamada apenas retorna que aguarda aprovação. Não existe mais atalho `confirmado: true`.
+## Confirmação na própria conversa (sem abrir outra aba)
+1. O assistente verifica as permissões da conta OAuth quando necessário e reúne os dados.
+2. Uma das ferramentas `preparar_*` valida e cria uma proposta da conta, com resumo e expiração de 20 minutos. Nenhum dado da atividade é gravado.
+3. O assistente apresenta o resumo completo **na conversa** e pergunta se a pessoa confirma aquela operação específica.
+4. Se a resposta for negativa, ambígua ou inexistente, **não executa**. Se a pessoa confirmar explicitamente na conversa, o assistente chama `confirmar_acao` com o ID da proposta e `confirmado_na_conversa: true`.
+5. O MCP registra a aprovação da proposta por meio da RPC do próprio usuário e executa a RPC aplicável; o banco verifica propriedade, prazo, permissões e impede repetir a mesma gravação.
+6. O assistente só comunica sucesso quando a resposta for `sucesso: true`, e consulta a atividade novamente quando apropriado.
 
-## Colegas sem conta
-- `preparar_conclusao` compara nomes informados com `user_directory`.
-- Nomes sem cadastro causam pergunta explícita: incluir na Descrição personalizada (opcional)?
-- Somente após o sim os nomes são incluídos em `private_activity_works.custom_description`.
-- Sem dupla/grupo cadastrado, somente a conclusão da própria pessoa pode ser marcada e apenas se ela aceitar claramente esse fallback.
-- Nunca criar contas ou atribuir conclusão a quem não tem conta. Nomes parecidos/duplicados exigem seleção de ID.
+**Nota de segurança:** a confirmação na conversa é afirmada pelo cliente MCP, não comprovada independentemente pelo banco por meio de outra interface. Assim, o controle depende de o assistente respeitar a resposta do usuário. A proteção OAuth/RLS e as permissões do banco permanecem ativas. É uma troca deliberada de conveniência por uma aprovação menos independente.
 
-## Push de novas atividades
-- Trigger `trg_notify_new_activity` em `activities` gera mensagem `new_activity` para perfis cadastrados (somente INSERT).
-- O trigger existente em `user_notifications` encaminha para `send-web-push`; somente usuários com assinatura push ativa recebem notificação no celular.
-- Validado em transação revertida: nenhuma atividade nem notificação de teste ficou no banco.
-- A entrega real ao aparelho deve ser verificada no próximo cadastro real. A funcionalidade do aparelho exige permissão push ativa.
+A página antiga `confirm-action.html` pode continuar acessível para propostas anteriores, mas não faz parte do fluxo novo e não deve ser enviada pelo assistente.
 
-## Segurança e testes
-- MCP usa token OAuth do próprio usuário com Supabase RLS, não chave administrativa.
-- As RPCs de conclusão e criação seguem validando permissões e participações existentes.
-- `node --env-file=.env.local scripts/mcp-smoke.mjs` exercita fluxo de entrada, obrigatoriedade e colegas sem cadastro.
-- Clientes Claude e ChatGPT usam o mesmo servidor. Após atualizar, reconecte/recarregue o MCP para ver as novas ferramentas.
+## Regras mantidas
+- Cadastro e edição globais exigem papel `owner`, `admin` ou `editor`. Sempre consultar `verificar_permissao_cadastro` antes de pedir campos.
+- Edição conserva o ID, modalidade, prazo, pontuação e participantes; nunca cria atividade duplicada.
+- Conclusões em dupla/grupo conferem IDs reais. Para colegas sem conta, perguntar antes de anotar nomes na Descrição personalizada (opcional); nunca criar membros fictícios.
+- A função `trg_notify_new_activity` gera avisos quando uma nova atividade é cadastrada. Push depende de inscrição válida no dispositivo.
 
-Referências:
-- https://supabase.com/docs/guides/database/postgres/row-level-security
-- https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization
+## Testes
+- `node --env-file=.env.local scripts/mcp-smoke.mjs` testa a descoberta do MCP, permissão, propostas, confirmação ausente/afirmativa, edição e conclusão.
+- Claude e ChatGPT usam o mesmo servidor MCP; após atualizar a versão, abra conversa nova para recarregar ferramentas.

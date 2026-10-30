@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import handler, { validateCreation, prepareCompletion, prepareActivityEdit, resolveToolName, getCadastroPermission } from "../api/mcp.js";
+import handler, { validateCreation, prepareCompletion, prepareActivityEdit, resolveToolName, getCadastroPermission, run } from "../api/mcp.js";
 import metadata from "../api/mcp/oauth-protected-resource.js";
 
 function invoke(fn, method, body, headers = {}) {
@@ -16,10 +16,11 @@ function invoke(fn, method, body, headers = {}) {
 const base = { jsonrpc: "2.0", id: 1 };
 const init = await invoke(handler, "POST", {...base,method:"initialize",params:{}});
 assert.equal(init.statusCode, 200);
-assert.equal(init.data.result.serverInfo.version, "0.5.0");
+assert.equal(init.data.result.serverInfo.version, "0.6.0");
 const tools = await invoke(handler, "POST", {...base,method:"tools/list"});
 assert.equal(tools.statusCode, 200);
 assert.equal(tools.data.result.tools.length, 9);
+assert.deepEqual(tools.data.result.tools.find(x=>x.name==="confirmar_acao").inputSchema.required,["proposta_id","confirmado_na_conversa"]);
 assert.equal(tools.data.result.tools.find(t=>t.name==="preparar_edicao").inputSchema.required[0],"atividade_id");
 assert.equal(tools.data.result.tools.find(t=>t.name==="verificar_permissao_cadastro").annotations.readOnlyHint,true);
 assert.equal(resolveToolName("criar_atividade"), "preparar_atividade");
@@ -107,7 +108,7 @@ const two=await prepareCompletion({...initial,incluir_nomes_na_descricao:true},d
 assert.equal(two.estado,"AGUARDANDO_DECISAO_SOBRE_CONCLUSAO_PESSOAL");
 assert.equal(staged,null);
 const three=await prepareCompletion({...initial,incluir_nomes_na_descricao:true,conclusao_apenas_minha:true},db,id);
-assert.equal(three.estado,"AGUARDANDO_APROVACAO_NO_SITE");
+assert.equal(three.estado,"AGUARDANDO_CONFIRMACAO_NO_CHAT");
 assert.equal(staged.payload.modo,"personal_only");
 assert.match(staged.payload.descricao_personalizada,/Fernanda Sem Conta/);
 assert.equal(staged.user_id,id);
@@ -137,7 +138,7 @@ const update = await prepareActivityEdit({
  atividade_id:activity,novo_titulo:"TSP das 27 Capitais com AG (DEAP)",
  nova_descricao:"Completar TODOs no Colab."
 },editDb,id);
-assert.equal(update.estado,"AGUARDANDO_APROVACAO_NO_SITE");
+assert.equal(update.estado,"AGUARDANDO_CONFIRMACAO_NO_CHAT");
 assert.equal(editPending.action_type,"edit_activity");
 assert.equal(editPending.payload.atividade_id,activity);
 assert.equal(editPending.payload.titulo_anterior,originalActivity.title);
@@ -150,5 +151,42 @@ assert.equal(noChange.estado,"SEM_ALTERACOES");
 const editBlocked=await prepareActivityEdit({atividade_id:activity,novo_titulo:"Outro"},profileDb("student"),id);
 assert.equal(editBlocked.estado,"SEM_PERMISSAO");
 await assert.rejects(()=>prepareActivityEdit({atividade_id:activity,novo_titulo:"   "},editDb,id),/título não pode ficar vazio/);
+const confirmationId="33333333-3333-4333-8333-333333333333";
+function proposalDb(actionType="create_activity",approved=false,expiry="2099-01-01T00:00:00Z") {
+ const calls=[];
+ const db={
+  from(table){
+   assert.equal(table,"mcp_pending_actions");
+   return {select:()=>({eq:()=>({eq:()=>({
+    maybeSingle:async()=>({data:{
+     id:confirmationId,action_type:actionType,expires_at:expiry,
+     approved_at:approved?"2026-10-30T00:00:00Z":null,consumed_at:null
+    },error:null})
+   })})})};
+  },
+  rpc: async(name,params)=>{
+   calls.push({name,params});
+   return {data:name==="approve_mcp_pending_action" ? true : {sucesso:true,tipo:actionType},error:null};
+  }
+ };
+ return {db,calls};
+}
+for(const actionType of ["create_activity","edit_activity","complete_activity"]){
+ const {db:check,calls}=proposalDb(actionType);
+ const pending=await run("confirmar_acao",{proposta_id:confirmationId,confirmado_na_conversa:false},check,{id});
+ assert.equal(pending.estado,"AGUARDANDO_CONFIRMACAO_NO_CHAT");
+ assert.equal(calls.length,0,"must never write without chat confirmation");
+ const result=await run("confirmar_acao",{proposta_id:confirmationId,confirmado_na_conversa:true},check,{id});
+ assert.equal(result.sucesso,true);
+ assert.deepEqual(calls.map(x=>x.name),["approve_mcp_pending_action",
+  actionType==="edit_activity"?"execute_mcp_edit_action":"execute_mcp_pending_action"]);
+}
+const {db:already,calls:alreadyCalls}=proposalDb("edit_activity",true);
+assert.equal((await run("confirmar_acao",{proposta_id:confirmationId,confirmado_na_conversa:true},already,{id})).sucesso,true);
+assert.deepEqual(alreadyCalls.map(x=>x.name),["execute_mcp_edit_action"]);
+const {db:expired,calls:expiredCalls}=proposalDb("create_activity",false,"2000-01-01T00:00:00Z");
+await assert.rejects(()=>run("confirmar_acao",{proposta_id:confirmationId,confirmado_na_conversa:true},expired,{id}),/expirou/);
+assert.equal(expiredCalls.length,0);
+console.log("MCP chat confirmation tests: preparation and explicit confirmation for all write actions OK.");
 console.log("MCP activity edit: permission, draft, unchanged fields, validation OK.");
 console.log("MCP smoke OK: discovery, OAuth, missing fields, unknown people, personal-only fallback, approval proposal.");
