@@ -11,6 +11,7 @@ const tools = [
   { name: "listar_grupos", title: "Listar meus grupos", description: "Lista os grupos dos quais a conta participa ou é proprietária e seus identificadores para concluir atividades em grupo.", inputSchema: { type: "object", properties: {}, additionalProperties: false } },
   { name: "listar_pessoas", title: "Listar colegas", description: "Lista usuários disponíveis para selecionar a dupla pelo nome e ID, sem presumir identidade quando nomes se repetem.", inputSchema: { type: "object", properties: { busca: property("string", "Nome a pesquisar") }, additionalProperties: false } },
   { name: "listar_notificacoes", title: "Minhas notificações", description: "Mostra as notificações da conta atual no Organiza Isso.", inputSchema: { type: "object", properties: { limite: property("integer", "Máximo de 50 notificações", { minimum: 1, maximum: 50 }) }, additionalProperties: false } },
+  { name: "verificar_permissao_cadastro", title: "Verificar permissão para cadastrar", description: "Use PRIMEIRO quando a pessoa pedir para cadastrar uma atividade, antes de pedir qualquer campo. Confere na conta autenticada se ela pode cadastrar; se pode_cadastrar=false, informe e não continue. Consulta de leitura, não cadastra.", inputSchema: { type: "object", properties: {}, additionalProperties: false } },
   { name: "preparar_atividade", title: "Preparar cadastro", description: "Valida os campos obrigatórios e gera uma proposta para aprovação no site. NÃO cadastra nada. Depois que a pessoa aprovar no navegador, chame confirmar_acao.", inputSchema: { type: "object", properties: { titulo: property("string", "Título da atividade"), disciplina: property("string", "Disciplina"), tipo: property("string", "Tipo", { enum: ["Trabalho", "Seminário", "Prova", "Projeto"] }), modalidade: property("string", "Modalidade", { enum: ["Individual", "Em dupla", "Em grupo"] }), prazo: property("string", "Data/hora ISO com fuso explícito"), pontos: property("number", "Pontuação opcional"), descricao: property("string", "Descrição opcional") }, required: ["titulo", "disciplina", "tipo", "modalidade", "prazo"], additionalProperties: false } },
   { name: "preparar_conclusao", title: "Preparar conclusão", description: "Confere modalidade, colegas cadastrados e não cadastrados, prepara descrição personalizada e pede aprovação no site antes de registrar. NÃO conclui nada. Se houver pessoas sem conta, pergunte se os nomes devem entrar na descrição personalizada opcional e só então envie incluir_nomes_na_descricao. Pessoas sem conta nunca recebem conclusão como membros.", inputSchema: { type: "object", properties: { atividade_id: property("string", "UUID da atividade"), nomes_colegas: property("array", "Nomes informados pelo usuário para verificar cadastro", { items: { type: "string" } }), parceiro_id: property("string", "UUID do colega cadastrado para dupla"), grupo_id: property("string", "UUID do grupo existente"), incluir_nomes_na_descricao: property("boolean", "Resposta explícita do usuário sobre incluir nomes de pessoas sem cadastro na descrição opcional"), conclusao_apenas_minha: property("boolean", "Usuário concordou expressamente em registrar apenas sua própria conclusão quando dupla/grupo não pode ser vinculado"), descricao_personalizada: property("string", "Texto opcional do trabalho privado") }, required: ["atividade_id"], additionalProperties: false } },
   { name: "confirmar_acao", title: "Executar ação aprovada", description: "Somente executa uma proposta se a própria pessoa já clicou em Autorizar na página do Organiza Isso. Nunca chame sem explicar o link de aprovação. Não aceita confirmado=true ou dados de ação livres.", inputSchema: { type: "object", properties: { proposta_id: property("string", "UUID gerado pela ferramenta preparar_atividade ou preparar_conclusao") }, required: ["proposta_id"], additionalProperties: false } }
@@ -71,7 +72,23 @@ async function prepare(db, userId, actionType, payload, summary) {
   };
 }
 
+export async function getCadastroPermission(db, id) {
+  const { data: profile, error } = await db.from("profiles").select("role").eq("id", id).maybeSingle();
+  if (error) throw error;
+  const role = profile?.role || null;
+  const allowed = ["owner", "admin", "editor"].includes(role);
+  return {
+    pode_cadastrar: allowed,
+    papel: role,
+    mensagem: allowed
+      ? "Sua conta tem permissão para cadastrar atividades no Organiza Isso."
+      : "Sua conta não tem permissão para cadastrar atividades. Apenas proprietário, administrador e editor podem cadastrar. Solicite acesso a um administrador."
+  };
+}
+
 async function validateCreation(args, db, id) {
+  const permission = await getCadastroPermission(db, id);
+  if (!permission.pode_cadastrar) return { estado: "SEM_PERMISSAO", ...permission };
   const title = clampText(args.titulo, 180, "Título");
   const subject = clampText(args.disciplina, 180, "Disciplina");
   if (!title || !subject) throw new Error("Informe título e disciplina.");
@@ -83,10 +100,6 @@ async function validateCreation(args, db, id) {
       !Number.isFinite(Date.parse(args.prazo))) throw new Error("Informe data e horário completos com fuso.");
   if (args.pontos != null && (!Number.isFinite(args.pontos) || args.pontos < 0))
     throw new Error("Pontuação inválida.");
-  const { data: role, error } = await db.from("profiles").select("role").eq("id", id).single();
-  if (error) throw error;
-  if (!["owner", "admin", "editor"].includes(role?.role))
-    throw new Error("Sua conta não tem permissão para cadastrar atividades gerais.");
   const payload = {
     titulo: title, disciplina: subject, tipo: args.tipo, modalidade: args.modalidade,
     prazo: args.prazo, pontos: args.pontos ?? null,
@@ -280,6 +293,9 @@ async function run(name, args, db, user) {
     return data || [];
   }
 
+  if (name === "verificar_permissao_cadastro") {
+    return getCadastroPermission(db, id);
+  }
   if (name === "preparar_atividade") {
     return validateCreation(args, db, id);
   }
@@ -323,8 +339,8 @@ export default async function handler(req, res) {
   // ferramentas e securitySchemes antes de apresentar a conexao OAuth.
   if (request.method === "initialize") return res.status(200).json(reply(request.id, {
     protocolVersion: VERSION, capabilities: { tools: { listChanged: false } },
-    serverInfo: { name: "organiza-isso", version: "0.3.1" },
-    instructions: "Ações de escrita exigem confirmação explícita. Cada ferramenta requer login OAuth no Organiza Isso."
+    serverInfo: { name: "organiza-isso", version: "0.4.0" },
+    instructions: "Sempre chame verificar_permissao_cadastro antes de pedir os dados de uma nova atividade. Se a conta não tiver permissão, informe e interrompa o cadastro. Ações de escrita exigem aprovação no site e login OAuth individual."
   }));
   if (request.method === "ping") return res.status(200).json(reply(request.id, {}));
   if (request.method === "tools/list") return res.status(200).json(reply(request.id, { tools }));

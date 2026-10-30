@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import handler, { validateCreation, prepareCompletion, resolveToolName } from "../api/mcp.js";
+import handler, { validateCreation, prepareCompletion, resolveToolName, getCadastroPermission } from "../api/mcp.js";
 import metadata from "../api/mcp/oauth-protected-resource.js";
 
 function invoke(fn, method, body, headers = {}) {
@@ -16,10 +16,11 @@ function invoke(fn, method, body, headers = {}) {
 const base = { jsonrpc: "2.0", id: 1 };
 const init = await invoke(handler, "POST", {...base,method:"initialize",params:{}});
 assert.equal(init.statusCode, 200);
-assert.equal(init.data.result.serverInfo.version, "0.3.1");
+assert.equal(init.data.result.serverInfo.version, "0.4.0");
 const tools = await invoke(handler, "POST", {...base,method:"tools/list"});
 assert.equal(tools.statusCode, 200);
-assert.equal(tools.data.result.tools.length, 7);
+assert.equal(tools.data.result.tools.length, 8);
+assert.equal(tools.data.result.tools.find(t=>t.name==="verificar_permissao_cadastro").annotations.readOnlyHint,true);
 assert.equal(resolveToolName("criar_atividade"), "preparar_atividade");
 assert.equal(resolveToolName("concluir_atividade"), "preparar_conclusao");
 assert.equal(resolveToolName("confirmar_acao"), "confirmar_acao");
@@ -54,9 +55,32 @@ const invalid = await invoke(handler,"POST",request,{authorization:"Bearer inval
 assert.equal(invalid.data.result.isError,true);
 assert.equal((await invoke(metadata,"GET")).statusCode,200);
 
+const profileDb = role => ({
+ from(table) {
+  assert.equal(table, "profiles");
+  return { select: () => ({ eq: () => ({
+   maybeSingle: async () => ({ data: role === null ? null : { role }, error: null })
+  }) }) };
+ }
+});
+for (const role of ["owner", "admin", "editor", "student", "viewer", null]) {
+ const allowed = ["owner", "admin", "editor"].includes(role);
+ const permission = await getCadastroPermission(profileDb(role), "user-1");
+ assert.equal(permission.pode_cadastrar, allowed, "role: " + role);
+ if (!allowed) {
+  // Mesmo sem um título ou prazo, a falta de permissão deve ser detectada PRIMEIRO.
+  const denied = await validateCreation({}, profileDb(role), "user-1");
+  assert.equal(denied.estado, "SEM_PERMISSAO");
+  assert.equal(denied.pode_cadastrar, false);
+ }
+}
 await assert.rejects(
-  ()=>validateCreation({titulo:"Tarefa",disciplina:"Redes",tipo:"Trabalho",modalidade:"Em dupla"},null,"uid"),
+  () => validateCreation({ titulo:"Tarefa", disciplina:"Redes", tipo:"Trabalho", modalidade:"Em dupla" }, profileDb("editor"), "user-1"),
   /Informe data e horário/
+);
+await assert.rejects(
+  () => getCadastroPermission({ from:()=>({ select:()=>({eq:()=>({maybeSingle:async()=>({data:null,error:new Error("blocked")})})}) }) }, "user-1"),
+  /blocked/
 );
 
 const id="11111111-1111-4111-8111-111111111111";
