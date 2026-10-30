@@ -23,7 +23,7 @@ const tools = [
   }
 }));
 
-const RESOURCE_METADATA_URL = "https://organizaisso.vercel.app/api/mcp/oauth-protected-resource";
+const RESOURCE_METADATA_URL = "https://organizaisso.vercel.app/.well-known/oauth-protected-resource/api/mcp";
 function authenticationChallenge(reason = "Autorização necessária para usar o Organiza Isso.") {
   return `Bearer resource_metadata="${RESOURCE_METADATA_URL}", error="invalid_token", error_description="${reason}"`;
 }
