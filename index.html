@@ -6814,6 +6814,7 @@
 
   <script type="module">
     import { createClient } from "@supabase/supabase-js";
+    import { compareActivityDisplayOrder } from "./activity-order.js";
 
     const supabaseClient = createClient(
       import.meta.env.VITE_SUPABASE_URL,
@@ -9884,7 +9885,9 @@
           ? "Prazo"
           : notification.kind === "new_activity"
             ? "Nova atividade"
-            : String(notification.kind || "").startsWith("group_activity_")
+            : notification.kind === "activity_completed"
+              ? "Atividade concluída"
+              : String(notification.kind || "").startsWith("group_activity_")
               ? "Atividade em grupo"
               : "Grupo";
 
@@ -11804,7 +11807,7 @@
       const search = $("#searchInput").value.trim().toLowerCase();
       const container = $("#activityList");
 
-      // Atividades em aberto primeiro (da mais urgente à mais distante); vencidas jogadas para o final (direita/baixo)
+      // Atividades não concluídas primeiro, inclusive vencidas. Concluídas ao final.
       const filtered = activities.filter(a => {
         const info = getDueInfo(getActivityReferenceDue(a));
         const isDone = doneIds.has(a.id);
@@ -11821,19 +11824,9 @@
           if (!hay.includes(search)) return false;
         }
         return true;
-      }).sort((a, b) => {
-        const isExpiredA = getDueInfo(getActivityReferenceDue(a)).status === "expired";
-        const isExpiredB = getDueInfo(getActivityReferenceDue(b)).status === "expired";
-
-        if (!isExpiredA && isExpiredB) return -1;
-        if (isExpiredA && !isExpiredB) return 1;
-
-        if (!isExpiredA && !isExpiredB) {
-          return new Date(getActivityReferenceDue(a)) - new Date(getActivityReferenceDue(b));
-        } else {
-          return new Date(getActivityReferenceDue(b)) - new Date(getActivityReferenceDue(a));
-        }
-      });
+      }).sort((a, b) =>
+        compareActivityDisplayOrder(a, b, doneIds, getActivityReferenceDue, getDueInfo)
+      );
 
       if (!filtered.length) {
         container.innerHTML = '<div class="empty-state">Nenhuma atividade localizada no fichamento do mural.</div>';
