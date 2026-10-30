@@ -13,8 +13,9 @@ const tools = [
   { name: "listar_notificacoes", title: "Minhas notificações", description: "Mostra as notificações da conta atual no Organiza Isso.", inputSchema: { type: "object", properties: { limite: property("integer", "Máximo de 50 notificações", { minimum: 1, maximum: 50 }) }, additionalProperties: false } },
   { name: "verificar_permissao_cadastro", title: "Verificar permissão para cadastrar", description: "Use PRIMEIRO quando a pessoa pedir para cadastrar uma atividade, antes de pedir qualquer campo. Confere na conta autenticada se ela pode cadastrar; se pode_cadastrar=false, informe e não continue. Consulta de leitura, não cadastra.", inputSchema: { type: "object", properties: {}, additionalProperties: false } },
   { name: "preparar_atividade", title: "Preparar cadastro", description: "Valida os campos obrigatórios e gera uma proposta para aprovação no site. NÃO cadastra nada. Depois que a pessoa aprovar no navegador, chame confirmar_acao.", inputSchema: { type: "object", properties: { titulo: property("string", "Título da atividade"), disciplina: property("string", "Disciplina"), tipo: property("string", "Tipo", { enum: ["Trabalho", "Seminário", "Prova", "Projeto"] }), modalidade: property("string", "Modalidade", { enum: ["Individual", "Em dupla", "Em grupo"] }), prazo: property("string", "Data/hora ISO com fuso explícito"), pontos: property("number", "Pontuação opcional"), descricao: property("string", "Descrição opcional") }, required: ["titulo", "disciplina", "tipo", "modalidade", "prazo"], additionalProperties: false } },
+  { name: "preparar_edicao", title: "Preparar edição", description: "Edita título e/ou descrição de uma atividade existente, preservando ID, prazo, pontuação, modalidade e membros. Exige owner/admin/editor e aprovação no site. NÃO cria uma segunda atividade. Localize primeiro o ID por listar_atividades.", inputSchema: { type: "object", properties: { atividade_id: property("string", "UUID da atividade existente"), novo_titulo: property("string", "Novo título; omitir se não mudar"), nova_descricao: property("string", "Nova descrição; omitir se não mudar; vazia para apagar") }, required: ["atividade_id"], additionalProperties: false } },
   { name: "preparar_conclusao", title: "Preparar conclusão", description: "Confere modalidade, colegas cadastrados e não cadastrados, prepara descrição personalizada e pede aprovação no site antes de registrar. NÃO conclui nada. Se houver pessoas sem conta, pergunte se os nomes devem entrar na descrição personalizada opcional e só então envie incluir_nomes_na_descricao. Pessoas sem conta nunca recebem conclusão como membros.", inputSchema: { type: "object", properties: { atividade_id: property("string", "UUID da atividade"), nomes_colegas: property("array", "Nomes informados pelo usuário para verificar cadastro", { items: { type: "string" } }), parceiro_id: property("string", "UUID do colega cadastrado para dupla"), grupo_id: property("string", "UUID do grupo existente"), incluir_nomes_na_descricao: property("boolean", "Resposta explícita do usuário sobre incluir nomes de pessoas sem cadastro na descrição opcional"), conclusao_apenas_minha: property("boolean", "Usuário concordou expressamente em registrar apenas sua própria conclusão quando dupla/grupo não pode ser vinculado"), descricao_personalizada: property("string", "Texto opcional do trabalho privado") }, required: ["atividade_id"], additionalProperties: false } },
-  { name: "confirmar_acao", title: "Executar ação aprovada", description: "Somente executa uma proposta se a própria pessoa já clicou em Autorizar na página do Organiza Isso. Nunca chame sem explicar o link de aprovação. Não aceita confirmado=true ou dados de ação livres.", inputSchema: { type: "object", properties: { proposta_id: property("string", "UUID gerado pela ferramenta preparar_atividade ou preparar_conclusao") }, required: ["proposta_id"], additionalProperties: false } }
+  { name: "confirmar_acao", title: "Executar ação aprovada", description: "Finaliza a criação, edição ou conclusão de uma proposta APROVADA no site pelo próprio usuário. Não aceita dados livres nem confirmado=true.", inputSchema: { type: "object", properties: { proposta_id: property("string", "UUID gerado pela ferramenta preparar_atividade ou preparar_conclusao") }, required: ["proposta_id"], additionalProperties: false } }
 ].map(tool => ({
   ...tool,
   securitySchemes: [{ type: "oauth2", scopes: [] }],
@@ -110,6 +111,43 @@ async function validateCreation(args, db, id) {
     modalidade: args.modalidade, prazo: args.prazo, pontos: payload.pontos,
     descricao: payload.descricao,
     aviso: "Será cadastrada para os usuários do mural. O cadastro dispara uma notificação de nova atividade."
+  });
+}
+
+export async function prepareActivityEdit(args, db, id) {
+  const permission = await getCadastroPermission(db, id);
+  if (!permission.pode_cadastrar) return { estado: "SEM_PERMISSAO", ...permission };
+  checkId(args.atividade_id, "Atividade");
+  if (args.novo_titulo === undefined && args.nova_descricao === undefined)
+    throw new Error("Informe novo_titulo ou nova_descricao.");
+  const { data: current, error } = await db.from("activities")
+    .select("id,title,description,subject,type,modality,due_at,points")
+    .eq("id", args.atividade_id).maybeSingle();
+  if (error) throw error;
+  if (!current) throw new Error("Atividade não encontrada.");
+  const title = args.novo_titulo === undefined
+    ? current.title : clampText(args.novo_titulo, 180, "Título");
+  if (!title) throw new Error("O título não pode ficar vazio.");
+  const description = args.nova_descricao === undefined
+    ? (current.description ?? null)
+    : (clampText(args.nova_descricao, 4000, "Descrição") || null);
+  if (title === current.title && description === (current.description ?? null))
+    return { estado: "SEM_ALTERACOES", mensagem: "Título e descrição já têm esses valores." };
+  return prepare(db, id, "edit_activity", {
+    atividade_id: current.id,
+    titulo_anterior: current.title,
+    descricao_anterior: current.description ?? null,
+    novo_titulo: title,
+    nova_descricao: description
+  }, {
+    acao: "Editar atividade existente",
+    atividade_id: current.id,
+    disciplina: current.subject,
+    titulo_anterior: current.title,
+    novo_titulo: title,
+    descricao_anterior: current.description ?? null,
+    nova_descricao: description,
+    aviso: "Apenas título e descrição serão alterados. ID, modalidade, data, pontuação e vínculos serão preservados. Nenhuma duplicata e nenhuma notificação de nova atividade."
   });
 }
 
@@ -302,10 +340,13 @@ async function run(name, args, db, user) {
   if (name === "preparar_conclusao") {
     return prepareCompletion(args, db, id);
   }
+  if (name === "preparar_edicao") {
+    return prepareActivityEdit(args, db, id);
+  }
   if (name === "confirmar_acao") {
     checkId(args.proposta_id, "ID da proposta");
     const { data: proposal, error: readError } = await db.from("mcp_pending_actions")
-      .select("id,expires_at,approved_at,consumed_at").eq("id",args.proposta_id).eq("user_id",id).maybeSingle();
+      .select("id,action_type,expires_at,approved_at,consumed_at").eq("id",args.proposta_id).eq("user_id",id).maybeSingle();
     if (readError) throw readError;
     if (!proposal) throw new Error("Proposta não encontrada nesta conta.");
     if (proposal.consumed_at) return {estado:"JA_EXECUTADA",mensagem:"Essa proposta já foi executada."};
@@ -315,7 +356,9 @@ async function run(name, args, db, user) {
       url_para_aprovar:approvalUrl(proposal.id),
       mensagem:"Abra a URL, entre na sua conta e clique em Autorizar. Ainda não houve gravação."
     };
-    const { data, error } = await db.rpc("execute_mcp_pending_action", { p_id: proposal.id });
+    const rpc = proposal.action_type === "edit_activity"
+      ? "execute_mcp_edit_action" : "execute_mcp_pending_action";
+    const { data, error } = await db.rpc(rpc, { p_id: proposal.id });
     if (error) throw error;
     return data;
   }
@@ -339,7 +382,7 @@ export default async function handler(req, res) {
   // ferramentas e securitySchemes antes de apresentar a conexao OAuth.
   if (request.method === "initialize") return res.status(200).json(reply(request.id, {
     protocolVersion: VERSION, capabilities: { tools: { listChanged: false } },
-    serverInfo: { name: "organiza-isso", version: "0.4.0" },
+    serverInfo: { name: "organiza-isso", version: "0.5.0" },
     instructions: "Sempre chame verificar_permissao_cadastro antes de pedir os dados de uma nova atividade. Se a conta não tiver permissão, informe e interrompa o cadastro. Ações de escrita exigem aprovação no site e login OAuth individual."
   }));
   if (request.method === "ping") return res.status(200).json(reply(request.id, {}));

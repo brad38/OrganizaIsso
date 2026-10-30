@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import handler, { validateCreation, prepareCompletion, resolveToolName, getCadastroPermission } from "../api/mcp.js";
+import handler, { validateCreation, prepareCompletion, prepareActivityEdit, resolveToolName, getCadastroPermission } from "../api/mcp.js";
 import metadata from "../api/mcp/oauth-protected-resource.js";
 
 function invoke(fn, method, body, headers = {}) {
@@ -16,10 +16,11 @@ function invoke(fn, method, body, headers = {}) {
 const base = { jsonrpc: "2.0", id: 1 };
 const init = await invoke(handler, "POST", {...base,method:"initialize",params:{}});
 assert.equal(init.statusCode, 200);
-assert.equal(init.data.result.serverInfo.version, "0.4.0");
+assert.equal(init.data.result.serverInfo.version, "0.5.0");
 const tools = await invoke(handler, "POST", {...base,method:"tools/list"});
 assert.equal(tools.statusCode, 200);
-assert.equal(tools.data.result.tools.length, 8);
+assert.equal(tools.data.result.tools.length, 9);
+assert.equal(tools.data.result.tools.find(t=>t.name==="preparar_edicao").inputSchema.required[0],"atividade_id");
 assert.equal(tools.data.result.tools.find(t=>t.name==="verificar_permissao_cadastro").annotations.readOnlyHint,true);
 assert.equal(resolveToolName("criar_atividade"), "preparar_atividade");
 assert.equal(resolveToolName("concluir_atividade"), "preparar_conclusao");
@@ -111,4 +112,43 @@ assert.equal(staged.payload.modo,"personal_only");
 assert.match(staged.payload.descricao_personalizada,/Fernanda Sem Conta/);
 assert.equal(staged.user_id,id);
 assert.equal(staged.action_type,"complete_activity");
+const originalActivity = {
+ id:activity, title:"Título muito comprido", description:null,
+ subject:"Tópicos Avançados", type:"Trabalho", modality:"Em grupo",
+ due_at:"2026-10-31T02:59:00Z", points:2
+};
+let editPending=null;
+const editDb = {
+ from(table) {
+  if(table==="profiles") return profileDb("editor").from("profiles");
+  if(table==="activities") return {select:()=>({eq:()=>({
+   maybeSingle:async()=>({data:originalActivity,error:null})
+  })})};
+  if(table==="mcp_pending_actions") return {insert(row) {
+   editPending=row;
+   return {select:()=>({single:async()=>({
+    data:{id:"33333333-3333-4333-8333-333333333333",expires_at:"2099-01-01T00:00:00Z"},error:null
+   })})};
+  }};
+  throw new Error("Unexpected table "+table);
+ }
+};
+const update = await prepareActivityEdit({
+ atividade_id:activity,novo_titulo:"TSP das 27 Capitais com AG (DEAP)",
+ nova_descricao:"Completar TODOs no Colab."
+},editDb,id);
+assert.equal(update.estado,"AGUARDANDO_APROVACAO_NO_SITE");
+assert.equal(editPending.action_type,"edit_activity");
+assert.equal(editPending.payload.atividade_id,activity);
+assert.equal(editPending.payload.titulo_anterior,originalActivity.title);
+assert.equal(editPending.payload.novo_titulo,"TSP das 27 Capitais com AG (DEAP)");
+assert.equal(editPending.payload.nova_descricao,"Completar TODOs no Colab.");
+assert.equal(editPending.payload.descricao_anterior,null);
+assert.equal(editPending.summary.acao,"Editar atividade existente");
+const noChange=await prepareActivityEdit({atividade_id:activity,novo_titulo:originalActivity.title},editDb,id);
+assert.equal(noChange.estado,"SEM_ALTERACOES");
+const editBlocked=await prepareActivityEdit({atividade_id:activity,novo_titulo:"Outro"},profileDb("student"),id);
+assert.equal(editBlocked.estado,"SEM_PERMISSAO");
+await assert.rejects(()=>prepareActivityEdit({atividade_id:activity,novo_titulo:"   "},editDb,id),/título não pode ficar vazio/);
+console.log("MCP activity edit: permission, draft, unchanged fields, validation OK.");
 console.log("MCP smoke OK: discovery, OAuth, missing fields, unknown people, personal-only fallback, approval proposal.");
