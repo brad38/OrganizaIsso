@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#202020">
+  <title>Confirmar ação · Organiza Isso</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color-scheme:dark}
+    *{box-sizing:border-box}
+    body{min-height:100vh;margin:0;background:#1a1a1a;color:#f1eee9;display:grid;place-items:center;padding:20px}
+    main{background:#262626;border:1px solid #414141;border-radius:13px;max-width:500px;width:100%;padding:24px}
+    .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#b2b0ad}
+    h1{font-size:22px;line-height:1.25;margin:10px 0 15px}
+    p,dd{font-size:14px;line-height:1.55;color:#d3d1cd}
+    dl{display:grid;gap:7px;margin:18px 0}
+    dt{font-size:12px;color:#aaa;margin-bottom:2px}
+    dd{margin:0;word-break:break-word}
+    .item{padding:9px 0;border-bottom:1px solid #3b3b3b}
+    .buttons{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px}
+    button,a{background:#383838;color:#eee;border:1px solid #595959;border-radius:7px;padding:11px 14px;font:inherit;font-size:14px;text-decoration:none;cursor:pointer}
+    button.primary{color:#202020;background:#eee9e1;border-color:#eee9e1;font-weight:650}
+    button:disabled{opacity:.5;cursor:wait}
+    .error{color:#f7adad}
+    .success{color:#c7e9cf}
+  </style>
+</head>
+<body>
+<main>
+ <div class="eyebrow">Organiza Isso · Aprovação segura</div>
+ <h1>Confirmar alteração</h1>
+ <p id="status">Verificando a proposta e sua conta…</p>
+ <section id="proposal" hidden>
+  <dl id="fields"></dl>
+  <p>Somente a aprovação nesta página permite executar a alteração. A proposta expira em 20 minutos.</p>
+  <div class="buttons">
+    <button class="primary" id="approve">Autorizar alteração</button>
+    <button id="cancel">Não autorizar</button>
+  </div>
+ </section>
+ <section id="signin" hidden>
+  <p>Entre no Organiza Isso com a mesma conta conectada ao ChatGPT ou Claude. Depois retorne a esta aba.</p>
+  <div class="buttons">
+   <a href="/" target="_blank" rel="noopener">Entrar no Organiza Isso</a>
+   <button id="reload">Verificar novamente</button>
+  </div>
+ </section>
+</main>
+<script type="module">
+ import { createClient } from "@supabase/supabase-js";
+ const id = new URLSearchParams(location.search).get("id");
+ const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
+ const status = document.getElementById("status");
+ const fields = document.getElementById("fields");
+ const proposal = document.getElementById("proposal");
+ const signin = document.getElementById("signin");
+ const approve = document.getElementById("approve");
+ function message(text, css="") { status.textContent=text; status.className=css; }
+ async function load() {
+  proposal.hidden = true; signin.hidden=true;
+  if (!id || !/^[0-9a-f-]{36}$/i.test(id)) return message("Link de aprovação inválido.", "error");
+  try {
+   message("Verificando sua conta…");
+   const {data:{user},error:authError}=await supabase.auth.getUser();
+   if (authError || !user) {signin.hidden=false;return message("Faça login para autorizar esta ação.");}
+   const {data:pending,error}=await supabase.from("mcp_pending_actions")
+      .select("id,summary,approved_at,consumed_at,expires_at").eq("id",id).eq("user_id",user.id).maybeSingle();
+   if (error) throw error;
+   if (!pending) return message("Proposta não encontrada para esta conta.", "error");
+   if (pending.consumed_at) return message("Esta alteração já foi executada.", "success");
+   if (Date.parse(pending.expires_at)<Date.now()) return message("Esta proposta expirou. Solicite outra ao assistente.", "error");
+   if (pending.approved_at) return message("Aprovado. Volte ao ChatGPT/Claude e peça para confirmar a proposta.", "success");
+   fields.replaceChildren();
+   for(const [key,value] of Object.entries(pending.summary||{})){
+    if (value===null || value===undefined || value==="" || (Array.isArray(value) && !value.length)) continue;
+    const item=document.createElement("div");item.className="item";
+    const title=document.createElement("dt");title.textContent=key.replaceAll("_"," ");
+    const valueNode=document.createElement("dd");valueNode.textContent=typeof value==="string"?value:JSON.stringify(value);
+    item.append(title,valueNode);fields.append(item);
+   }
+   proposal.hidden=false;
+   message("Confira os dados antes de autorizar. Nada foi salvo ainda.");
+  }catch(e){message("Não foi possível consultar a proposta: "+(e.message||"erro"),"error");}
+ }
+ approve.addEventListener("click",async()=>{
+  approve.disabled=true;message("Autorizando…");
+  try{
+   const {data,error}=await supabase.rpc("approve_mcp_pending_action",{p_id:id});
+   if(error)throw error;
+   if(!data)throw new Error("Proposta não está mais disponível.");
+   proposal.hidden=true;
+   message("Autorizado. Volte ao ChatGPT ou Claude e peça para confirmar a proposta. A alteração ainda não foi executada.","success");
+  }catch(e){message("Falha ao autorizar: "+(e.message||"erro"),"error");approve.disabled=false;}
+ });
+ document.getElementById("cancel").addEventListener("click",()=>{proposal.hidden=true;message("Não autorizado. Nenhuma alteração foi executada.");});
+ document.getElementById("reload").addEventListener("click",load);
+ load();
+</script>
+</body>
+</html>

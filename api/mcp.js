@@ -11,13 +11,14 @@ const tools = [
   { name: "listar_grupos", title: "Listar meus grupos", description: "Lista os grupos dos quais a conta participa ou é proprietária e seus identificadores para concluir atividades em grupo.", inputSchema: { type: "object", properties: {}, additionalProperties: false } },
   { name: "listar_pessoas", title: "Listar colegas", description: "Lista usuários disponíveis para selecionar a dupla pelo nome e ID, sem presumir identidade quando nomes se repetem.", inputSchema: { type: "object", properties: { busca: property("string", "Nome a pesquisar") }, additionalProperties: false } },
   { name: "listar_notificacoes", title: "Minhas notificações", description: "Mostra as notificações da conta atual no Organiza Isso.", inputSchema: { type: "object", properties: { limite: property("integer", "Máximo de 50 notificações", { minimum: 1, maximum: 50 }) }, additionalProperties: false } },
-  { name: "criar_atividade", title: "Cadastrar uma atividade", description: "AÇÃO DE ESCRITA. Cria uma atividade global. Somente contas owner/admin/editor podem cadastrar. Confirme explicitamente os dados com o usuário antes de chamar.", inputSchema: { type: "object", properties: { titulo: property("string", "Título da atividade"), disciplina: property("string", "Disciplina exatamente como cadastrada"), tipo: property("string", "Trabalho, Seminário, Prova ou Projeto", { enum: ["Trabalho", "Seminário", "Prova", "Projeto"] }), modalidade: property("string", "Modalidade", { enum: ["Individual", "Em dupla", "Em grupo"] }), prazo: property("string", "Data/hora ISO 8601 com offset explícito, por exemplo 2026-11-02T19:00:00-03:00"), pontos: property("number", "Pontuação da atividade, se houver"), descricao: property("string", "Descrição opcional"), confirmado: property("boolean", "Deve ser true somente depois de o usuário confirmar os dados") }, required: ["titulo", "disciplina", "tipo", "modalidade", "prazo", "confirmado"], additionalProperties: false } },
-  { name: "concluir_atividade", title: "Marcar atividade como concluída", description: "AÇÃO DE ESCRITA. Marca conclusão individual, em dupla ou grupo, respeitando a modalidade original. Use listar_atividades, listar_pessoas ou listar_grupos para confirmar IDs e solicite autorização antes da ação.", inputSchema: { type: "object", properties: { atividade_id: property("string", "UUID exato da atividade"), parceiro_id: property("string", "UUID do colega, obrigatório apenas para Em dupla"), grupo_id: property("string", "UUID do grupo, obrigatório apenas para Em grupo"), confirmado: property("boolean", "Deve ser true depois da confirmação explícita da pessoa") }, required: ["atividade_id", "confirmado"], additionalProperties: false } }
+  { name: "preparar_atividade", title: "Preparar cadastro", description: "Valida os campos obrigatórios e gera uma proposta para aprovação no site. NÃO cadastra nada. Depois que a pessoa aprovar no navegador, chame confirmar_acao.", inputSchema: { type: "object", properties: { titulo: property("string", "Título da atividade"), disciplina: property("string", "Disciplina"), tipo: property("string", "Tipo", { enum: ["Trabalho", "Seminário", "Prova", "Projeto"] }), modalidade: property("string", "Modalidade", { enum: ["Individual", "Em dupla", "Em grupo"] }), prazo: property("string", "Data/hora ISO com fuso explícito"), pontos: property("number", "Pontuação opcional"), descricao: property("string", "Descrição opcional") }, required: ["titulo", "disciplina", "tipo", "modalidade", "prazo"], additionalProperties: false } },
+  { name: "preparar_conclusao", title: "Preparar conclusão", description: "Confere modalidade, colegas cadastrados e não cadastrados, prepara descrição personalizada e pede aprovação no site antes de registrar. NÃO conclui nada. Se houver pessoas sem conta, pergunte se os nomes devem entrar na descrição personalizada opcional e só então envie incluir_nomes_na_descricao. Pessoas sem conta nunca recebem conclusão como membros.", inputSchema: { type: "object", properties: { atividade_id: property("string", "UUID da atividade"), nomes_colegas: property("array", "Nomes informados pelo usuário para verificar cadastro", { items: { type: "string" } }), parceiro_id: property("string", "UUID do colega cadastrado para dupla"), grupo_id: property("string", "UUID do grupo existente"), incluir_nomes_na_descricao: property("boolean", "Resposta explícita do usuário sobre incluir nomes de pessoas sem cadastro na descrição opcional"), conclusao_apenas_minha: property("boolean", "Usuário concordou expressamente em registrar apenas sua própria conclusão quando dupla/grupo não pode ser vinculado"), descricao_personalizada: property("string", "Texto opcional do trabalho privado") }, required: ["atividade_id"], additionalProperties: false } },
+  { name: "confirmar_acao", title: "Executar ação aprovada", description: "Somente executa uma proposta se a própria pessoa já clicou em Autorizar na página do Organiza Isso. Nunca chame sem explicar o link de aprovação. Não aceita confirmado=true ou dados de ação livres.", inputSchema: { type: "object", properties: { proposta_id: property("string", "UUID gerado pela ferramenta preparar_atividade ou preparar_conclusao") }, required: ["proposta_id"], additionalProperties: false } }
 ].map(tool => ({
   ...tool,
   securitySchemes: [{ type: "oauth2", scopes: [] }],
   annotations: {
-    readOnlyHint: !["criar_atividade", "concluir_atividade"].includes(tool.name),
+    readOnlyHint: tool.name !== "confirmar_acao",
     destructiveHint: false,
     openWorldHint: false
   }
@@ -39,7 +40,177 @@ function err(id, code, message) { return { jsonrpc: "2.0", id, error: { code, me
 function textResult(data) { return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] }; }
 function failure(message) { return { content: [{ type: "text", text: message }], isError: true }; }
 function checkId(value, label) { if (!UUID.test(value || "")) throw new Error(label + " inválido."); }
-function requireConfirmation(args) { if (args.confirmado !== true) throw new Error("Confirmação explícita do usuário é necessária antes de gravar."); }
+function clampText(value, max, label) {
+  const result = String(value || "").trim();
+  if (result.length > max) throw new Error(label + " é muito longo.");
+  return result;
+}
+function approvalUrl(id) {
+  return "https://organizaisso.vercel.app/confirm-action.html?id=" + encodeURIComponent(id);
+}
+async function prepare(db, userId, actionType, payload, summary) {
+  const { data, error } = await db.from("mcp_pending_actions")
+    .insert({ user_id: userId, action_type: actionType, payload, summary })
+    .select("id,expires_at").single();
+  if (error) throw error;
+  return {
+    estado: "AGUARDANDO_APROVACAO_NO_SITE",
+    proposta_id: data.id,
+    expira_em: data.expires_at,
+    resumo: summary,
+    url_para_aprovar: approvalUrl(data.id),
+    instrucoes: "Abra a URL e clique em Autorizar no Organiza Isso. Depois volte ao chat e peça para confirmar a proposta. Ainda não foi salvo nada."
+  };
+}
+
+async function validateCreation(args, db, id) {
+  const title = clampText(args.titulo, 180, "Título");
+  const subject = clampText(args.disciplina, 180, "Disciplina");
+  if (!title || !subject) throw new Error("Informe título e disciplina.");
+  if (!["Trabalho", "Seminário", "Prova", "Projeto"].includes(args.tipo))
+    throw new Error("Informe o tipo: Trabalho, Seminário, Prova ou Projeto.");
+  if (!["Individual", "Em dupla", "Em grupo"].includes(args.modalidade))
+    throw new Error("Informe a modalidade: Individual, Em dupla ou Em grupo.");
+  if (!/^\d{4}-\d\d-\d\dT\d\d:\d\d(?::\d\d)?(?:Z|[+-]\d\d:\d\d)$/.test(args.prazo || "") ||
+      !Number.isFinite(Date.parse(args.prazo))) throw new Error("Informe data e horário completos com fuso.");
+  if (args.pontos != null && (!Number.isFinite(args.pontos) || args.pontos < 0))
+    throw new Error("Pontuação inválida.");
+  const { data: role, error } = await db.from("profiles").select("role").eq("id", id).single();
+  if (error) throw error;
+  if (!["owner", "admin", "editor"].includes(role?.role))
+    throw new Error("Sua conta não tem permissão para cadastrar atividades gerais.");
+  const payload = {
+    titulo: title, disciplina: subject, tipo: args.tipo, modalidade: args.modalidade,
+    prazo: args.prazo, pontos: args.pontos ?? null,
+    descricao: clampText(args.descricao, 4000, "Descrição") || null
+  };
+  return prepare(db, id, "create_activity", payload, {
+    acao: "Cadastrar atividade", titulo: title, disciplina: subject, tipo: args.tipo,
+    modalidade: args.modalidade, prazo: args.prazo, pontos: payload.pontos,
+    descricao: payload.descricao,
+    aviso: "Será cadastrada para os usuários do mural. O cadastro dispara uma notificação de nova atividade."
+  });
+}
+
+async function prepareCompletion(args, db, id) {
+  checkId(args.atividade_id, "Atividade");
+  const { data: activity, error: actError } = await db.from("activities")
+    .select("id,title,subject,modality").eq("id",args.atividade_id).single();
+  if (actError) throw actError;
+  const modality = activity.modality;
+  const names = [...new Set(
+    (Array.isArray(args.nomes_colegas) ? args.nomes_colegas : [])
+      .map(n => clampText(n, 100, "Nome do colega")).filter(Boolean)
+  )];
+  if (names.length > 25) throw new Error("Informe no máximo 25 colegas.");
+  const directory = names.length
+    ? await db.from("user_directory").select("user_id,display_name").limit(200)
+    : { data: [], error: null };
+  if (directory.error) throw directory.error;
+  const found = [], unknown = [];
+  for (const name of names) {
+    const matching = (directory.data || []).filter(row =>
+      row.display_name.trim().toLocaleLowerCase("pt-BR") === name.toLocaleLowerCase("pt-BR"));
+    if (matching.length > 1) return {
+      estado: "ESCOLHER_PESSOA",
+      mensagem: "Mais de uma conta tem o nome " + name + ". Use listar_pessoas e escolha o ID correto antes de continuar."
+    };
+    if (matching.length) found.push({ nome: name, id: matching[0].user_id });
+    else unknown.push(name);
+  }
+  if (unknown.length && typeof args.incluir_nomes_na_descricao !== "boolean") {
+    return {
+      estado: "AGUARDANDO_DECISAO_SOBRE_NOMES",
+      pessoas_nao_cadastradas: unknown,
+      pessoas_encontradas: found,
+      pergunta: "Estas pessoas não estão no Organiza Isso: " + unknown.join(", ") +
+        ". Deseja colocar os nomes na Descrição personalizada (opcional)?",
+      instrucoes: "Pergunte ao usuário e só repita preparar_conclusao após receber sim ou não. Nenhum registro foi feito."
+    };
+  }
+
+  let mode;
+  let partnerId = args.parceiro_id || null, teamId = args.grupo_id || null;
+  if (modality === "Individual") {
+    if (partnerId || teamId || names.length) return {
+      estado: "MODALIDADE_INDIVIDUAL",
+      mensagem: "Esta atividade é individual. Confirme com o usuário que só sua própria conclusão será registrada, sem participantes."
+    };
+    mode = "individual";
+  } else if (modality === "Em dupla") {
+    if (teamId) throw new Error("Esta atividade é em dupla, não em grupo.");
+    if (!partnerId && found.length === 1 && unknown.length === 0) partnerId = found[0].id;
+    if (partnerId) {
+      checkId(partnerId,"ID do parceiro");
+      if (partnerId === id) throw new Error("Não é possível ser sua própria dupla.");
+      const { data: peer, error } = await db.from("user_directory")
+        .select("user_id,display_name").eq("user_id", partnerId).maybeSingle();
+      if (error) throw error;
+      if (!peer) throw new Error("O colega informado não está cadastrado.");
+      if (found.some(x => x.id !== partnerId)) throw new Error("O colega cadastrado informado não corresponde ao parceiro selecionado.");
+      mode = "pair";
+    } else {
+      if (!args.conclusao_apenas_minha) return {
+        estado: "AGUARDANDO_DECISAO_SOBRE_CONCLUSAO_PESSOAL",
+        mensagem: "Não existe dupla cadastrada selecionada. Posso registrar somente sua conclusão, mantendo a atividade como 'Em dupla' e anotando os nomes opcionais na sua Descrição personalizada?",
+        instrucoes: "Se o usuário aceitar, chame novamente com conclusao_apenas_minha=true; isso não marca outras contas como concluídas."
+      };
+      mode = "personal_only";
+    }
+  } else if (modality === "Em grupo") {
+    if (partnerId) throw new Error("Esta atividade é em grupo, não em dupla.");
+    if (teamId) {
+      checkId(teamId, "ID do grupo");
+      const { data: teams, error } = await db.from("topic_teams")
+        .select("id,name,owner_id").eq("id",teamId).maybeSingle();
+      if (error) throw error;
+      if (!teams) throw new Error("Grupo não encontrado.");
+      const { data: membership, error: e2 } = await db.from("topic_team_members")
+        .select("user_id,status").eq("team_id",teamId).eq("status","accepted");
+      if (e2) throw e2;
+      const members = new Set([teams.owner_id,...(membership || []).map(m=>m.user_id)]);
+      if (!members.has(id)) throw new Error("Você não pertence a esse grupo.");
+      if (found.some(x=>!members.has(x.id))) return {
+        estado: "ESCOLHER_GRUPO",
+        mensagem: "Uma pessoa cadastrada informada não integra esse grupo. Selecione o grupo correto ou peça para registrar somente a sua conclusão."
+      };
+      mode = "group";
+    } else {
+      if (!args.conclusao_apenas_minha) return {
+        estado: "AGUARDANDO_DECISAO_SOBRE_CONCLUSAO_PESSOAL",
+        mensagem: "Nenhum grupo cadastrado foi selecionado. Deseja registrar somente sua conclusão e anotar os colegas sem cadastro na Descrição personalizada (opcional)?",
+        instrucoes: "Se o usuário aceitar, chame novamente com conclusao_apenas_minha=true; nenhum grupo será marcado como concluído."
+      };
+      mode = "personal_only";
+    }
+  } else throw new Error("Modalidade da atividade não reconhecida.");
+  let note = clampText(args.descricao_personalizada, 1600, "Descrição personalizada");
+  if (unknown.length && args.incluir_nomes_na_descricao === true) {
+    note = [note, "Realizada com: " + unknown.join(", ") + " (sem cadastro no Organiza Isso)."]
+      .filter(Boolean).join("\n");
+  }
+  if (note.length > 2000) throw new Error("Descrição personalizada excede 2000 caracteres.");
+  const payload = {
+    atividade_id: activity.id, modo: mode,
+    parceiro_id: mode === "pair" ? partnerId : null,
+    grupo_id: mode === "group" ? teamId : null,
+    descricao_personalizada: note || null
+  };
+  return prepare(db, id, "complete_activity", payload, {
+    acao: "Marcar atividade como concluída", atividade: activity.title,
+    disciplina: activity.subject, modalidade: modality, modo_de_registro: mode,
+    pessoas_cadastradas_encontradas: found.map(x=>x.nome),
+    pessoas_sem_cadastro: unknown,
+    nomes_incluidos_na_descricao: unknown.length > 0 && args.incluir_nomes_na_descricao === true,
+    descricao_personalizada: note || null,
+    aviso: mode === "personal_only"
+      ? "Apenas sua conta será marcada como concluída. Não será criada dupla nem grupo fictício."
+      : "Somente participantes reais e autorizados serão marcados conforme as regras do site."
+  });
+}
+
+
+export { validateCreation, prepareCompletion };
 
 async function run(name, args, db, user) {
   const id = user.id;
@@ -88,56 +259,28 @@ async function run(name, args, db, user) {
     return data || [];
   }
 
-  if (name === "criar_atividade") {
-    requireConfirmation(args);
-    const title = String(args.titulo || "").trim(), subject = String(args.disciplina || "").trim();
-    if (!title || !subject || title.length > 180 || subject.length > 180) throw new Error("Título ou disciplina ausente/inválido.");
-    if (!["Trabalho", "Seminário", "Prova", "Projeto"].includes(args.tipo)) throw new Error("Tipo inválido.");
-    if (!["Individual", "Em dupla", "Em grupo"].includes(args.modalidade)) throw new Error("Modalidade inválida.");
-    if (!/^\d{4}-\d\d-\d\dT\d\d:\d\d(?::\d\d)?(?:Z|[+-]\d\d:\d\d)$/.test(args.prazo) || !Number.isFinite(Date.parse(args.prazo))) throw new Error("Prazo precisa ter data e fuso horário explícitos.");
-    if (args.pontos != null && (!Number.isFinite(args.pontos) || args.pontos < 0)) throw new Error("Pontuação inválida.");
-    const { data: role, error: roleError } = await db.from("profiles").select("role").eq("id", id).single();
-    if (roleError) throw roleError;
-    if (!["owner", "admin", "editor"].includes(role?.role)) throw new Error("Sua conta não tem permissão para cadastrar atividades gerais.");
-    const { data, error } = await db.rpc("save_activity_with_topic_links", {
-      p_activity_id: null, p_title: title, p_subject: subject, p_type: args.tipo,
-      p_modality: args.modalidade, p_due_at: args.prazo, p_additional_due_dates: [],
-      p_points: args.pontos ?? null, p_description: args.descricao || null, p_topic_ids: []
-    });
-    if (error) throw error;
-    return { sucesso: true, atividade_id: data, titulo: title, disciplina: subject };
+  if (name === "preparar_atividade") {
+    return validateCreation(args, db, id);
   }
-
-  if (name === "concluir_atividade") {
-    requireConfirmation(args);
-    checkId(args.atividade_id, "ID da atividade");
-    const { data: activity, error: actError } = await db.from("activities").select("id,title,modality").eq("id", args.atividade_id).single();
-    if (actError) throw actError;
-    if (!activity) throw new Error("Atividade não encontrada.");
-    if (activity.modality === "Individual") {
-      if (args.parceiro_id || args.grupo_id) throw new Error("Conclusão individual não aceita dupla/grupo.");
-      const { error } = await db.from("activity_completions").upsert(
-        { user_id: id, activity_id: activity.id }, { onConflict: "user_id,activity_id", ignoreDuplicates: true }
-      );
-      if (error) throw error;
-    } else if (activity.modality === "Em dupla") {
-      if (args.grupo_id) throw new Error("Essa atividade é em dupla, não em grupo.");
-      checkId(args.parceiro_id, "ID da dupla");
-      const { error } = await db.rpc("complete_activity_with_partner", {
-        p_activity_id: activity.id, p_partner_user_id: args.parceiro_id, p_completed: true
-      });
-      if (error) throw error;
-    } else if (activity.modality === "Em grupo") {
-      if (args.parceiro_id) throw new Error("Essa atividade é em grupo, não em dupla.");
-      checkId(args.grupo_id, "ID do grupo");
-      const { error } = await db.rpc("complete_activity_with_group", {
-        p_activity_id: activity.id, p_team_id: args.grupo_id, p_completed: true
-      });
-      if (error) throw error;
-    } else {
-      throw new Error("Modalidade não reconhecida.");
-    }
-    return { sucesso: true, atividade_id: activity.id, titulo: activity.title, modalidade: activity.modality };
+  if (name === "preparar_conclusao") {
+    return prepareCompletion(args, db, id);
+  }
+  if (name === "confirmar_acao") {
+    checkId(args.proposta_id, "ID da proposta");
+    const { data: proposal, error: readError } = await db.from("mcp_pending_actions")
+      .select("id,expires_at,approved_at,consumed_at").eq("id",args.proposta_id).eq("user_id",id).maybeSingle();
+    if (readError) throw readError;
+    if (!proposal) throw new Error("Proposta não encontrada nesta conta.");
+    if (proposal.consumed_at) return {estado:"JA_EXECUTADA",mensagem:"Essa proposta já foi executada."};
+    if (new Date(proposal.expires_at).getTime() <= Date.now()) throw new Error("A proposta expirou. Prepare uma nova.");
+    if (!proposal.approved_at) return {
+      estado:"AGUARDANDO_APROVACAO_NO_SITE",
+      url_para_aprovar:approvalUrl(proposal.id),
+      mensagem:"Abra a URL, entre na sua conta e clique em Autorizar. Ainda não houve gravação."
+    };
+    const { data, error } = await db.rpc("execute_mcp_pending_action", { p_id: proposal.id });
+    if (error) throw error;
+    return data;
   }
   throw new Error("Ferramenta desconhecida.");
 }
@@ -159,7 +302,7 @@ export default async function handler(req, res) {
   // ferramentas e securitySchemes antes de apresentar a conexao OAuth.
   if (request.method === "initialize") return res.status(200).json(reply(request.id, {
     protocolVersion: VERSION, capabilities: { tools: { listChanged: false } },
-    serverInfo: { name: "organiza-isso", version: "0.2.0" },
+    serverInfo: { name: "organiza-isso", version: "0.3.0" },
     instructions: "Ações de escrita exigem confirmação explícita. Cada ferramenta requer login OAuth no Organiza Isso."
   }));
   if (request.method === "ping") return res.status(200).json(reply(request.id, {}));

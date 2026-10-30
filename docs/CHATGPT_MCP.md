@@ -1,29 +1,39 @@
-# Integração Organiza Isso ↔ ChatGPT (MCP)
+# Integração Organiza Isso (ChatGPT e Claude)
 
-## Estado
-- Servidor MCP HTTP criado em `api/mcp.js` (deploy Vercel: `/api/mcp`).
-- Ferramentas: `listar_atividades`, `listar_grupos`, `listar_pessoas`, `listar_notificacoes`, `criar_atividade`, `concluir_atividade`.
-- Acesso **sempre autenticado por JWT da conta do Organiza Isso**. Nunca usa chave `service_role`.
-- Criação exige papel `owner`, `admin` ou `editor`, validado pelo banco. Conclusões em grupo e dupla reutilizam os procedimentos existentes de segurança.
-- Escritas exigem `confirmado: true` após confirmação explícita do usuário.
-- Testes básicos: `node --env-file=.env.local scripts/mcp-smoke.mjs`.
+Servidor remoto MCP: `https://organizaisso.vercel.app/api/mcp`.
 
-## Pendente para funcionar em ChatGPT Plus
-1. **Disponibilizar o host do plugin no ChatGPT Sites.** A ferramenta de publicação do Sites não está conectada nesta sessão. A existência de `/api/mcp` por si só não cria um plugin instalável no Plus.
-2. **Habilitar OAuth 2.1 Server no Supabase (dashboard > Authentication > OAuth Server)**. No momento a URL de descoberta OAuth do projeto responde 404. Definir o caminho de autorização como `/oauth-consent.html` (exposto em `https://organizaisso.vercel.app/oauth-consent.html`); manter Site URL `https://organizaisso.vercel.app`. Habilitar registro dinâmico de clientes somente após revisar políticas de consentimento.
-3. A tela de consentimento OAuth foi criada e publicada junto com o site, mas **não foi validada em uma concessão OAuth real** até o servidor de OAuth estar ativado. O recurso protegido é descrito em `/api/mcp/oauth-protected-resource`.
-4. Testar login por conta existente, expiração e renovação dos tokens, limites de autorização e tentativas sem permissão.
-5. Publicar/instalar o plugin no ChatGPT Sites e validar ferramentas de leitura/escrita com uma conta de teste.
+## Ferramentas
+- Consultas: `listar_atividades`, `listar_grupos`, `listar_pessoas`, `listar_notificacoes`.
+- Preparação de gravações: `preparar_atividade`, `preparar_conclusao`.
+- Execução após aprovação externa: `confirmar_acao`.
 
-## Segurança
-- Não colocar tokens, senhas, publishable keys ou service_role nos arquivos do plugin.
-- Não distribuir o endpoint como MCP anônimo; POST em `/api/mcp` exige `Authorization: Bearer <token Supabase Auth>` para `tools/list` e `tools/call`.
-- Não conceder ao modelo acesso à função administrativa `execute_sql` do Supabase.
-- Nunca usar a conta do proprietário para executar ações de outros usuários.
-- Em ações de grupo/dupla, confirmar IDs antes da escrita; nunca supor que dois nomes parecidos identificam a mesma pessoa.
-- Após habilitar OAuth, configurar a descoberta OAuth do recurso MCP e testar no cliente final. A existência de um JWT válido não substitui essa etapa.
+## Aprovação obrigatória em duas etapas
+1. O assistente verifica dados obrigatórios e modalidade; não salva atividades nem conclusões.
+2. A proposta é armazenada em `mcp_pending_actions` com usuário, prazo de 20 minutos e resumo imutável (não existe permissão UPDATE para usuários).
+3. O assistente entrega `https://organizaisso.vercel.app/confirm-action.html?id=<UUID>`.
+4. O usuário entra no site com **a mesma conta**, lê os detalhes e clica em Autorizar.
+5. O assistente chama `confirmar_acao`; `execute_mcp_pending_action` valida aprovação, propriedade e prazo e executa a ação em transação atômica. A proposta só é executada uma vez.
+6. Se não aprovada, a chamada apenas retorna que aguarda aprovação. Não existe mais atalho `confirmado: true`.
+
+## Colegas sem conta
+- `preparar_conclusao` compara nomes informados com `user_directory`.
+- Nomes sem cadastro causam pergunta explícita: incluir na Descrição personalizada (opcional)?
+- Somente após o sim os nomes são incluídos em `private_activity_works.custom_description`.
+- Sem dupla/grupo cadastrado, somente a conclusão da própria pessoa pode ser marcada e apenas se ela aceitar claramente esse fallback.
+- Nunca criar contas ou atribuir conclusão a quem não tem conta. Nomes parecidos/duplicados exigem seleção de ID.
+
+## Push de novas atividades
+- Trigger `trg_notify_new_activity` em `activities` gera mensagem `new_activity` para perfis cadastrados (somente INSERT).
+- O trigger existente em `user_notifications` encaminha para `send-web-push`; somente usuários com assinatura push ativa recebem notificação no celular.
+- Validado em transação revertida: nenhuma atividade nem notificação de teste ficou no banco.
+- A entrega real ao aparelho deve ser verificada no próximo cadastro real. A funcionalidade do aparelho exige permissão push ativa.
+
+## Segurança e testes
+- MCP usa token OAuth do próprio usuário com Supabase RLS, não chave administrativa.
+- As RPCs de conclusão e criação seguem validando permissões e participações existentes.
+- `node --env-file=.env.local scripts/mcp-smoke.mjs` exercita fluxo de entrada, obrigatoriedade e colegas sem cadastro.
+- Clientes Claude e ChatGPT usam o mesmo servidor. Após atualizar, reconecte/recarregue o MCP para ver as novas ferramentas.
 
 Referências:
-- https://supabase.com/docs/guides/auth/oauth-server/getting-started
-- https://help.openai.com/en/articles/20001547-hosting-a-plugin-with-chatgpt-sites
+- https://supabase.com/docs/guides/database/postgres/row-level-security
 - https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization

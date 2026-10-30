@@ -9882,9 +9882,11 @@
       const notificationRows = userNotifications.map(notification => {
         const kindLabel = notification.kind === "deadline_reminder"
           ? "Prazo"
-          : String(notification.kind || "").startsWith("group_activity_")
-            ? "Atividade em grupo"
-            : "Grupo";
+          : notification.kind === "new_activity"
+            ? "Nova atividade"
+            : String(notification.kind || "").startsWith("group_activity_")
+              ? "Atividade em grupo"
+              : "Grupo";
 
         return `
           <div class="topic-invite-row notification-row ${notification.read_at ? "" : "unread"}">
