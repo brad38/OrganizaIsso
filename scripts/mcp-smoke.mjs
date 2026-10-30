@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import handler, { validateCreation, prepareCompletion } from "../api/mcp.js";
+import handler, { validateCreation, prepareCompletion, resolveToolName } from "../api/mcp.js";
 import metadata from "../api/mcp/oauth-protected-resource.js";
 
 function invoke(fn, method, body, headers = {}) {
@@ -16,10 +16,33 @@ function invoke(fn, method, body, headers = {}) {
 const base = { jsonrpc: "2.0", id: 1 };
 const init = await invoke(handler, "POST", {...base,method:"initialize",params:{}});
 assert.equal(init.statusCode, 200);
-assert.equal(init.data.result.serverInfo.version, "0.3.0");
+assert.equal(init.data.result.serverInfo.version, "0.3.1");
 const tools = await invoke(handler, "POST", {...base,method:"tools/list"});
 assert.equal(tools.statusCode, 200);
 assert.equal(tools.data.result.tools.length, 7);
+assert.equal(resolveToolName("criar_atividade"), "preparar_atividade");
+assert.equal(resolveToolName("concluir_atividade"), "preparar_conclusao");
+assert.equal(resolveToolName("confirmar_acao"), "confirmar_acao");
+const oldCreate = {...base, method:"tools/call", params:{
+  name:"criar_atividade",
+  arguments:{
+    titulo:"Teste legado", disciplina:"Redes",tipo:"Trabalho",
+    modalidade:"Em grupo",prazo:"2026-11-30T23:59:00-03:00",
+    confirmado:true
+  }
+}};
+const legacyAuthChallenge = await invoke(handler,"POST",oldCreate);
+assert.equal(legacyAuthChallenge.statusCode,200);
+assert.equal(legacyAuthChallenge.data.result.isError,true);
+assert.match(legacyAuthChallenge.headers["WWW-Authenticate"],/resource_metadata/);
+const oldCompletion = await invoke(handler,"POST",{
+  ...base, method:"tools/call", params:{
+    name:"concluir_atividade",arguments:{atividade_id:"22222222-2222-4222-8222-222222222222",confirmado:true}
+  }
+});
+assert.equal(oldCompletion.statusCode,200);
+assert.equal(oldCompletion.data.result.isError,true);
+assert.match(oldCompletion.headers["WWW-Authenticate"],/resource_metadata/);
 assert.equal(tools.data.result.tools.find(t=>t.name==="confirmar_acao").annotations.readOnlyHint,false);
 assert.equal(tools.data.result.tools.find(t=>t.name==="criar_atividade"),undefined);
 assert.ok(tools.data.result.tools.every(t => t.securitySchemes?.[0]?.type === "oauth2"));

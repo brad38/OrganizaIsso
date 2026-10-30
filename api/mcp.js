@@ -24,6 +24,14 @@ const tools = [
   }
 }));
 
+// Conversas antigas podem manter a lista de ferramentas da v0.2.
+// Esses aliases só PREPARAM propostas; nunca autorizam uma gravação.
+const LEGACY_TOOL_NAMES = Object.freeze({
+  criar_atividade: "preparar_atividade",
+  concluir_atividade: "preparar_conclusao"
+});
+function resolveToolName(name) { return LEGACY_TOOL_NAMES[name] || name; }
+
 const RESOURCE_METADATA_URL = "https://organizaisso.vercel.app/.well-known/oauth-protected-resource/api/mcp";
 function authenticationChallenge(reason = "Autorização necessária para usar o Organiza Isso.") {
   return `Bearer resource_metadata="${RESOURCE_METADATA_URL}", error="invalid_token", error_description="${reason}"`;
@@ -223,7 +231,7 @@ async function prepareCompletion(args, db, id) {
 }
 
 
-export { validateCreation, prepareCompletion };
+export { validateCreation, prepareCompletion, resolveToolName };
 
 async function run(name, args, db, user) {
   const id = user.id;
@@ -315,14 +323,15 @@ export default async function handler(req, res) {
   // ferramentas e securitySchemes antes de apresentar a conexao OAuth.
   if (request.method === "initialize") return res.status(200).json(reply(request.id, {
     protocolVersion: VERSION, capabilities: { tools: { listChanged: false } },
-    serverInfo: { name: "organiza-isso", version: "0.3.0" },
+    serverInfo: { name: "organiza-isso", version: "0.3.1" },
     instructions: "Ações de escrita exigem confirmação explícita. Cada ferramenta requer login OAuth no Organiza Isso."
   }));
   if (request.method === "ping") return res.status(200).json(reply(request.id, {}));
   if (request.method === "tools/list") return res.status(200).json(reply(request.id, { tools }));
   if (request.method !== "tools/call") return res.status(200).json(err(request.id, -32601, "Método não suportado."));
 
-  const name = request.params?.name;
+  const requestedName = request.params?.name;
+  const name = resolveToolName(requestedName);
   const args = request.params?.arguments || {};
   if (!tools.some(tool => tool.name === name)) return res.status(200).json(err(request.id, -32602, "Ferramenta desconhecida."));
 
