@@ -63,11 +63,23 @@
       -webkit-tap-highlight-color: transparent; 
     }
 
-    /* Barra de rolagem temática */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #212121; }
-    ::-webkit-scrollbar-thumb { background: #3A3A3A; border-radius: 4px; border: 1px solid #2A2A2A; }
-    ::-webkit-scrollbar-thumb:hover { background: #343434; }
+    /* Barras de rolagem: tema escuro consistente em Chromium, Safari e Firefox. */
+    html {
+      color-scheme: dark;
+      scrollbar-color: #646464 #212121;
+      scrollbar-width: thin;
+    }
+    ::-webkit-scrollbar { width: 9px; height: 9px; }
+    ::-webkit-scrollbar-track { background: #212121; border-radius: 999px; }
+    ::-webkit-scrollbar-thumb {
+      background: #606060;
+      border: 2px solid #212121;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: #858585; }
+    ::-webkit-scrollbar-thumb:active { background: #999999; }
+    ::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+    ::-webkit-scrollbar-corner { background: #212121; }
 
     html, body { min-height: 100vh; width: 100%; }
 
@@ -5804,6 +5816,53 @@
         flex-basis: 96px;
         min-height: 96px;
       }
+    }
+
+
+    /* Rolagem interna de detalhes, prévias e filtros no mesmo tom do painel.
+       CSS scrollbar-color cobre Firefox/Chromium modernos; WebKit é fallback. */
+    .activity-details-dialog,
+    .activity-detail-body,
+    .activity-detail-description,
+    #shareModal .share-redesign-body,
+    #shareModal .share-redesign-controls,
+    #shareModal .share-preview-box {
+      color-scheme: dark;
+      scrollbar-width: thin;
+      scrollbar-color: #686868 #1c1c1c;
+    }
+    .activity-detail-description,
+    #shareModal .share-preview-box {
+      scrollbar-color: #666666 #171717;
+    }
+    :is(.activity-details-dialog, .activity-detail-body, .activity-detail-description,
+        #shareModal .share-redesign-body, #shareModal .share-redesign-controls,
+        #shareModal .share-preview-box)::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    :is(.activity-details-dialog, .activity-detail-body,
+        #shareModal .share-redesign-body, #shareModal .share-redesign-controls)::-webkit-scrollbar-track {
+      background: #1c1c1c;
+      border-radius: 999px;
+    }
+    :is(.activity-detail-description, #shareModal .share-preview-box)::-webkit-scrollbar-track {
+      background: #171717;
+      border-radius: 999px;
+    }
+    :is(.activity-details-dialog, .activity-detail-body, .activity-detail-description,
+        #shareModal .share-redesign-body, #shareModal .share-redesign-controls,
+        #shareModal .share-preview-box)::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: #686868;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+    :is(.activity-details-dialog, .activity-detail-body, .activity-detail-description,
+        #shareModal .share-redesign-body, #shareModal .share-redesign-controls,
+        #shareModal .share-preview-box)::-webkit-scrollbar-thumb:hover {
+      background: #858585;
+      background-clip: padding-box;
     }
 
   </style>
