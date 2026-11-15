@@ -5250,6 +5250,73 @@
       }
     }
 
+
+    /* Detalhes expandidos de atividades: card animado no desktop e folha mobile. */
+    .activity-card[data-open-activity] {
+      cursor:pointer;
+      transition:border-color .15s,transform .15s;
+    }
+    .activity-card[data-open-activity]:focus-visible {
+      outline:2px solid var(--parchment); outline-offset:3px;
+    }
+    @media(hover:hover) and (pointer:fine) {
+      .activity-card[data-open-activity]:hover {transform:translateY(-2px)}
+    }
+    .activity-details-dialog {
+      width:min(92vw,640px);max-width:640px;
+      max-height:min(88dvh,calc(var(--visual-viewport-height,100dvh) - 12px));
+      padding:0;margin:auto;border:1px solid var(--border);
+      border-radius:22px;background:#252525;color:var(--parchment);
+      overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;
+      box-shadow:0 30px 80px rgba(0,0,0,.65);
+      -webkit-overflow-scrolling:touch;
+    }
+    .activity-details-dialog::backdrop {
+      background:rgba(8,8,8,.7);backdrop-filter:blur(4px);
+      animation:activity-detail-fade .2s ease both;
+    }
+    @keyframes activity-detail-fade {from{opacity:0}to{opacity:1}}
+    body:has(.activity-details-dialog[open]) {overflow:hidden}
+    .activity-detail-handle {display:none}
+    .activity-detail-body {padding:30px 34px 8px}
+    .activity-detail-header {display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+    .activity-detail-header > div {min-width:0}
+    .activity-detail-subject {font:.72rem var(--font-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--brass);overflow-wrap:anywhere}
+    .activity-detail-professor {font-size:.83rem;color:var(--muted);margin-top:6px}
+    .activity-detail-close {width:38px;height:38px;flex:0 0 38px;border-radius:50%;border:1px solid var(--border);background:#313131;color:var(--muted);display:grid;place-items:center;cursor:pointer}
+    .activity-detail-close:hover {color:var(--parchment)}
+    .activity-detail-title {font-family:var(--font-display);font-size:clamp(1.35rem,3vw,1.85rem);font-weight:650;line-height:1.32;margin:12px 0 18px;overflow-wrap:anywhere}
+    .activity-detail-description {white-space:pre-wrap;overflow-wrap:anywhere;font-size:.94rem;line-height:1.65;padding:18px 20px;border:1px solid #353535;border-radius:13px;background:#191919;color:#dedede}
+    .activity-detail-description.empty {color:var(--muted);font-style:italic}
+    .activity-detail-metadata {display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 6px}
+    .activity-detail-metadata .tag {min-height:32px;padding:6px 10px}
+    .activity-detail-footer {position:sticky;bottom:0;z-index:2;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:16px 34px max(22px,env(safe-area-inset-bottom));margin-top:18px;border-top:1px solid var(--border);background:#252525}
+    .activity-detail-actions {display:flex;flex-wrap:wrap;gap:7px}
+    .activity-detail-action {display:inline-flex;justify-content:center;align-items:center;gap:7px;min-height:40px;padding:9px 11px;border:1px solid var(--border);border-radius:9px;background:#303030;color:var(--parchment);font-size:.78rem;cursor:pointer}
+    .activity-detail-action:hover {border-color:#646464;background:#383838}
+    .activity-detail-action.danger {color:#e8a3a6}
+    .activity-detail-action:focus-visible,.activity-detail-close:focus-visible {outline:2px solid var(--parchment);outline-offset:3px}
+    .activity-detail-share-status {flex:0 0 100%;color:var(--muted);font-size:.78rem}
+    .activity-detail-share-status:empty {display:none}
+    @media(max-width:600px) {
+      .activity-details-dialog {position:fixed;inset:auto 0 0 0;width:100%;max-width:100%;max-height:min(92dvh,calc(var(--visual-viewport-height,100dvh) - 6px));margin:auto 0 0;border-radius:22px 22px 0 0;border-bottom:0}
+      .activity-detail-handle {display:block;position:sticky;top:0;z-index:3;width:100%;height:28px;background:#252525;touch-action:none;cursor:grab}
+      .activity-detail-handle::after {content:"";position:absolute;top:10px;left:calc(50% - 20px);width:40px;height:4px;border-radius:5px;background:#656565}
+      .activity-detail-body {padding:4px 18px 0}
+      .activity-detail-title {font-size:1.35rem;margin:8px 0 14px}
+      .activity-detail-description {font-size:.9rem;padding:15px}
+      .activity-detail-close {width:42px;height:42px;flex-basis:42px}
+      .activity-detail-metadata {margin-top:16px;gap:7px}
+      .activity-detail-footer {flex-direction:column;align-items:stretch;gap:10px;padding:12px 18px calc(16px + env(safe-area-inset-bottom));margin-top:14px}
+      .activity-detail-footer .check-btn {min-height:44px}
+      .activity-detail-actions {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+      .activity-detail-action {min-width:0;min-height:46px;white-space:normal;text-align:center}
+    }
+    @media(prefers-reduced-motion:reduce) {
+      .activity-details-dialog::backdrop {animation:none}
+      .activity-card[data-open-activity] {transition:none}
+    }
+
   </style>
 </head>
 <body>
@@ -5802,6 +5869,12 @@
       </button>
     </div>
   </div>
+
+  <!-- Detalhes completos de uma atividade (modal expandido / bottom sheet). -->
+  <dialog id="activityDetailsDialog" class="activity-details-dialog" aria-labelledby="activityDetailsTitle">
+    <div id="activityDetailsHandle" class="activity-detail-handle" aria-hidden="true"></div>
+    <div id="activityDetailsBody"></div>
+  </dialog>
 
   <!-- Modal Adicionar Atividade -->
   <div class="modal-backdrop" id="addModal">
@@ -11904,6 +11977,240 @@
       addModal.classList.add("open");
       setTimeout(() => $("#actTitle").focus(), 80);
     }
+
+    const activityDetailsDialog = $("#activityDetailsDialog");
+    const activityDetailsHandle = $("#activityDetailsHandle");
+    const activityDetailsBody = $("#activityDetailsBody");
+    let detailActivityId = null;
+    let detailSourceCard = null;
+    let detailClosing = false;
+    const detailMobile = () => matchMedia("(max-width: 600px)").matches;
+    const detailReduceMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const detailIcons = {
+      close: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+      calendar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>',
+      share: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"/></svg>',
+      work: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 12v5M9.5 14.5h5"/></svg>',
+      edit: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20l4-1L19.5 7.5a2.1 2.1 0 0 0-3-3L5 16z"/></svg>',
+      delete: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'
+    };
+
+    function renderActivityDetails() {
+      if (!detailActivityId) return;
+      const a = activities.find(item => item.id === detailActivityId);
+      if (!a) {
+        if (activityDetailsDialog.open) activityDetailsDialog.close();
+        detailActivityId = null;
+        return;
+      }
+      const subject = findSubjectByName(a.subject);
+      const professor = getSubjectProfessor(subject);
+      const professorText = professor
+        ? professor.name + (subject?.period ? " (" + subject.period + ")" : "")
+        : (subject?.period || "");
+      const dates = getActivityDates(a);
+      const due = getDueInfo(getActivityReferenceDue(a));
+      const done = doneIds.has(a.id);
+      const modality = a.modality || "Individual";
+      const check = done
+        ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>' : "";
+      const extraActions = currentUser ? `
+        <button type="button" class="activity-detail-action" data-detail-action="work">${detailIcons.work}Meus trabalhos</button>
+        ${isStaff() ? `
+          <button type="button" class="activity-detail-action" data-detail-action="edit">${detailIcons.edit}Editar</button>
+          <button type="button" class="activity-detail-action danger" data-detail-action="delete">${detailIcons.delete}Excluir</button>
+        ` : ""}
+      ` : "";
+      activityDetailsBody.innerHTML = `
+        <div class="activity-detail-body">
+          <div class="activity-detail-header">
+            <div>
+              <div class="activity-detail-subject">${escapeHtml(a.subject)}</div>
+              ${professorText ? `<div class="activity-detail-professor">${escapeHtml(professorText)}</div>` : ""}
+            </div>
+            <button type="button" class="activity-detail-close" data-detail-action="close" aria-label="Fechar detalhes">${detailIcons.close}</button>
+          </div>
+          <h2 id="activityDetailsTitle" class="activity-detail-title">${escapeHtml(a.title)}</h2>
+          <div class="activity-detail-description${a.description ? "" : " empty"}">${a.description ? escapeHtml(a.description) : "Sem descrição cadastrada."}</div>
+          <div class="activity-detail-metadata">
+            ${dates.map((date,index) => `
+              <span class="tag date-tag" title="${index ? "Prazo adicional" : "Prazo principal"}">${detailIcons.calendar} ${escapeHtml(formatDate(date))}</span>
+            `).join("")}
+            <span class="tag">${escapeHtml(a.type || "Atividade")}</span>
+            <span class="tag modality">${getModalityIcon(modality)} ${escapeHtml(modality)}</span>
+            ${a.points !== null && a.points !== undefined && a.points !== "" ? `<span class="tag">${Number(a.points).toLocaleString("pt-BR")} pts</span>` : ""}
+            <span class="tag ${due.status === "expired" ? "expired-badge" : ""}">${done ? "Concluída" : due.status === "expired" ? "Prazo expirado" : escapeHtml(due.text)}</span>
+          </div>
+        </div>
+        <div class="activity-detail-footer">
+          <button type="button" class="check-btn ${done ? "checked" : ""}" data-detail-action="complete">
+            <span class="check-box">${check}</span><span>${done ? "Concluída" : "Marcar como feita"}</span>
+          </button>
+          <div class="activity-detail-actions">
+            <button type="button" class="activity-detail-action" data-detail-action="share">${detailIcons.share}Compartilhar</button>
+            ${extraActions}
+          </div>
+          <span class="activity-detail-share-status" id="activityDetailsShareStatus" role="status" aria-live="polite"></span>
+        </div>
+      `;
+    }
+
+    function openActivityDetails(id, card) {
+      if (activityDetailsDialog.open || detailClosing || !activities.some(a => a.id === id)) return;
+      detailActivityId = id;
+      detailSourceCard = card;
+      renderActivityDetails();
+      activityDetailsDialog.showModal();
+      activityDetailsDialog.classList.add("is-open");
+      syncMobileBackGuard();
+      if (detailReduceMotion()) return;
+      if (detailMobile()) {
+        activityDetailsDialog.animate(
+          [{transform:"translateY(100%)"},{transform:"translateY(0)"}],
+          {duration:300,easing:"cubic-bezier(.2,.8,.2,1)"}
+        );
+      } else {
+        const c = card.getBoundingClientRect();
+        const p = activityDetailsDialog.getBoundingClientRect();
+        const dx = c.left + c.width / 2 - (p.left + p.width / 2);
+        const dy = c.top + c.height / 2 - (p.top + p.height / 2);
+        const scale = Math.min(c.width / p.width,c.height / p.height,1);
+        activityDetailsDialog.animate(
+          [{transform:`translate(${dx}px, ${dy}px) scale(${scale})`,opacity:.4},
+           {transform:"none",opacity:1}],
+          {duration:320,easing:"cubic-bezier(.2,.8,.2,1)"}
+        );
+      }
+    }
+
+    function closeActivityDetails(afterClose=null, startY=0) {
+      if (!activityDetailsDialog.open || detailClosing) return;
+      detailClosing = true;
+      const source = detailSourceCard;
+      const finish = () => {
+        activityDetailsDialog.close();
+        activityDetailsDialog.style.removeProperty("transform");
+        activityDetailsDialog.classList.remove("is-open");
+        detailClosing = false;
+        detailActivityId = null;
+        detailSourceCard = null;
+        syncMobileBackGuard();
+        if (typeof afterClose === "function") afterClose();
+        else if (source?.isConnected) source.focus({preventScroll:true});
+      };
+      if (detailReduceMotion()) {finish();return;}
+      const mobile = detailMobile();
+      const frames = mobile
+        ? [{transform:startY ? `translateY(${startY}px)` : "translateY(0)"},{transform:"translateY(100%)"}]
+        : [{transform:"none",opacity:1},{transform:"scale(.96)",opacity:0}];
+      const animation = activityDetailsDialog.animate(frames,{duration:mobile?220:140,easing:"ease-in"});
+      animation.onfinish = finish;
+      animation.oncancel = finish;
+    }
+
+
+    function shareActivityDetails() {
+      const a = activities.find(item => item.id === detailActivityId);
+      if (!a) return;
+      const subject = findSubjectByName(a.subject);
+      const professor = getSubjectProfessor(subject);
+      const dates = getActivityDates(a);
+      const lines = [
+        a.title,
+        "Disciplina: " + a.subject,
+        professor?.name ? "Professor: " + professor.name : null,
+        a.description ? "Descrição: " + a.description : null,
+        dates.length > 1 ? "Prazos: " + dates.map(formatDate).join(" | ") :
+          dates[0] ? "Prazo: " + formatDate(dates[0]) : null,
+        "Tipo: " + (a.type || "Atividade"),
+        "Modalidade: " + (a.modality || "Individual"),
+        a.points != null && a.points !== "" ? "Pontuação: " + a.points + " pts" : null,
+        "Estado: " + (doneIds.has(a.id) ? "Concluída" : "Pendente")
+      ].filter(Boolean);
+      const info = lines.join("\n");
+      const status = $("#activityDetailsShareStatus");
+      const feedback = message => {if (status) status.textContent = message;};
+      const fallback = () => copyTextToClipboard(info).then(
+        () => feedback("Informações desta atividade copiadas."),
+        () => feedback("Não foi possível copiar as informações.")
+      );
+      // Sem URL genérica do mural: compartilha somente os dados da atividade.
+      if (navigator.share) {
+        navigator.share({title:a.title,text:info}).catch(error => {
+          if (error?.name !== "AbortError") fallback();
+        });
+      } else {
+        fallback();
+      }
+    }
+
+    activityDetailsDialog.addEventListener("click",event => {
+      const btn = event.target.closest("[data-detail-action]");
+      if (btn && activityDetailsDialog.contains(btn)) {
+        const action = btn.dataset.detailAction;
+        if (action === "close") return closeActivityDetails();
+        if (action === "share") return shareActivityDetails();
+        const id = detailActivityId;
+        const attr = {
+          complete:"data-check",work:"data-open-my-work",
+          edit:"data-edit",delete:"data-delete"
+        }[action];
+        if (!attr || !id) return;
+        // Reutiliza os mesmos botões, permissões e confirmações do card.
+        closeActivityDetails(() => {
+          const original = [...document.querySelectorAll("#activityList ["+attr+"]")]
+            .find(node => node.getAttribute(attr) === id);
+          if (original) original.click();
+        });
+        return;
+      }
+      if (event.target === activityDetailsDialog) {
+        const r = activityDetailsDialog.getBoundingClientRect();
+        if (event.clientX < r.left || event.clientX > r.right ||
+            event.clientY < r.top || event.clientY > r.bottom) {
+          closeActivityDetails();
+        }
+      }
+    });
+    activityDetailsDialog.addEventListener("cancel",event => {
+      event.preventDefault();
+      closeActivityDetails();
+    });
+
+    let activityDetailDrag = null;
+    activityDetailsHandle.addEventListener("pointerdown",event => {
+      if (!detailMobile() || !activityDetailsDialog.open || !event.isPrimary) return;
+      activityDetailDrag = {id:event.pointerId,y:event.clientY,dy:0};
+      activityDetailsHandle.setPointerCapture(event.pointerId);
+      event.preventDefault();
+    });
+    activityDetailsHandle.addEventListener("pointermove",event => {
+      if (!activityDetailDrag || activityDetailDrag.id !== event.pointerId) return;
+      activityDetailDrag.dy = Math.max(0,event.clientY-activityDetailDrag.y);
+      activityDetailsDialog.style.transform = "translateY("+activityDetailDrag.dy+"px)";
+      event.preventDefault();
+    });
+    function finishActivityDetailDrag(event,cancelled=false) {
+      if (!activityDetailDrag || activityDetailDrag.id !== event.pointerId) return;
+      const dy = activityDetailDrag.dy;
+      activityDetailDrag = null;
+      try {activityDetailsHandle.releasePointerCapture(event.pointerId);} catch (_) {}
+      if (!cancelled && dy > 100) {
+        closeActivityDetails(null,dy);
+      } else if (!detailReduceMotion() && dy > 0) {
+        const anim = activityDetailsDialog.animate(
+          [{transform:"translateY("+dy+"px)"},{transform:"translateY(0)"}],
+          {duration:180,easing:"ease-out"}
+        );
+        anim.onfinish = () => activityDetailsDialog.style.removeProperty("transform");
+        anim.oncancel = () => activityDetailsDialog.style.removeProperty("transform");
+      } else {
+        activityDetailsDialog.style.removeProperty("transform");
+      }
+    }
+    activityDetailsHandle.addEventListener("pointerup",event => finishActivityDetailDrag(event));
+    activityDetailsHandle.addEventListener("pointercancel",event => finishActivityDetailDrag(event,true));
+
     function renderList() {
       renderSubjectOptions();
       updateKpis();
@@ -11961,7 +12268,7 @@
           : (subjectDetails?.period || "");
 
         return `
-          <article class="${cardClass}">
+          <article class="${cardClass}" data-open-activity="${escapeHtml(a.id)}" tabindex="0" role="button" aria-haspopup="dialog" aria-label="Abrir detalhes de ${escapeHtml(a.title)}">
             <div class="card-main">
               <div class="card-top">
                 <div>
@@ -12080,6 +12387,21 @@
           </article>
         `;
       }).join("");
+
+      if (activityDetailsDialog.open && !detailClosing) renderActivityDetails();
+      $$("#activityList [data-open-activity]").forEach(card => {
+        card.addEventListener("click", event => {
+          // Cliques nas ações e nos links não devem abrir o popup.
+          if (event.target.closest("button, a, input, label, select, textarea, [contenteditable], [role=link]")) return;
+          if (window.getSelection()?.toString()?.trim()) return;
+          openActivityDetails(card.dataset.openActivity, card);
+        });
+        card.addEventListener("keydown", event => {
+          if (event.target !== card || (event.key !== "Enter" && event.key !== " ")) return;
+          event.preventDefault();
+          openActivityDetails(card.dataset.openActivity, card);
+        });
+      });
 
       $$("[data-toggle-completion-records]").forEach(button => {
         button.addEventListener("click", () => {
@@ -12347,6 +12669,7 @@
 
       return Boolean(
         $(".modal-backdrop.open") ||
+        activityDetailsDialog.open ||
         $(".custom-select-menu.open") ||
         $("#calendarPopup.open") ||
         $("#userMenu.open") ||
@@ -12383,6 +12706,11 @@
 
       if ($("#fabActionCluster.open")) {
         closeFabActionMenu();
+        return true;
+      }
+
+      if (activityDetailsDialog.open) {
+        closeActivityDetails();
         return true;
       }
 
