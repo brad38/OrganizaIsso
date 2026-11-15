@@ -3951,6 +3951,47 @@
       display: none;
     }
 
+    .fab-primary-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      pointer-events: auto;
+    }
+
+    .fab-share-shortcut {
+      width: 54px;
+      height: 54px;
+      display: grid;
+      flex: 0 0 54px;
+      place-items: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #444 0%, #2D2D2D 55%, #1F1F1F 100%);
+      border: 1px solid rgba(255,255,255,.15);
+      color: var(--parchment);
+      box-shadow: 0 10px 28px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.18);
+      cursor: pointer;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
+    }
+
+    .fab-share-shortcut[hidden], .fab-share[hidden] {
+      display: none !important;
+    }
+
+    .fab-share-shortcut:hover {
+      transform: translateY(-2px) scale(1.06);
+      border-color: rgba(255,255,255,.28);
+    }
+
+    .fab-share-shortcut:active {
+      transform: scale(.95);
+    }
+
+    .fab-share-shortcut:focus-visible {
+      outline: 2px solid var(--parchment);
+      outline-offset: 3px;
+    }
+
     .fab-share {
       width: 54px;
       height: 54px;
@@ -4028,6 +4069,10 @@
       border: 1px solid var(--border);
       color: var(--parchment);
       box-shadow: 0 7px 20px rgba(0,0,0,.42);
+    }
+
+    .share-sheet-controls {
+      display: contents;
     }
 
     .share-filter-group {
@@ -4548,9 +4593,10 @@
         transform: rotate(135deg);
       }
 
-      .fab-share {
+      .fab-share, .fab-share-shortcut {
         width: 52px;
         height: 52px;
+        flex-basis: 52px;
       }
 
       .fab-mobile-plus-icon {
@@ -4988,22 +5034,41 @@
       }
 
       #shareModal {
-        inset: 0;
-        top: 0;
-        height: 100dvh;
+        inset: auto 0 auto 0;
+        top: var(--visual-viewport-top, 0px);
+        height: var(--visual-viewport-height, 100dvh);
       }
 
       #shareModal .modal {
         display: flex;
         flex-direction: column;
+        height: min(76dvh, 590px, calc(var(--visual-viewport-height, 100dvh) - 8px));
+        max-height: calc(var(--visual-viewport-height, 100dvh) - 8px);
+        min-height: 0;
         overflow: hidden;
-        max-height: calc(100dvh - 4px);
+        transition: transform 320ms cubic-bezier(.22, 1, .36, 1),
+                    height 280ms cubic-bezier(.22, 1, .36, 1);
+      }
+
+      #shareModal.share-expanded .modal {
+        height: calc(var(--visual-viewport-height, 100dvh) - 8px);
+      }
+
+      #shareModal .sheet-drag-handle {
+        background: transparent;
+        border: 0;
+        padding: 0;
+        color: inherit;
+        min-height: 28px;
+      }
+
+      #shareModal .sheet-drag-handle:focus-visible {
+        outline: 2px solid var(--parchment);
+        outline-offset: -2px;
+        border-radius: 8px;
       }
 
       #shareModal .modal-head,
-      #shareModal .share-filter-group,
-      #shareModal .share-team-toggle,
-      #shareModal .share-options-row,
       #shareModal .share-stats-badge,
       #shareModal .share-actions {
         flex-shrink: 0;
@@ -5013,9 +5078,34 @@
         margin-bottom: 10px;
       }
 
+      #shareModal .share-sheet-controls {
+        display: flex;
+        flex-direction: column;
+        flex: 0 1 auto;
+        gap: 8px;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding-right: 2px;
+        scrollbar-width: thin;
+      }
+
+      #shareModal .share-sheet-controls > .share-filter-group,
+      #shareModal .share-sheet-controls > .share-team-toggle,
+      #shareModal .share-sheet-controls > .share-options-row,
+      #shareModal .share-private-controls .share-filter-group,
+      #shareModal .share-private-controls .share-team-toggle {
+        margin: 0;
+      }
+
+      #shareModal .share-private-controls:not([hidden]) {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
       #shareModal .share-filter-group {
         gap: 5px;
-        margin-bottom: 7px;
       }
 
       #shareModal .share-filter-btn {
@@ -5025,28 +5115,34 @@
 
       #shareModal .share-team-toggle {
         padding: 8px 10px;
-        margin-bottom: 7px;
       }
 
       #shareModal .share-options-row {
         grid-template-columns: 1fr 1fr;
-        margin-bottom: 7px;
+        gap: 8px;
       }
 
       #shareModal .share-stats-badge {
-        margin-bottom: 7px;
+        margin: 7px 0;
       }
 
       #shareModal .share-preview-box {
-        flex: 0 0 96px;
-        height: 96px;
-        min-height: 96px;
-        max-height: 96px;
+        flex: 1 1 110px;
+        height: auto;
+        min-height: 84px;
+        max-height: none;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
         padding: 10px;
       }
 
       #shareModal .share-actions {
         margin-top: 8px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #shareModal .modal { transition-duration: 1ms; }
       }
 
       .topic-invite-row {
@@ -5683,19 +5779,18 @@
         </span>
       </button>
 
-      <button type="button" class="fab-quick-action" id="fabQuickShareBtn">
-        <span class="fab-quick-label">Compartilhar</span>
-        <span class="fab-quick-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-            <polyline points="16 6 12 2 8 6"/>
-            <line x1="12" y1="2" x2="12" y2="15"/>
-          </svg>
-        </span>
-      </button>
     </div>
 
-    <button class="fab-share" id="fabShareBtn" type="button" title="Ações rápidas" aria-label="Abrir ações rápidas" aria-expanded="false">
+    <div class="fab-primary-buttons">
+      <button type="button" class="fab-share-shortcut" id="fabQuickShareBtn" aria-label="Compartilhar atividades" title="Compartilhar atividades">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+          <polyline points="16 6 12 2 8 6"/>
+          <line x1="12" y1="2" x2="12" y2="15"/>
+        </svg>
+      </button>
+
+      <button class="fab-share" id="fabShareBtn" type="button" title="Ações rápidas" aria-label="Abrir ações rápidas" aria-expanded="false">
       <svg class="fab-mobile-plus-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
         <path d="M12 5v14M5 12h14"/>
       </svg>
@@ -5704,7 +5799,8 @@
         <polyline points="16 6 12 2 8 6"/>
         <line x1="12" y1="2" x2="12" y2="15"/>
       </svg>
-    </button>
+      </button>
+    </div>
   </div>
 
   <!-- Modal Adicionar Atividade -->
@@ -6377,8 +6473,9 @@
         </button>
       </div>
 
-      <div class="share-filter-group">
-        <div class="share-filter-label">Período</div>
+      <div class="share-sheet-controls">
+        <div class="share-filter-group">
+          <div class="share-filter-label">Período</div>
         <button type="button" class="share-filter-btn" data-share-range="today">Hoje</button>
         <button type="button" class="share-filter-btn" data-share-range="yesterday">Ontem</button>
         <button type="button" class="share-filter-btn active" data-share-range="14">Últimas 2 semanas</button>
@@ -6455,6 +6552,8 @@
           <strong>Exibir professores</strong>
         </span>
       </label>
+
+      </div>
 
       <div class="share-stats-badge" id="shareCountLabel">0 atividades</div>
       <div class="share-preview-box" id="shareSummaryText"></div>
@@ -8317,6 +8416,11 @@
       quickAdd.hidden = !canUseQuickAdd;
       quickGroup.hidden = !canCreateGroup;
       quickShare.hidden = !canShare;
+      $("#fabShareBtn").hidden = isMobileFab && !canUseQuickAdd && !canCreateGroup;
+      quickShare.setAttribute(
+        "aria-label",
+        activeSection === "myworks" ? "Compartilhar meus trabalhos" : "Compartilhar atividades"
+      );
       quickAddLabel.textContent = activeSection === "myworks"
         ? "Escolher atividade"
         : activeSection === "topics"
@@ -12392,18 +12496,47 @@
       document.body.classList.toggle("sheet-open", hasOpenSheet);
     }
 
+    function setShareSheetExpanded(expanded) {
+      const share = $("#shareModal");
+      share.classList.toggle("share-expanded", Boolean(expanded));
+      const handle = share.querySelector(".sheet-drag-handle");
+      if (handle) {
+        handle.setAttribute("aria-expanded", String(Boolean(expanded)));
+        handle.setAttribute("aria-label", expanded
+          ? "Recolher painel de compartilhamento"
+          : "Expandir painel de compartilhamento");
+      }
+    }
+
     function setupBottomSheets() {
       $$(".modal-backdrop").forEach(backdrop => {
         const modal = backdrop.querySelector(".modal");
         if (!modal || modal.querySelector(":scope > .sheet-drag-handle")) return;
 
-        const handle = document.createElement("div");
+        const isShareSheet = backdrop.id === "shareModal";
+        const handle = document.createElement(isShareSheet ? "button" : "div");
         handle.className = "sheet-drag-handle";
-        handle.setAttribute("aria-hidden", "true");
+        if (isShareSheet) {
+          handle.type = "button";
+          handle.setAttribute("aria-label", "Expandir painel de compartilhamento");
+          handle.setAttribute("aria-expanded", "false");
+        } else {
+          handle.setAttribute("aria-hidden", "true");
+        }
         modal.prepend(handle);
 
         let dragState = null;
         let resetTimer = null;
+        let lastSharePointerUp = 0;
+
+        if (isShareSheet) {
+          handle.addEventListener("click", () => {
+            if (!mobileSheetMedia.matches ||
+                !backdrop.classList.contains("open") ||
+                Date.now() - lastSharePointerUp < 380) return;
+            setShareSheetExpanded(!backdrop.classList.contains("share-expanded"));
+          });
+        }
 
         const snapBack = () => {
           modal.classList.remove("dragging");
@@ -12444,6 +12577,21 @@
           }
 
           dragState = null;
+
+          if (isShareSheet && mobileSheetMedia.matches) {
+            if (!cancelled) {
+              if (rawDy < -45 || velocity < -0.45) {
+                setShareSheetExpanded(true);
+              } else if (rawDy > 45 || velocity > 0.45) {
+                setShareSheetExpanded(false);
+              } else if (Math.abs(rawDy) < 12) {
+                setShareSheetExpanded(!backdrop.classList.contains("share-expanded"));
+              }
+            }
+            lastSharePointerUp = Date.now();
+            snapBack();
+            return;
+          }
 
           if (shouldClose) {
             modal.classList.remove("dragging");
@@ -13556,6 +13704,7 @@
       });
 
       generateAndDisplaySummary();
+      setShareSheetExpanded(false);
       shareModal.classList.add("open");
     }
 
