@@ -12964,10 +12964,10 @@
       const professor = getSubjectProfessor(subject);
       const dates = getActivityDates(activity);
       const lines = [
-        activity.title,
+        "*" + activity.title + "*",
         fields.disciplina ? "*Disciplina:* " + (activity.subject || "Não informada") : null,
         fields.professor && professor?.name ? "*Professor:* " + professor.name : null,
-        activity.description ? "Descrição: " + activity.description : null,
+        activity.description ? "*Descrição:* " + activity.description : null,
         fields.data ? "*Data de cadastro:* " + (
           activity.created_at && !Number.isNaN(new Date(activity.created_at).getTime())
           ? formatDate(activity.created_at)
