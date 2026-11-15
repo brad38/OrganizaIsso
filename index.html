@@ -5865,6 +5865,226 @@
       background-clip: padding-box;
     }
 
+
+    /* Filtros de compartilhamento individual acionados por toque longo. */
+    .activity-detail-action[data-detail-action="share"] {
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: manipulation;
+    }
+    .activity-share-options-dialog {
+      width: min(92vw, 510px);
+      max-width: 510px;
+      height: min(525px, calc(var(--visual-viewport-height, 100dvh) - 20px));
+      max-height: calc(var(--visual-viewport-height, 100dvh) - 20px);
+      padding: 0;
+      margin: auto;
+      border: 1px solid #444;
+      border-radius: 20px;
+      background: #242424;
+      color: var(--parchment);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, .65);
+      overflow: hidden;
+      color-scheme: dark;
+    }
+    .activity-share-options-dialog[open] {display: flex;flex-direction: column}
+    .activity-share-options-dialog::backdrop {background: rgba(0,0,0,.58);backdrop-filter: blur(3px)}
+    .activity-share-options-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex: 0 0 auto;
+      padding: 24px 24px 12px;
+    }
+    .activity-share-options-header > div {min-width: 0}
+    .activity-share-options-header h3 {
+      margin: 0;
+      font: 700 21px/1.3 var(--font-display);
+    }
+    .activity-share-options-header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .activity-share-options-close {
+      flex: 0 0 38px;
+      width: 38px;
+      height: 38px;
+      border: 1px solid #3a3a3a;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #303030;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .activity-share-options-close:hover {color:var(--parchment);background:#383838}
+    .activity-share-options-fields {
+      margin: 0;
+      padding: 6px 24px 0;
+      border: 0;
+      flex: 0 0 auto;
+      min-width: 0;
+    }
+    .activity-share-options-fields legend {
+      display: block;
+      color: var(--muted);
+      margin: 0 0 10px;
+      padding: 0;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .activity-share-options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+    }
+    .activity-share-option {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 43px;
+      padding: 8px 12px;
+      border: 1px solid #3d3d3d;
+      border-radius: 11px;
+      background: #2d2d2d;
+      color: #bcbcbc;
+      font-size: 12.5px;
+      line-height: 1.25;
+      cursor: pointer;
+      user-select: none;
+    }
+    .activity-share-option input {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+      pointer-events: none;
+    }
+    .activity-share-option svg {
+      flex: 0 0 17px;
+      width: 17px;
+      height: 17px;
+      padding: 1px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      border: 1px solid #676767;
+      border-radius: 5px;
+      color: transparent;
+    }
+    .activity-share-option:has(input:checked) {
+      background: #28334a;
+      border-color: #50678b;
+      color: #e5edff;
+    }
+    .activity-share-option:has(input:checked) svg {
+      background: #87a9ed;
+      border-color: #87a9ed;
+      color: #16223b;
+    }
+    .activity-share-option:has(input:focus-visible),
+    .activity-share-options-dialog button:focus-visible {
+      outline: 2px solid #a7bff6;
+      outline-offset: 2px;
+    }
+    .activity-share-options-result {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: 14px 24px 18px;
+    }
+    .activity-share-options-preview-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex: 0 0 auto;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #d7d7d7;
+    }
+    .activity-share-options-preview-heading span {color:var(--muted);font-weight:400}
+    .activity-share-options-preview {
+      flex: 1 1 auto;
+      min-height: 0;
+      margin: 0;
+      padding: 12px 14px;
+      border: 1px solid #373737;
+      border-radius: 11px;
+      background: #171717;
+      color: #dedede;
+      font: 12px/1.6 var(--font-mono);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: #686868 #171717;
+    }
+    .activity-share-options-footer {
+      flex: 0 0 auto;
+      display: flex;
+      gap: 9px;
+      justify-content: flex-end;
+      padding: 14px 24px calc(18px + env(safe-area-inset-bottom));
+      border-top: 1px solid #383838;
+      background: #242424;
+    }
+    .activity-share-options-footer button {
+      min-height: 44px;
+      padding: 10px 17px;
+      border-radius: 10px;
+      border: 1px solid #454545;
+      background: #303030;
+      color: #e5e5e5;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .activity-share-options-footer .activity-share-options-submit {
+      background: #ededed;
+      color: #141414;
+      border-color: #ededed;
+    }
+    @media (max-width: 600px) {
+      .activity-share-options-dialog {
+        position: fixed;
+        inset: auto 0 0 0;
+        margin: auto 0 0;
+        width: 100%;
+        max-width: 100%;
+        height: min(78dvh, 525px, calc(var(--visual-viewport-height, 100dvh) - 8px));
+        max-height: calc(var(--visual-viewport-height, 100dvh) - 8px);
+        border-bottom: 0;
+        border-radius: 20px 20px 0 0;
+        animation: activity-share-options-up 260ms cubic-bezier(.2,.8,.2,1);
+      }
+      .activity-share-options-header {padding: 24px 18px 10px}
+      .activity-share-options-fields {padding: 6px 18px 0}
+      .activity-share-options-grid {gap: 8px}
+      .activity-share-option {padding:8px 9px;font-size:12px}
+      .activity-share-options-result {padding: 12px 18px}
+      .activity-share-options-footer {
+        display: grid;
+        grid-template-columns: repeat(2,minmax(0,1fr));
+        padding: 12px 18px calc(16px + env(safe-area-inset-bottom));
+      }
+    }
+    @keyframes activity-share-options-up {
+      from {transform:translateY(100%);opacity:.8}
+      to {transform:translateY(0);opacity:1}
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .activity-share-options-dialog {animation: none}
+    }
+
   </style>
 </head>
 <body>
@@ -6422,6 +6642,64 @@
   <dialog id="activityDetailsDialog" class="activity-details-dialog" aria-labelledby="activityDetailsTitle">
     <div id="activityDetailsHandle" class="activity-detail-handle" aria-hidden="true"></div>
     <div id="activityDetailsBody"></div>
+  </dialog>
+
+  <!-- Opções do compartilhamento individual: toque longo em Compartilhar. -->
+  <dialog id="activityShareOptionsDialog" class="activity-share-options-dialog"
+          aria-labelledby="activityShareOptionsTitle" aria-describedby="activityShareOptionsHint">
+    <div class="activity-share-options-header">
+      <div>
+        <h3 id="activityShareOptionsTitle">Compartilhar atividade</h3>
+        <p id="activityShareOptionsHint">Escolha as informações exibidas ao compartilhar esta atividade.</p>
+      </div>
+      <button type="button" class="activity-share-options-close" id="closeActivityShareOptions"
+              aria-label="Fechar opções de compartilhamento">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <fieldset class="activity-share-options-fields">
+      <legend>Exibir no compartilhamento</legend>
+      <div class="activity-share-options-grid">
+        <label class="activity-share-option">
+          <input type="checkbox" data-activity-share-field="professor">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          Exibir professor
+        </label>
+        <label class="activity-share-option">
+          <input type="checkbox" data-activity-share-field="disciplina">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          Exibir disciplina
+        </label>
+        <label class="activity-share-option">
+          <input type="checkbox" data-activity-share-field="estado">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          Exibir estado
+        </label>
+        <label class="activity-share-option" title="Data em que a atividade foi cadastrada">
+          <input type="checkbox" data-activity-share-field="data">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          Exibir data
+        </label>
+        <label class="activity-share-option">
+          <input type="checkbox" data-activity-share-field="modalidade">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          Exibir modalidade
+        </label>
+        <label class="activity-share-option">
+          <input type="checkbox" data-activity-share-field="prazo">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          Exibir prazo
+        </label>
+      </div>
+    </fieldset>
+    <section class="activity-share-options-result" aria-label="Prévia do compartilhamento">
+      <div class="activity-share-options-preview-heading">Prévia <span>atualiza ao selecionar</span></div>
+      <pre class="activity-share-options-preview" id="activityShareOptionsPreview"></pre>
+    </section>
+    <footer class="activity-share-options-footer">
+      <button type="button" class="activity-share-options-cancel" id="cancelActivityShareOptions">Cancelar</button>
+      <button type="button" class="activity-share-options-submit" id="confirmActivityShareOptions">Compartilhar</button>
+    </footer>
   </dialog>
 
   <!-- Modal Adicionar Atividade -->
@@ -12579,7 +12857,9 @@
             <span class="check-box">${check}</span><span>${done ? "Concluída" : "Marcar como feita"}</span>
           </button>
           <div class="activity-detail-actions">
-            <button type="button" class="activity-detail-action" data-detail-action="share">${detailIcons.share}Compartilhar</button>
+            <button type="button" class="activity-detail-action" data-detail-action="share"
+                    aria-label="Compartilhar atividade; pressione e segure para escolher as informações"
+                    title="Clique para compartilhar; pressione e segure para escolher os campos">${detailIcons.share}Compartilhar</button>
             ${extraActions}
           </div>
           <span class="activity-detail-share-status" id="activityDetailsShareStatus" role="status" aria-live="polite"></span>
@@ -12617,6 +12897,8 @@
 
     function closeActivityDetails(afterClose=null, startY=0) {
       if (!activityDetailsDialog.open || detailClosing) return;
+      clearActivityShareHold();
+      if (activityShareOptionsDialog.open) closeActivityShareOptions();
       detailClosing = true;
       const source = detailSourceCard;
       const finish = () => {
@@ -12641,32 +12923,103 @@
     }
 
 
-    function shareActivityDetails() {
-      const a = activities.find(item => item.id === detailActivityId);
-      if (!a) return;
-      const subject = findSubjectByName(a.subject);
+    const activityShareDefaults = Object.freeze({
+      professor: true,
+      disciplina: true,
+      estado: true,
+      data: false,
+      modalidade: true,
+      prazo: true
+    });
+    const activityShareStorageKey = "organizaisso.activity-share-fields.v1";
+    const activityShareOptionsDialog = $("#activityShareOptionsDialog");
+    let activityShareCurrentId = null;
+    let activityShareFields = readActivityShareFields();
+    let shareHoldTimer = null;
+    let shareHoldPoint = null;
+    let ignoreShareClickBefore = 0;
+
+    function readActivityShareFields() {
+      try {
+        const stored = JSON.parse(localStorage.getItem(activityShareStorageKey));
+        if (stored && typeof stored === "object") {
+          return Object.fromEntries(Object.entries(activityShareDefaults).map(
+            ([key, enabled]) => [key, typeof stored[key] === "boolean" ? stored[key] : enabled]
+          ));
+        }
+      } catch (_) {}
+      return { ...activityShareDefaults };
+    }
+
+    function getActivityShareFieldDraft() {
+      const fields = { ...activityShareDefaults };
+      activityShareOptionsDialog.querySelectorAll("[data-activity-share-field]").forEach(input => {
+        fields[input.dataset.activityShareField] = input.checked;
+      });
+      return fields;
+    }
+
+    function buildActivityShareText(activity, fields = activityShareFields) {
+      const subject = findSubjectByName(activity.subject);
       const professor = getSubjectProfessor(subject);
-      const dates = getActivityDates(a);
+      const dates = getActivityDates(activity);
       const lines = [
-        a.title,
-        "Disciplina: " + a.subject,
-        professor?.name ? "Professor: " + professor.name : null,
-        a.description ? "Descrição: " + a.description : null,
-        dates.length > 1 ? "Prazos: " + dates.map(formatDate).join(" | ") :
-          dates[0] ? "Prazo: " + formatDate(dates[0]) : null,
-        "Tipo: " + (a.type || "Atividade"),
-        "Modalidade: " + (a.modality || "Individual"),
-        a.points != null && a.points !== "" ? "Pontuação: " + a.points + " pts" : null,
-        "Estado: " + (doneIds.has(a.id) ? "Concluída" : "Pendente")
+        activity.title,
+        fields.disciplina ? "Disciplina: " + (activity.subject || "Não informada") : null,
+        fields.professor && professor?.name ? "Professor: " + professor.name : null,
+        activity.description ? "Descrição: " + activity.description : null,
+        fields.data ? "Data de cadastro: " + (
+          activity.created_at && !Number.isNaN(new Date(activity.created_at).getTime())
+          ? formatDate(activity.created_at)
+          : "Não informada"
+        ) : null,
+        fields.prazo ? (
+          dates.length > 1 ? "Prazos: " + dates.map(formatDate).join(" | ") :
+          dates[0] ? "Prazo: " + formatDate(dates[0]) : "Prazo: Não informado"
+        ) : null,
+        "Tipo: " + (activity.type || "Atividade"),
+        fields.modalidade ? "Modalidade: " + (activity.modality || "Individual") : null,
+        activity.points != null && activity.points !== "" ? "Pontuação: " + activity.points + " pts" : null,
+        fields.estado ? "Estado: " + (doneIds.has(activity.id) ? "Concluída" : "Pendente") : null
       ].filter(Boolean);
-      const info = lines.join("\n");
+      return lines.join("\n");
+    }
+
+    function renderActivityShareOptionsPreview() {
+      const activity = activities.find(a => a.id === activityShareCurrentId);
+      $("#activityShareOptionsPreview").textContent = activity
+        ? buildActivityShareText(activity, getActivityShareFieldDraft())
+        : "Atividade não encontrada.";
+    }
+
+    function openActivityShareOptions() {
+      if (activityShareOptionsDialog.open || !detailActivityId) return;
+      activityShareCurrentId = detailActivityId;
+      activityShareOptionsDialog.querySelectorAll("[data-activity-share-field]").forEach(input => {
+        input.checked = activityShareFields[input.dataset.activityShareField];
+      });
+      renderActivityShareOptionsPreview();
+      activityShareOptionsDialog.showModal();
+      syncMobileBackGuard();
+    }
+
+    function closeActivityShareOptions() {
+      if (!activityShareOptionsDialog.open) return;
+      activityShareOptionsDialog.close();
+      activityShareCurrentId = null;
+      syncMobileBackGuard();
+    }
+
+    function shareActivityDetails(selectedActivityId = detailActivityId) {
+      const a = activities.find(item => item.id === selectedActivityId);
+      if (!a) return;
+      const info = buildActivityShareText(a);
       const status = $("#activityDetailsShareStatus");
       const feedback = message => {if (status) status.textContent = message;};
       const fallback = () => copyTextToClipboard(info).then(
         () => feedback("Informações desta atividade copiadas."),
         () => feedback("Não foi possível copiar as informações.")
       );
-      // Sem URL genérica do mural: compartilha somente os dados da atividade.
       if (navigator.share) {
         navigator.share({title:a.title,text:info}).catch(error => {
           if (error?.name !== "AbortError") fallback();
@@ -12676,12 +13029,80 @@
       }
     }
 
+    activityShareOptionsDialog.addEventListener("change",event => {
+      if (event.target.matches("[data-activity-share-field]")) {
+        renderActivityShareOptionsPreview();
+      }
+    });
+    $("#closeActivityShareOptions").addEventListener("click",closeActivityShareOptions);
+    $("#cancelActivityShareOptions").addEventListener("click",closeActivityShareOptions);
+    $("#confirmActivityShareOptions").addEventListener("click",() => {
+      const activityId = activityShareCurrentId;
+      activityShareFields = getActivityShareFieldDraft();
+      try {
+        localStorage.setItem(activityShareStorageKey,JSON.stringify(activityShareFields));
+      } catch (_) {}
+      closeActivityShareOptions();
+      shareActivityDetails(activityId);
+    });
+    activityShareOptionsDialog.addEventListener("cancel",event => {
+      event.preventDefault();
+      closeActivityShareOptions();
+    });
+
+    function clearActivityShareHold() {
+      clearTimeout(shareHoldTimer);
+      shareHoldTimer = null;
+      shareHoldPoint = null;
+    }
+    activityDetailsDialog.addEventListener("pointerdown",event => {
+      const button = event.target.closest('[data-detail-action="share"]');
+      if (!button || event.button !== 0 || !event.isPrimary) return;
+      // Uma nova pressão é um novo gesto; suprimir apenas o clique fantasma do toque longo.
+      ignoreShareClickBefore = 0;
+      clearActivityShareHold();
+      shareHoldPoint = {id:event.pointerId,x:event.clientX,y:event.clientY};
+      shareHoldTimer = setTimeout(() => {
+        ignoreShareClickBefore = Date.now() + 1000;
+        clearActivityShareHold();
+        openActivityShareOptions();
+      },550);
+    });
+    activityDetailsDialog.addEventListener("pointermove",event => {
+      const point = shareHoldPoint;
+      if (point?.id === event.pointerId &&
+          Math.hypot(event.clientX - point.x,event.clientY - point.y) > 12) {
+        clearActivityShareHold();
+      }
+    });
+    for (const name of ["pointerup","pointercancel","pointerleave"]) {
+      activityDetailsDialog.addEventListener(name,clearActivityShareHold);
+    }
+    activityDetailsDialog.addEventListener("contextmenu",event => {
+      if (!event.target.closest('[data-detail-action="share"]')) return;
+      event.preventDefault();
+      clearActivityShareHold();
+      ignoreShareClickBefore = Date.now() + 1000;
+      openActivityShareOptions();
+    });
+    activityDetailsDialog.addEventListener("keydown",event => {
+      if (!event.target.closest('[data-detail-action="share"]')) return;
+      if ((event.shiftKey && event.key === "F10") ||
+          (event.altKey && event.key === "Enter")) {
+        event.preventDefault();
+        openActivityShareOptions();
+      }
+    });
+
     activityDetailsDialog.addEventListener("click",event => {
       const btn = event.target.closest("[data-detail-action]");
       if (btn && activityDetailsDialog.contains(btn)) {
         const action = btn.dataset.detailAction;
         if (action === "close") return closeActivityDetails();
-        if (action === "share") return shareActivityDetails();
+        if (action === "share") {
+          if (Date.now() < ignoreShareClickBefore) return;
+          return shareActivityDetails();
+        }
         const id = detailActivityId;
         const attr = {
           complete:"data-check",work:"data-open-my-work",
@@ -13202,6 +13623,7 @@
       return Boolean(
         $(".modal-backdrop.open") ||
         activityDetailsDialog.open ||
+        activityShareOptionsDialog.open ||
         $(".custom-select-menu.open") ||
         $("#calendarPopup.open") ||
         $("#userMenu.open") ||
@@ -13241,6 +13663,10 @@
         return true;
       }
 
+      if (activityShareOptionsDialog.open) {
+        closeActivityShareOptions();
+        return true;
+      }
       if (activityDetailsDialog.open) {
         closeActivityDetails();
         return true;
