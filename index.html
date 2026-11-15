@@ -12965,22 +12965,22 @@
       const dates = getActivityDates(activity);
       const lines = [
         activity.title,
-        fields.disciplina ? "Disciplina: " + (activity.subject || "Não informada") : null,
-        fields.professor && professor?.name ? "Professor: " + professor.name : null,
+        fields.disciplina ? "*Disciplina:* " + (activity.subject || "Não informada") : null,
+        fields.professor && professor?.name ? "*Professor:* " + professor.name : null,
         activity.description ? "Descrição: " + activity.description : null,
-        fields.data ? "Data de cadastro: " + (
+        fields.data ? "*Data de cadastro:* " + (
           activity.created_at && !Number.isNaN(new Date(activity.created_at).getTime())
           ? formatDate(activity.created_at)
           : "Não informada"
         ) : null,
         fields.prazo ? (
-          dates.length > 1 ? "Prazos: " + dates.map(formatDate).join(" | ") :
-          dates[0] ? "Prazo: " + formatDate(dates[0]) : "Prazo: Não informado"
+          dates.length > 1 ? "*Prazos:* " + dates.map(formatDate).join(" | ") :
+          dates[0] ? "*Prazo:* " + formatDate(dates[0]) : "*Prazo:* Não informado"
         ) : null,
         "Tipo: " + (activity.type || "Atividade"),
-        fields.modalidade ? "Modalidade: " + (activity.modality || "Individual") : null,
+        fields.modalidade ? "*Modalidade:* " + (activity.modality || "Individual") : null,
         activity.points != null && activity.points !== "" ? "Pontuação: " + activity.points + " pts" : null,
-        fields.estado ? "Estado: " + (doneIds.has(activity.id) ? "Concluída" : "Pendente") : null
+        fields.estado ? "*Estado:* " + (doneIds.has(activity.id) ? "Concluída" : "Pendente") : null
       ].filter(Boolean);
       return lines.join("\n");
     }
