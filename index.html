@@ -5732,6 +5732,80 @@
       #shareModal .modal-backdrop { transition-duration: 1ms !important; }
     }
 
+
+    /* Regra de UX: dimensões estáveis para conteúdo variável.
+       O texto rola por dentro; quantidade de informação não redimensiona a janela. */
+    .activity-details-dialog {
+      height: min(560px, 88dvh, calc(var(--visual-viewport-height, 100dvh) - 12px));
+      max-height: calc(var(--visual-viewport-height, 100dvh) - 12px);
+      overflow: hidden;
+    }
+    .activity-details-dialog[open] {
+      display: flex;
+      flex-direction: column;
+    }
+    #activityDetailsBody {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .activity-detail-body {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    .activity-detail-header,
+    .activity-detail-title,
+    .activity-detail-metadata {
+      flex: 0 0 auto;
+    }
+    .activity-detail-description {
+      flex: 1 0 120px;
+      min-height: 120px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+    .activity-detail-footer {
+      position: relative;
+      flex: 0 0 auto;
+      margin-top: 0;
+    }
+    #shareModal .share-redesign-modal {
+      flex: 0 0 auto;
+      height: min(640px, 90dvh, calc(var(--visual-viewport-height, 100dvh) - 16px));
+      min-height: min(640px, 90dvh, calc(var(--visual-viewport-height, 100dvh) - 16px));
+    }
+    @media (max-width: 820px) {
+      #shareModal .share-redesign-modal {
+        height: min(80dvh, 620px, calc(var(--visual-viewport-height, 100dvh) - 8px));
+        min-height: min(80dvh, 620px, calc(var(--visual-viewport-height, 100dvh) - 8px));
+      }
+      #shareModal.share-expanded .share-redesign-modal {
+        height: calc(var(--visual-viewport-height, 100dvh) - 8px);
+        min-height: calc(var(--visual-viewport-height, 100dvh) - 8px);
+      }
+    }
+    @media (max-width: 600px) {
+      .activity-details-dialog {
+        height: min(92dvh, calc(var(--visual-viewport-height, 100dvh) - 6px));
+        max-height: calc(var(--visual-viewport-height, 100dvh) - 6px);
+      }
+      .activity-detail-handle {
+        flex: 0 0 28px;
+      }
+      .activity-detail-description {
+        flex-basis: 96px;
+        min-height: 96px;
+      }
+    }
+
   </style>
 </head>
 <body>
